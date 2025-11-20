@@ -1,0 +1,81 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        for service in src/*/; do
+          if [ -f "$service/requirements.txt" ]; then
+            pip install -r $service/requirements.txt
+          fi
+        done
+    
+    - name: Run tests
+      run: |
+        for service in src/*/; do
+          if [ -f "$service/tests/" ]; then
+            pytest $service/tests/ --cov --cov-report=xml
+          fi
+        done
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+  
+  test-dotnet:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Build and test C# services
+      run: |
+        for service in src/*/; do
+          if [ -f "$service/*.csproj" ]; then
+            dotnet build $service
+            dotnet test $service
+          fi
+        done
+  
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Bandit (Python security)
+      run: |
+        pip install bandit
+        bandit -r src/ -f json -o bandit-report.json || true
+    
+    - name: Run Trivy scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
