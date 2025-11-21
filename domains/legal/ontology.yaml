@@ -1,0 +1,1191 @@
+# Legal & Law Practice Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Legal domain ontology covering cases, clients, documents, and legal proceedings"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Case Entity
+    # ------------------------------------------------------------------------
+    - name: Case
+      display_name: "Case"
+      description: "Legal case or matter with associated proceedings"
+      icon: "briefcase"
+      color: "#6366F1"
+
+      attributes:
+        # Core Identification
+        - name: case_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Internal case/matter number"
+
+        - name: court_case_number
+          type: string
+          indexed: true
+          description: "Court-assigned case number"
+
+        - name: case_title
+          type: string
+          required: true
+          description: "Case title (e.g., 'Smith v. Jones')"
+
+        # Classification
+        - name: case_type
+          type: enum
+          required: true
+          values:
+            - "Civil Litigation"
+            - "Criminal Defense"
+            - "Family Law"
+            - "Personal Injury"
+            - "Corporate"
+            - "Intellectual Property"
+            - "Real Estate"
+            - "Employment"
+            - "Immigration"
+            - "Bankruptcy"
+            - "Tax"
+            - "Estate Planning"
+            - "Healthcare"
+            - "Environmental"
+          default: "Civil Litigation"
+
+        - name: practice_area
+          type: string
+          indexed: true
+          description: "Specific practice area within case type"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Intake"
+            - "Active"
+            - "Discovery"
+            - "Trial"
+            - "Appeal"
+            - "Settlement"
+            - "Closed - Won"
+            - "Closed - Lost"
+            - "Closed - Settled"
+            - "Closed - Dismissed"
+            - "On Hold"
+          default: "Intake"
+
+        # Dates
+        - name: open_date
+          type: date
+          required: true
+          description: "Date case was opened"
+
+        - name: close_date
+          type: date
+          description: "Date case was closed"
+
+        - name: statute_of_limitations
+          type: date
+          description: "Statute of limitations deadline"
+
+        # Financial
+        - name: fee_arrangement
+          type: enum
+          values:
+            - "Hourly"
+            - "Contingency"
+            - "Flat Fee"
+            - "Retainer"
+            - "Hybrid"
+            - "Pro Bono"
+          default: "Hourly"
+
+        - name: contingency_percentage
+          type: number
+          min: 0
+          max: 100
+          description: "Contingency fee percentage"
+
+        - name: retainer_amount
+          type: money
+          description: "Initial retainer amount"
+
+        - name: estimated_value
+          type: money
+          description: "Estimated case value or damages"
+
+        - name: settlement_amount
+          type: money
+          description: "Final settlement or judgment amount"
+
+        # Location/Jurisdiction
+        - name: jurisdiction
+          type: string
+          required: true
+          indexed: true
+          description: "Primary jurisdiction (e.g., 'California', 'Federal - 9th Circuit')"
+
+        - name: venue
+          type: string
+          description: "Court venue"
+
+        # Risk Assessment
+        - name: risk_level
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+          default: "Medium"
+
+        - name: complexity
+          type: enum
+          values: ["Simple", "Moderate", "Complex", "Highly Complex"]
+          default: "Moderate"
+
+        # Notes
+        - name: description
+          type: text
+          description: "Case description and background"
+
+        - name: notes
+          type: text
+          description: "Internal notes"
+
+        - name: tags
+          type: array
+          item_type: string
+          description: "Custom tags for categorization"
+
+      indexes:
+        - fields: ["status", "case_type"]
+          name: "idx_status_type"
+        - fields: ["jurisdiction"]
+          name: "idx_jurisdiction"
+        - fields: ["open_date"]
+          name: "idx_open_date"
+
+      validation_rules:
+        - rule: "contingency_percentage required if fee_arrangement is Contingency"
+        - rule: "close_date must be >= open_date"
+        - rule: "statute_of_limitations must be >= open_date"
+
+    # ------------------------------------------------------------------------
+    # Client Entity
+    # ------------------------------------------------------------------------
+    - name: Client
+      display_name: "Client"
+      description: "Individual or organization receiving legal services"
+      icon: "user"
+      color: "#10B981"
+
+      attributes:
+        - name: client_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: client_type
+          type: enum
+          required: true
+          values:
+            - "Individual"
+            - "Corporation"
+            - "LLC"
+            - "Partnership"
+            - "Non-Profit"
+            - "Government"
+            - "Trust"
+          default: "Individual"
+
+        # Individual Fields
+        - name: first_name
+          type: string
+
+        - name: last_name
+          type: string
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        # Organization Fields
+        - name: organization_name
+          type: string
+
+        - name: display_name
+          type: string
+          required: true
+          computed: true
+          formula: "organization_name OR full_name"
+
+        # Contact Information
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: mobile_phone
+          type: phone
+
+        - name: address
+          type: address
+
+        # Business Details
+        - name: industry
+          type: string
+
+        - name: tax_id
+          type: string
+          description: "SSN or EIN"
+
+        # Client Status
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Prospective"
+            - "Former"
+            - "Declined"
+          default: "Active"
+
+        - name: intake_date
+          type: date
+
+        - name: source
+          type: string
+          description: "How client was acquired (referral, website, etc.)"
+
+        # Billing
+        - name: billing_contact
+          type: string
+
+        - name: billing_email
+          type: email
+
+        - name: billing_address
+          type: address
+
+        - name: payment_terms
+          type: enum
+          values: ["Due on Receipt", "Net 15", "Net 30", "Net 45", "Net 60"]
+          default: "Net 30"
+
+        # Notes
+        - name: notes
+          type: text
+
+        - name: conflicts_notes
+          type: text
+          description: "Notes for conflict checking"
+
+      indexes:
+        - fields: ["client_number"]
+          unique: true
+          name: "idx_client_number"
+        - fields: ["status"]
+          name: "idx_client_status"
+        - fields: ["display_name"]
+          name: "idx_client_name"
+
+    # ------------------------------------------------------------------------
+    # Document Entity
+    # ------------------------------------------------------------------------
+    - name: Document
+      display_name: "Document"
+      description: "Legal document, pleading, contract, or evidence"
+      icon: "file-text"
+      color: "#F59E0B"
+
+      attributes:
+        - name: document_name
+          type: string
+          required: true
+
+        - name: document_type
+          type: enum
+          required: true
+          values:
+            - "Pleading"
+            - "Motion"
+            - "Brief"
+            - "Contract"
+            - "Correspondence"
+            - "Discovery"
+            - "Evidence"
+            - "Court Order"
+            - "Judgment"
+            - "Internal Memo"
+            - "Research"
+            - "Template"
+
+        - name: document_subtype
+          type: string
+          description: "More specific document classification"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "In Review"
+            - "Final"
+            - "Filed"
+            - "Executed"
+            - "Superseded"
+          default: "Draft"
+
+        - name: version
+          type: string
+          description: "Document version number"
+
+        # File Details
+        - name: file_url
+          type: url
+          required: true
+
+        - name: file_size
+          type: number
+          description: "File size in bytes"
+
+        - name: file_type
+          type: string
+          description: "File extension (PDF, DOCX, etc.)"
+
+        - name: page_count
+          type: number
+
+        # Dates
+        - name: created_date
+          type: datetime
+          required: true
+
+        - name: modified_date
+          type: datetime
+
+        - name: filed_date
+          type: date
+          description: "Date filed with court"
+
+        - name: execution_date
+          type: date
+          description: "Date document was executed/signed"
+
+        # Metadata
+        - name: author
+          type: string
+
+        - name: confidentiality
+          type: enum
+          values:
+            - "Public"
+            - "Confidential"
+            - "Privileged"
+            - "Work Product"
+          default: "Confidential"
+
+        - name: bates_range_start
+          type: string
+          description: "Starting Bates number for discovery"
+
+        - name: bates_range_end
+          type: string
+          description: "Ending Bates number"
+
+        - name: ocr_text
+          type: text
+          description: "Extracted text content for search"
+
+        - name: summary
+          type: text
+          description: "AI-generated or manual document summary"
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["document_type", "status"]
+          name: "idx_doc_type_status"
+        - fields: ["filed_date"]
+          name: "idx_filed_date"
+        - fields: ["confidentiality"]
+          name: "idx_confidentiality"
+
+    # ------------------------------------------------------------------------
+    # Precedent Entity
+    # ------------------------------------------------------------------------
+    - name: Precedent
+      display_name: "Precedent"
+      description: "Legal precedent, case law, or citation"
+      icon: "bookmark"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: citation
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Legal citation (e.g., '123 F.3d 456')"
+
+        - name: case_name
+          type: string
+          required: true
+          description: "Case name (e.g., 'Smith v. Jones')"
+
+        - name: court
+          type: string
+          required: true
+          description: "Court that issued the decision"
+
+        - name: decision_date
+          type: date
+          required: true
+
+        - name: jurisdiction
+          type: string
+          indexed: true
+
+        - name: legal_topics
+          type: array
+          item_type: string
+          description: "Legal topics covered (e.g., 'Contract Breach', 'Negligence')"
+
+        - name: holding
+          type: text
+          description: "Summary of the court's holding"
+
+        - name: key_quotes
+          type: array
+          item_type: text
+          description: "Important quotes from the decision"
+
+        - name: status
+          type: enum
+          values:
+            - "Good Law"
+            - "Questioned"
+            - "Overruled"
+            - "Superseded"
+          default: "Good Law"
+
+        - name: source_url
+          type: url
+          description: "Link to full text"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["citation"]
+          unique: true
+          name: "idx_citation"
+        - fields: ["legal_topics"]
+          name: "idx_legal_topics"
+        - fields: ["decision_date"]
+          name: "idx_decision_date"
+
+    # ------------------------------------------------------------------------
+    # Attorney Entity
+    # ------------------------------------------------------------------------
+    - name: Attorney
+      display_name: "Attorney"
+      description: "Attorney or legal professional"
+      icon: "user-tie"
+      color: "#3B82F6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: phone
+          type: phone
+
+        - name: mobile_phone
+          type: phone
+
+        - name: role
+          type: enum
+          required: true
+          values:
+            - "Partner"
+            - "Of Counsel"
+            - "Associate"
+            - "Paralegal"
+            - "Legal Assistant"
+            - "Law Clerk"
+          default: "Associate"
+
+        - name: practice_areas
+          type: array
+          item_type: string
+          description: "Areas of practice"
+
+        - name: bar_number
+          type: string
+          indexed: true
+
+        - name: bar_state
+          type: string
+
+        - name: bar_admission_date
+          type: date
+
+        - name: hourly_rate
+          type: money
+          description: "Standard hourly billing rate"
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "On Leave"]
+          default: "Active"
+
+        - name: bio
+          type: text
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_attorney_email"
+        - fields: ["bar_number", "bar_state"]
+          name: "idx_bar_info"
+        - fields: ["role"]
+          name: "idx_role"
+
+    # ------------------------------------------------------------------------
+    # Court Entity
+    # ------------------------------------------------------------------------
+    - name: Court
+      display_name: "Court"
+      description: "Court or tribunal"
+      icon: "landmark"
+      color: "#EF4444"
+
+      attributes:
+        - name: court_name
+          type: string
+          required: true
+
+        - name: court_type
+          type: enum
+          required: true
+          values:
+            - "Federal District"
+            - "Federal Circuit"
+            - "Federal Supreme"
+            - "State Trial"
+            - "State Appellate"
+            - "State Supreme"
+            - "Bankruptcy"
+            - "Tax"
+            - "Administrative"
+            - "Arbitration"
+
+        - name: jurisdiction
+          type: string
+          required: true
+          indexed: true
+
+        - name: address
+          type: address
+
+        - name: phone
+          type: phone
+
+        - name: website
+          type: url
+
+        - name: e_filing_url
+          type: url
+          description: "Electronic filing system URL"
+
+        - name: filing_requirements
+          type: text
+          description: "Special filing requirements or local rules"
+
+        - name: judges
+          type: array
+          item_type: string
+          description: "List of judges"
+
+      indexes:
+        - fields: ["court_type", "jurisdiction"]
+          name: "idx_court_type_jurisdiction"
+
+    # ------------------------------------------------------------------------
+    # Deadline Entity
+    # ------------------------------------------------------------------------
+    - name: Deadline
+      display_name: "Deadline"
+      description: "Legal deadline or calendar event"
+      icon: "calendar-alert"
+      color: "#DC2626"
+
+      attributes:
+        - name: title
+          type: string
+          required: true
+
+        - name: deadline_type
+          type: enum
+          required: true
+          values:
+            - "Court Filing"
+            - "Discovery"
+            - "Hearing"
+            - "Trial"
+            - "Statute of Limitations"
+            - "Response Due"
+            - "Client Meeting"
+            - "Internal Review"
+            - "Other"
+
+        - name: due_date
+          type: datetime
+          required: true
+          indexed: true
+
+        - name: reminder_date
+          type: datetime
+          description: "Date to send reminder"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Completed"
+            - "Extended"
+            - "Missed"
+            - "Cancelled"
+          default: "Pending"
+
+        - name: priority
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+          default: "Medium"
+
+        - name: description
+          type: text
+
+        - name: completion_date
+          type: datetime
+
+        - name: completed_by
+          type: string
+
+      indexes:
+        - fields: ["due_date", "status"]
+          name: "idx_due_date_status"
+        - fields: ["priority"]
+          name: "idx_priority"
+
+    # ------------------------------------------------------------------------
+    # Billing Entity
+    # ------------------------------------------------------------------------
+    - name: Billing
+      display_name: "Billing Entry"
+      description: "Time entry or expense for billing"
+      icon: "receipt"
+      color: "#059669"
+
+      attributes:
+        - name: entry_type
+          type: enum
+          required: true
+          values:
+            - "Time"
+            - "Expense"
+            - "Flat Fee"
+
+        - name: description
+          type: text
+          required: true
+
+        - name: date
+          type: date
+          required: true
+
+        # Time Entry Fields
+        - name: hours
+          type: number
+          min: 0
+          max: 24
+          description: "Hours worked"
+
+        - name: rate
+          type: money
+          description: "Hourly rate"
+
+        - name: amount
+          type: money
+          required: true
+          computed: true
+          formula: "hours * rate (for time) or expense amount"
+
+        # Status
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Approved"
+            - "Billed"
+            - "Paid"
+            - "Written Off"
+          default: "Draft"
+
+        - name: billable
+          type: boolean
+          default: true
+
+        - name: activity_code
+          type: string
+          description: "UTBMS activity code"
+
+        - name: task_code
+          type: string
+          description: "UTBMS task code"
+
+        - name: invoice_number
+          type: string
+          indexed: true
+
+      indexes:
+        - fields: ["date", "status"]
+          name: "idx_billing_date_status"
+        - fields: ["invoice_number"]
+          name: "idx_invoice"
+
+    # ------------------------------------------------------------------------
+    # Matter Entity
+    # ------------------------------------------------------------------------
+    - name: Matter
+      display_name: "Matter"
+      description: "Legal matter or sub-matter within a case"
+      icon: "folder"
+      color: "#7C3AED"
+
+      attributes:
+        - name: matter_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: matter_name
+          type: string
+          required: true
+
+        - name: matter_type
+          type: enum
+          values:
+            - "Main Matter"
+            - "Sub-Matter"
+            - "Appeal"
+            - "Related Action"
+
+        - name: status
+          type: enum
+          values:
+            - "Active"
+            - "Closed"
+            - "On Hold"
+          default: "Active"
+
+        - name: open_date
+          type: date
+
+        - name: close_date
+          type: date
+
+        - name: description
+          type: text
+
+      indexes:
+        - fields: ["matter_number"]
+          name: "idx_matter_number"
+
+    # ------------------------------------------------------------------------
+    # Party Entity
+    # ------------------------------------------------------------------------
+    - name: Party
+      display_name: "Party"
+      description: "Party to a legal proceeding"
+      icon: "users"
+      color: "#F97316"
+
+      attributes:
+        - name: party_name
+          type: string
+          required: true
+
+        - name: party_type
+          type: enum
+          required: true
+          values:
+            - "Plaintiff"
+            - "Defendant"
+            - "Petitioner"
+            - "Respondent"
+            - "Appellant"
+            - "Appellee"
+            - "Third Party"
+            - "Intervenor"
+            - "Witness"
+
+        - name: represented_by
+          type: string
+          description: "Opposing counsel name"
+
+        - name: firm_name
+          type: string
+          description: "Opposing counsel firm"
+
+        - name: contact_info
+          type: text
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["party_type"]
+          name: "idx_party_type"
+
+    # ------------------------------------------------------------------------
+    # Evidence Entity
+    # ------------------------------------------------------------------------
+    - name: Evidence
+      display_name: "Evidence"
+      description: "Evidence item in a case"
+      icon: "archive"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: exhibit_number
+          type: string
+          required: true
+
+        - name: description
+          type: string
+          required: true
+
+        - name: evidence_type
+          type: enum
+          required: true
+          values:
+            - "Document"
+            - "Physical"
+            - "Digital"
+            - "Testimonial"
+            - "Demonstrative"
+            - "Photo"
+            - "Video"
+            - "Audio"
+
+        - name: status
+          type: enum
+          values:
+            - "Collected"
+            - "In Review"
+            - "Authenticated"
+            - "Admitted"
+            - "Excluded"
+          default: "Collected"
+
+        - name: custodian
+          type: string
+          description: "Source/custodian of evidence"
+
+        - name: collection_date
+          type: date
+
+        - name: chain_of_custody
+          type: text
+          description: "Chain of custody notes"
+
+        - name: storage_location
+          type: string
+
+        - name: file_url
+          type: url
+
+      indexes:
+        - fields: ["exhibit_number"]
+          name: "idx_exhibit_number"
+        - fields: ["evidence_type"]
+          name: "idx_evidence_type"
+
+    # ------------------------------------------------------------------------
+    # Filing Entity
+    # ------------------------------------------------------------------------
+    - name: Filing
+      display_name: "Court Filing"
+      description: "Document filed with the court"
+      icon: "send"
+      color: "#84CC16"
+
+      attributes:
+        - name: filing_type
+          type: enum
+          required: true
+          values:
+            - "Complaint"
+            - "Answer"
+            - "Motion"
+            - "Brief"
+            - "Discovery Request"
+            - "Discovery Response"
+            - "Notice"
+            - "Subpoena"
+            - "Order"
+            - "Judgment"
+
+        - name: filing_date
+          type: datetime
+          required: true
+
+        - name: due_date
+          type: datetime
+
+        - name: confirmation_number
+          type: string
+
+        - name: status
+          type: enum
+          values:
+            - "Drafted"
+            - "Ready to File"
+            - "Filed"
+            - "Accepted"
+            - "Rejected"
+          default: "Drafted"
+
+        - name: filed_by
+          type: string
+
+        - name: fee_amount
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["filing_date"]
+          name: "idx_filing_date"
+        - fields: ["status"]
+          name: "idx_filing_status"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Client-Case Relationships
+    - name: REPRESENTS
+      from: Attorney
+      to: Client
+      description: "Attorney represents client"
+      cardinality: many_to_many
+      attributes:
+        - name: start_date
+          type: date
+        - name: end_date
+          type: date
+        - name: engagement_type
+          type: string
+
+    - name: INVOLVES
+      from: Case
+      to: Client
+      description: "Case involves client"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: enum
+          values: ["Primary Client", "Co-Client", "Adverse Party"]
+          required: true
+
+    # Case-Document Relationships
+    - name: CONTAINS_DOCUMENT
+      from: Case
+      to: Document
+      description: "Case contains document"
+      cardinality: one_to_many
+
+    - name: CITES
+      from: Document
+      to: Precedent
+      description: "Document cites precedent"
+      cardinality: many_to_many
+      attributes:
+        - name: citation_context
+          type: text
+        - name: page_number
+          type: number
+
+    # Precedent Relationships
+    - name: PRECEDES
+      from: Precedent
+      to: Precedent
+      description: "Precedent precedes or overrules another"
+      cardinality: many_to_many
+      attributes:
+        - name: relationship_type
+          type: enum
+          values: ["Follows", "Distinguishes", "Overrules", "Supersedes"]
+
+    # Attorney Assignments
+    - name: ASSIGNED_TO
+      from: Case
+      to: Attorney
+      description: "Case assigned to attorney"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: enum
+          values: ["Lead Attorney", "Second Chair", "Associate", "Paralegal"]
+          required: true
+        - name: assignment_date
+          type: date
+
+    # Court Relationships
+    - name: FILED_IN
+      from: Case
+      to: Court
+      description: "Case filed in court"
+      cardinality: many_to_one
+
+    - name: FILED_WITH
+      from: Filing
+      to: Court
+      description: "Filing submitted to court"
+      cardinality: many_to_one
+
+    # Other Relationships
+    - name: HAS_DEADLINE
+      from: Case
+      to: Deadline
+      description: "Case has deadline"
+      cardinality: one_to_many
+
+    - name: HAS_BILLING
+      from: Case
+      to: Billing
+      description: "Case has billing entry"
+      cardinality: one_to_many
+
+    - name: HAS_MATTER
+      from: Case
+      to: Matter
+      description: "Case has sub-matter"
+      cardinality: one_to_many
+
+    - name: HAS_PARTY
+      from: Case
+      to: Party
+      description: "Case has party"
+      cardinality: one_to_many
+
+    - name: HAS_EVIDENCE
+      from: Case
+      to: Evidence
+      description: "Case has evidence"
+      cardinality: one_to_many
+
+    - name: HAS_FILING
+      from: Case
+      to: Filing
+      description: "Case has filing"
+      cardinality: one_to_many
+
+    - name: BILLED_BY
+      from: Billing
+      to: Attorney
+      description: "Billing entry by attorney"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "find_related_cases"
+      description: "Find cases with similar legal issues or precedents"
+      cypher: |
+        MATCH (c1:Case)-[:CONTAINS_DOCUMENT]->(d:Document)-[:CITES]->(p:Precedent)
+        WHERE c1.id = $case_id
+        WITH p
+        MATCH (c2:Case)-[:CONTAINS_DOCUMENT]->(:Document)-[:CITES]->(p)
+        WHERE c2.id <> $case_id
+        RETURN DISTINCT c2
+        ORDER BY c2.open_date DESC
+
+    - name: "attorney_workload"
+      description: "Get attorney's active case assignments and hours"
+      cypher: |
+        MATCH (a:Attorney {id: $attorney_id})<-[r:ASSIGNED_TO]-(c:Case)
+        WHERE c.status IN ['Active', 'Discovery', 'Trial']
+        OPTIONAL MATCH (c)-[:HAS_BILLING]->(b:Billing)
+        WHERE b.date >= date() - duration({days: 30})
+        RETURN c, sum(b.hours) AS monthly_hours
+        ORDER BY c.open_date DESC
+
+    - name: "upcoming_deadlines"
+      description: "Get upcoming deadlines across all cases"
+      cypher: |
+        MATCH (c:Case)-[:HAS_DEADLINE]->(d:Deadline)
+        WHERE d.status = 'Pending'
+          AND d.due_date >= datetime()
+          AND d.due_date <= datetime() + duration({days: $days_ahead})
+        RETURN c, d
+        ORDER BY d.due_date ASC
+
+    - name: "client_history"
+      description: "Get complete client history with all cases and matters"
+      cypher: |
+        MATCH (client:Client {id: $client_id})
+        OPTIONAL MATCH (client)<-[:INVOLVES]-(c:Case)
+        OPTIONAL MATCH (c)-[:HAS_BILLING]->(b:Billing)
+        RETURN client, collect(DISTINCT c) AS cases,
+               sum(b.amount) AS total_billed
+        ORDER BY c.open_date DESC
+
+    - name: "precedent_chain"
+      description: "Trace the precedent chain for a citation"
+      cypher: |
+        MATCH path = (p1:Precedent {id: $precedent_id})-[:PRECEDES*1..5]->(p2:Precedent)
+        RETURN path
+        ORDER BY p2.decision_date DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

@@ -1,0 +1,438 @@
+ui:
+  theme:
+    primary_color: "#10B981"
+    secondary_color: "#059669"
+    icon: "shopping-cart"
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "products"
+        label: "Products"
+        icon: "package"
+        route: "/products"
+
+      - id: "orders"
+        label: "Orders"
+        icon: "shopping-bag"
+        route: "/orders"
+
+      - id: "customers"
+        label: "Customers"
+        icon: "users"
+        route: "/customers"
+
+      - id: "analytics"
+        label: "Analytics"
+        icon: "bar-chart"
+        route: "/analytics"
+
+      - id: "marketing"
+        label: "Marketing"
+        icon: "megaphone"
+        route: "/marketing"
+
+  dashboards:
+    - id: "store-overview"
+      name: "Store Overview"
+      layout: "grid"
+      widgets:
+        - type: "metric_card"
+          title: "Total Revenue"
+          entity_type: "Order"
+          aggregation: "sum"
+          field: "totalPrice"
+          time_period: "30d"
+          comparison: "previous_period"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Orders"
+          entity_type: "Order"
+          aggregation: "count"
+          time_period: "30d"
+          comparison: "previous_period"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Customers"
+          entity_type: "Customer"
+          aggregation: "count"
+          time_period: "30d"
+          comparison: "previous_period"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Avg Order Value"
+          entity_type: "Order"
+          aggregation: "average"
+          field: "totalPrice"
+          time_period: "30d"
+          comparison: "previous_period"
+          size: "medium"
+
+        - type: "line_chart"
+          title: "Revenue Over Time"
+          entity_type: "Order"
+          x_axis: "orderDate"
+          y_axis: "totalPrice"
+          aggregation: "sum"
+          time_period: "90d"
+          size: "large"
+
+        - type: "pie_chart"
+          title: "Orders by Status"
+          entity_type: "Order"
+          group_by: "status"
+          size: "medium"
+
+        - type: "bar_chart"
+          title: "Top Products"
+          entity_type: "OrderLineItem"
+          group_by: "productId"
+          aggregation: "sum"
+          field: "quantity"
+          limit: 10
+          size: "large"
+
+        - type: "table"
+          title: "Recent Orders"
+          entity_type: "Order"
+          columns: ["orderNumber", "customerName", "totalPrice", "status", "orderDate"]
+          sort_by: "orderDate"
+          sort_order: "desc"
+          limit: 10
+          size: "large"
+
+        - type: "alert_list"
+          title: "Low Stock Alerts"
+          entity_type: "Product"
+          filter: "stockQuantity <= lowStockThreshold"
+          columns: ["name", "sku", "stockQuantity"]
+          size: "medium"
+
+  entity_lists:
+    Product:
+      default_view: "grid"
+      views:
+        - id: "grid"
+          label: "Grid View"
+          icon: "grid"
+        - id: "table"
+          label: "Table View"
+          icon: "table"
+
+      columns:
+        - field: "name"
+          label: "Product Name"
+          sortable: true
+          filterable: true
+
+        - field: "sku"
+          label: "SKU"
+          sortable: true
+          filterable: true
+
+        - field: "price"
+          label: "Price"
+          sortable: true
+          filterable: true
+          format: "currency"
+
+        - field: "stockQuantity"
+          label: "Stock"
+          sortable: true
+          filterable: true
+
+        - field: "active"
+          label: "Active"
+          sortable: true
+          filterable: true
+          format: "boolean"
+
+      filters:
+        - field: "active"
+          type: "boolean"
+          label: "Active"
+
+        - field: "featured"
+          type: "boolean"
+          label: "Featured"
+
+        - field: "stockQuantity"
+          type: "number_range"
+          label: "Stock Quantity"
+
+        - field: "price"
+          type: "number_range"
+          label: "Price"
+
+      actions:
+        - id: "edit"
+          label: "Edit"
+          icon: "pencil"
+        - id: "duplicate"
+          label: "Duplicate"
+          icon: "copy"
+        - id: "delete"
+          label: "Delete"
+          icon: "trash"
+
+    Order:
+      default_view: "table"
+      columns:
+        - field: "orderNumber"
+          label: "Order #"
+          sortable: true
+          filterable: true
+
+        - field: "customerName"
+          label: "Customer"
+          sortable: true
+          filterable: true
+
+        - field: "totalPrice"
+          label: "Total"
+          sortable: true
+          filterable: true
+          format: "currency"
+
+        - field: "status"
+          label: "Status"
+          sortable: true
+          filterable: true
+          format: "badge"
+
+        - field: "financialStatus"
+          label: "Payment"
+          sortable: true
+          filterable: true
+          format: "badge"
+
+        - field: "orderDate"
+          label: "Order Date"
+          sortable: true
+          filterable: true
+          format: "datetime"
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Order Status"
+          options:
+            - value: "pending"
+              label: "Pending"
+            - value: "processing"
+              label: "Processing"
+            - value: "shipped"
+              label: "Shipped"
+            - value: "delivered"
+              label: "Delivered"
+            - value: "cancelled"
+              label: "Cancelled"
+
+        - field: "financialStatus"
+          type: "select"
+          label: "Payment Status"
+          options:
+            - value: "pending"
+              label: "Pending"
+            - value: "paid"
+              label: "Paid"
+            - value: "refunded"
+              label: "Refunded"
+
+        - field: "orderDate"
+          type: "date_range"
+          label: "Order Date"
+
+      actions:
+        - id: "view"
+          label: "View Details"
+          icon: "eye"
+        - id: "fulfill"
+          label: "Fulfill"
+          icon: "truck"
+        - id: "refund"
+          label: "Refund"
+          icon: "dollar-sign"
+
+    Customer:
+      default_view: "table"
+      columns:
+        - field: "fullName"
+          label: "Name"
+          sortable: true
+          filterable: true
+
+        - field: "email"
+          label: "Email"
+          sortable: true
+          filterable: true
+
+        - field: "totalOrders"
+          label: "Orders"
+          sortable: true
+
+        - field: "totalSpent"
+          label: "Total Spent"
+          sortable: true
+          format: "currency"
+
+        - field: "createdAt"
+          label: "Customer Since"
+          sortable: true
+          format: "date"
+
+      actions:
+        - id: "view"
+          label: "View Profile"
+          icon: "user"
+        - id: "email"
+          label: "Send Email"
+          icon: "mail"
+
+  entity_forms:
+    Product:
+      sections:
+        - title: "Basic Information"
+          fields:
+            - field: "name"
+              type: "text"
+              required: true
+
+            - field: "description"
+              type: "textarea"
+              rows: 5
+
+            - field: "sku"
+              type: "text"
+              required: true
+
+            - field: "active"
+              type: "checkbox"
+
+            - field: "featured"
+              type: "checkbox"
+
+        - title: "Pricing"
+          fields:
+            - field: "price"
+              type: "currency"
+              required: true
+
+            - field: "compareAtPrice"
+              type: "currency"
+
+            - field: "costPrice"
+              type: "currency"
+
+        - title: "Inventory"
+          fields:
+            - field: "stockQuantity"
+              type: "number"
+              required: true
+
+            - field: "lowStockThreshold"
+              type: "number"
+
+        - title: "Shipping"
+          fields:
+            - field: "weight"
+              type: "number"
+              suffix: "lbs"
+
+            - field: "dimensions"
+              type: "dimensions"
+              description: "Length x Width x Height (inches)"
+
+        - title: "Media"
+          fields:
+            - field: "images"
+              type: "image_upload"
+              multiple: true
+
+        - title: "Organization"
+          fields:
+            - field: "categories"
+              type: "multi_select"
+              relationship: "IN_CATEGORY"
+
+            - field: "tags"
+              type: "tag_input"
+
+    Order:
+      sections:
+        - title: "Order Information"
+          readonly: true
+          fields:
+            - field: "orderNumber"
+              type: "text"
+
+            - field: "orderDate"
+              type: "datetime"
+
+            - field: "status"
+              type: "select"
+
+            - field: "financialStatus"
+              type: "select"
+
+        - title: "Customer"
+          readonly: true
+          fields:
+            - field: "customer"
+              type: "relationship"
+              relationship: "PLACED_BY"
+
+        - title: "Line Items"
+          fields:
+            - field: "lineItems"
+              type: "line_items_table"
+              relationship: "CONTAINS_ITEM"
+
+        - title: "Shipping"
+          fields:
+            - field: "shippingAddress"
+              type: "address"
+              relationship: "SHIPS_TO"
+
+        - title: "Payment"
+          fields:
+            - field: "subtotalPrice"
+              type: "currency"
+              readonly: true
+
+            - field: "totalTax"
+              type: "currency"
+              readonly: true
+
+            - field: "totalShipping"
+              type: "currency"
+              readonly: true
+
+            - field: "totalDiscount"
+              type: "currency"
+              readonly: true
+
+            - field: "totalPrice"
+              type: "currency"
+              readonly: true
+
+  search:
+    entities:
+      - Product
+      - Order
+      - Customer
+
+    filters:
+      - type: "entity_type"
+        label: "Type"
+      - type: "date_range"
+        label: "Date Range"
+      - type: "status"
+        label: "Status"

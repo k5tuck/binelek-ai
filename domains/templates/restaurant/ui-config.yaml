@@ -1,0 +1,76 @@
+ui:
+  theme:
+    primary_color: "#F59E0B"
+    icon: "utensils"
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+      - id: "orders"
+        label: "Orders"
+        icon: "shopping-bag"
+        route: "/orders"
+      - id: "tables"
+        label: "Tables"
+        icon: "table"
+        route: "/tables"
+      - id: "menu"
+        label: "Menu"
+        icon: "book-open"
+        route: "/menu"
+      - id: "inventory"
+        label: "Inventory"
+        icon: "package"
+        route: "/inventory"
+
+  dashboards:
+    - id: "restaurant-overview"
+      name: "Restaurant Overview"
+      widgets:
+        - type: "metric_card"
+          title: "Today's Sales"
+          entity_type: "Order"
+          aggregation: "sum"
+          field: "total"
+          time_period: "1d"
+
+        - type: "table_status_grid"
+          title: "Table Status"
+          entity_type: "Table"
+          size: "large"
+
+  entity_lists:
+    MenuItem:
+      default_view: "grid"
+      columns:
+        - field: "name"
+          label: "Item"
+        - field: "category"
+          label: "Category"
+        - field: "price"
+          label: "Price"
+          format: "currency"
+        - field: "available"
+          label: "Available"
+          format: "boolean"
+
+    Order:
+      default_view: "table"
+      columns:
+        - field: "orderNumber"
+          label: "Order #"
+        - field: "status"
+          label: "Status"
+          format: "badge"
+        - field: "total"
+          label: "Total"
+          format: "currency"
+
+  search:
+    entities:
+      - MenuItem
+      - Order
+      - Reservation

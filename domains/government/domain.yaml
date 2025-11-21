@@ -1,0 +1,262 @@
+# Government & Public Sector Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: government
+  name: "Government & Public Sector"
+  version: "1.0.0"
+  description: |
+    Comprehensive knowledge graph platform for government agencies and public sector organizations.
+    Manages citizen services, case management, permits and licensing, asset tracking, regulatory
+    compliance, and inter-departmental coordination. Supports federal, state, and local government
+    operations with full accessibility and security compliance.
+
+  icon: "landmark"
+  color: "#1E40AF"  # Deep Blue
+
+  industry:
+    sector: "Government & Public Administration"
+    subsectors:
+      - "Federal Government"
+      - "State Government"
+      - "Local/Municipal Government"
+      - "Public Safety"
+      - "Public Health"
+      - "Social Services"
+      - "Transportation"
+      - "Utilities & Infrastructure"
+      - "Education (Public)"
+
+    primary_use_cases:
+      - "Citizen service request management"
+      - "Case management (social services, inspections)"
+      - "Permits and licensing"
+      - "Asset and fleet management"
+      - "Budget and financial tracking"
+      - "Regulatory compliance monitoring"
+      - "Inter-agency coordination"
+      - "Public records management"
+      - "Emergency management"
+
+  target_customers:
+    - type: "Municipal/Local Government"
+      size: "Population 10,000-500,000"
+      pain_points:
+        - "Siloed systems across departments"
+        - "Manual permit and licensing processes"
+        - "Limited visibility into service requests"
+        - "Aging infrastructure tracking challenges"
+
+    - type: "State Agencies"
+      size: "Large departments"
+      pain_points:
+        - "Complex case management across regions"
+        - "Regulatory compliance tracking"
+        - "Inter-agency data sharing barriers"
+        - "Legacy system modernization needs"
+
+    - type: "Federal Agencies"
+      size: "Enterprise"
+      pain_points:
+        - "Strict security and compliance requirements"
+        - "Massive scale data management"
+        - "Multi-system integration complexity"
+        - "Audit trail and accountability demands"
+
+    - type: "Public Utilities"
+      size: "Variable"
+      pain_points:
+        - "Asset lifecycle management"
+        - "Service territory coordination"
+        - "Regulatory reporting requirements"
+        - "Customer service optimization"
+
+  market_analysis:
+    market_size:
+      global_govtech: "$23.5B (2023)"
+      projected_2030: "$58.3B"
+      cagr: "13.8%"
+
+    key_trends:
+      - "Digital government transformation"
+      - "Citizen self-service portals"
+      - "AI for case triage and routing"
+      - "Open data and transparency initiatives"
+      - "Cloud-first government policies"
+      - "Zero Trust security architectures"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Salesforce Government Cloud"
+        - "ServiceNow Public Sector"
+        - "Tyler Technologies"
+        - "Accela (permits and licensing)"
+        - "Granicus (citizen engagement)"
+
+      differentiation:
+        - "Graph-based relationship mapping across agencies and services"
+        - "Unified citizen view across all touchpoints"
+        - "AI-powered case routing and resolution"
+        - "Full FedRAMP and accessibility compliance"
+        - "Open API for inter-agency data sharing"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Agencies evaluating platform"
+      included:
+        - "1 user"
+        - "1,000 records max"
+        - "10k API calls/month"
+        - "Test data only"
+        - "Community support"
+      limitations:
+        - "Not for production use"
+        - "No compliance certifications"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$1,499/month + $75/user"
+      target: "Small municipal departments (5-20 staff)"
+      included:
+        - "5 users included, then $75/user"
+        - "25,000 records"
+        - "500k API calls/month"
+        - "Basic case management"
+        - "Standard reporting"
+        - "Email support"
+        - "Section 508 compliance"
+      overage_rates:
+        - "Records: $0.05 per 1,000 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$4,999/month + $100/user"
+      target: "Mid-size agencies, county governments (20-100 staff)"
+      included:
+        - "20 users included, then $100/user"
+        - "500,000 records"
+        - "5M API calls/month"
+        - "Advanced case management"
+        - "Workflow automation"
+        - "SAML SSO"
+        - "Audit logs"
+        - "StateRAMP compliance"
+        - "Priority support (2hr response)"
+      overage_rates:
+        - "Records: $0.05 per 1,000 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $15,000+/month)"
+      target: "State agencies, large municipalities, federal"
+      included:
+        - "Unlimited users"
+        - "Unlimited records"
+        - "Unlimited API calls"
+        - "FedRAMP High authorization"
+        - "Dedicated environment"
+        - "24/7 support with SLA"
+        - "On-premise deployment option"
+        - "Custom integrations"
+        - "CJIS compliance available"
+        - "IL4/IL5 options"
+
+  compliance_requirements:
+    regulations:
+      - name: "FedRAMP (Federal)"
+        description: "Federal Risk and Authorization Management Program"
+        impact: "Security controls, continuous monitoring, third-party assessment"
+
+      - name: "StateRAMP"
+        description: "State-level cloud security framework"
+        impact: "Security assessment, ongoing compliance verification"
+
+      - name: "Section 508 / WCAG 2.1"
+        description: "Accessibility requirements for federal technology"
+        impact: "All UI must meet AA accessibility standards, alt text, keyboard navigation"
+
+      - name: "FOIA (Freedom of Information Act)"
+        description: "Public records access requirements"
+        impact: "Records retention, search capabilities, redaction tools"
+
+      - name: "CJIS (Criminal Justice)"
+        description: "FBI Criminal Justice Information Services security policy"
+        impact: "Enhanced background checks, encryption requirements, access controls"
+
+      - name: "HIPAA (Health agencies)"
+        description: "Health information protection for public health departments"
+        impact: "PHI protection, audit trails, access controls"
+
+      - name: "ADA Compliance"
+        description: "Americans with Disabilities Act requirements"
+        impact: "Physical and digital accessibility, reasonable accommodations"
+
+      - name: "State Public Records Laws"
+        description: "State-specific public records and retention requirements"
+        impact: "Configurable retention policies, e-discovery support"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "CRM & Case Management"
+        providers: ["Salesforce Government Cloud", "ServiceNow", "Microsoft Dynamics 365"]
+        use_case: "Citizen service requests and case tracking"
+
+      - name: "Permits & Licensing"
+        providers: ["Accela", "Tyler Energov", "OpenGov"]
+        use_case: "Permit applications, inspections, licensing"
+
+      - name: "Financial Systems"
+        providers: ["Tyler Munis", "Oracle PeopleSoft", "SAP"]
+        use_case: "Budget tracking, payments, financial reporting"
+
+      - name: "GIS & Mapping"
+        providers: ["Esri ArcGIS", "Google Maps Platform", "Mapbox"]
+        use_case: "Asset mapping, service territories, spatial analysis"
+
+      - name: "Document Management"
+        providers: ["Laserfiche", "Hyland OnBase", "Microsoft SharePoint"]
+        use_case: "Records management, document storage, e-discovery"
+
+      - name: "311 Systems"
+        providers: ["SeeClickFix", "PublicStuff", "Accela SeeClickFix"]
+        use_case: "Citizen service requests and issue reporting"
+
+      - name: "Identity & Access"
+        providers: ["Login.gov", "Okta", "Azure AD Government"]
+        use_case: "Citizen and employee authentication"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Service request resolution time"
+        benchmark: "Reduce from 5 days to 2 days with automated routing"
+
+      - metric: "Permit processing time"
+        benchmark: "Reduce from 30 days to 10 days with workflow automation"
+
+      - metric: "Citizen satisfaction score"
+        benchmark: "Increase from 65% to 85% with unified service view"
+
+      - metric: "Inter-agency collaboration"
+        benchmark: "50% reduction in duplicate data entry"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Government & Public Sector domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/government/SETUP.md"
+    api_reference: "docs/domains/government/API.md"
+    migration_guide: "docs/domains/government/MIGRATION.md"
+
+  contact:
+    domain_owner: "government-team@binelek.com"
+    support: "support@binelek.com"
+
+  status: "Future"
+  planned_release: "2027+"

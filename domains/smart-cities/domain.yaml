@@ -1,0 +1,104 @@
+domain:
+  id: smart-cities
+  name: "Smart Cities & Urban Planning"
+  version: "1.0.0"
+  description: "Comprehensive city planning, infrastructure management, IoT integration, and urban optimization platform"
+  icon: "building-2"
+  color: "#0EA5E9"
+
+  categories:
+    - "Smart Cities"
+    - "Urban Planning"
+    - "Infrastructure Management"
+    - "IoT & Sensors"
+    - "Energy Management"
+    - "Traffic & Transportation"
+
+  features:
+    - semantic_search
+    - knowledge_graph
+    - ai_insights
+    - data_pipelines
+    - real_time_monitoring
+    - predictive_analytics
+    - spatial_analysis
+    - time_series_analytics
+
+  use_cases:
+    - "City infrastructure planning and management"
+    - "Energy grid optimization and renewable integration"
+    - "Traffic flow analysis and optimization"
+    - "IoT device fleet management"
+    - "Environmental monitoring and sustainability"
+    - "Public safety and emergency response"
+    - "Zoning and land use planning"
+    - "Smart building management"
+    - "Citizen engagement and service delivery"
+
+  target_users:
+    - "City Planners"
+    - "Urban Development Departments"
+    - "Public Works & Utilities"
+    - "Transportation Departments"
+    - "Emergency Services"
+    - "Environmental Agencies"
+    - "Smart City Consultants"
+
+  market_potential:
+    size: "$1.5 trillion globally by 2030"
+    growth_rate: "25% CAGR"
+    key_markets: ["North America", "Europe", "Asia-Pacific"]
+
+  author:
+    name: "Binelek Team"
+    email: "domains@binelek.com"
+
+  pricing_tiers:
+    - tier: "Municipal"
+      price: "$2,499/month"
+      description: "For mid-sized cities (50k-250k population)"
+      features:
+        - "Up to 10,000 infrastructure assets"
+        - "Up to 5,000 IoT devices"
+        - "Basic analytics"
+
+    - tier: "Metropolitan"
+      price: "$9,999/month"
+      description: "For large cities (250k-1M+ population)"
+      features:
+        - "Unlimited infrastructure assets"
+        - "Unlimited IoT devices"
+        - "Advanced AI analytics"
+        - "Real-time monitoring"
+        - "Predictive maintenance"
+
+    - tier: "Regional"
+      price: "Custom"
+      description: "For regional planning agencies and multi-city deployments"
+      features:
+        - "Multi-city management"
+        - "Custom integrations"
+        - "Dedicated support"
+        - "On-premise deployment"
+
+  integrations:
+    - name: "GIS Systems"
+      providers: ["Esri ArcGIS", "QGIS", "Google Maps Platform"]
+    - name: "IoT Platforms"
+      providers: ["AWS IoT", "Azure IoT Hub", "ThingWorx"]
+    - name: "Traffic Systems"
+      providers: ["Siemens", "Cubic", "Kapsch"]
+    - name: "Energy Management"
+      providers: ["Schneider Electric", "Honeywell", "Siemens"]
+    - name: "CAD/Planning"
+      providers: ["AutoCAD", "SketchUp", "CityEngine"]
+
+  compliance:
+    - "ISO 37120 (Sustainable Cities)"
+    - "ISO 37122 (Smart Cities)"
+    - "GDPR (EU privacy)"
+    - "ADA (Accessibility)"
+    - "EPA Environmental Standards"
+
+  created_at: "2025-01-08"
+  updated_at: "2025-01-08"

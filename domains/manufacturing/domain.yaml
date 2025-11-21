@@ -1,0 +1,242 @@
+# Manufacturing & Industrial Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: manufacturing
+  name: "Manufacturing & Industrial"
+  version: "1.0.0"
+  description: |
+    Comprehensive manufacturing knowledge graph platform for production management, quality control,
+    supply chain tracking, and maintenance operations. Supports discrete, process, and hybrid
+    manufacturing environments.
+
+  icon: "factory"
+  color: "#F97316"  # Orange
+
+  industry:
+    sector: "Manufacturing"
+    subsectors:
+      - "Discrete Manufacturing"
+      - "Process Manufacturing"
+      - "Aerospace & Defense"
+      - "Automotive"
+      - "Medical Devices"
+      - "Electronics"
+      - "Consumer Goods"
+
+    primary_use_cases:
+      - "Production planning and scheduling"
+      - "Quality management and traceability"
+      - "Supply chain visibility"
+      - "Equipment maintenance and reliability"
+      - "Bill of materials management"
+      - "Defect tracking and root cause analysis"
+      - "Regulatory compliance documentation"
+
+  target_customers:
+    - type: "Mid-Size Manufacturers"
+      size: "$50M-$500M revenue"
+      pain_points:
+        - "Disconnected systems (ERP, MES, QMS)"
+        - "Limited supply chain visibility"
+        - "Manual quality documentation"
+        - "Reactive maintenance strategies"
+
+    - type: "Large Manufacturing Enterprises"
+      size: "$500M+ revenue"
+      pain_points:
+        - "Multi-plant coordination"
+        - "Complex multi-tier supplier networks"
+        - "Regulatory audit preparation"
+        - "Digital twin implementation"
+
+    - type: "Contract Manufacturers"
+      size: "Various"
+      pain_points:
+        - "Customer-specific requirements tracking"
+        - "Multi-customer scheduling"
+        - "Inventory segregation"
+        - "Quality compliance across customers"
+
+    - type: "Aerospace & Defense Contractors"
+      size: "Various"
+      pain_points:
+        - "AS9100/NADCAP compliance"
+        - "Serialized part tracking"
+        - "Counterfeit part detection"
+        - "ITAR/EAR compliance"
+
+  market_analysis:
+    market_size:
+      global_smart_manufacturing: "$277B (2023)"
+      projected_2030: "$658B"
+      cagr: "13.1%"
+
+    key_trends:
+      - "Industry 4.0 and IIoT adoption"
+      - "Digital twins and simulation"
+      - "AI/ML for predictive quality"
+      - "Reshoring and supply chain resilience"
+      - "Sustainability and carbon tracking"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "SAP Manufacturing"
+        - "Oracle Manufacturing Cloud"
+        - "Siemens Opcenter"
+        - "Plex (Rockwell)"
+        - "Dassault 3DEXPERIENCE"
+
+      differentiation:
+        - "Graph-based supply chain intelligence"
+        - "Cross-system defect root cause analysis"
+        - "Real-time supplier risk assessment"
+        - "Unified product genealogy tracking"
+        - "Open API for legacy system integration"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Startups evaluating platform"
+      included:
+        - "1 user"
+        - "100 products max"
+        - "10k API calls/month"
+        - "Basic BOM management"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No supplier management"
+        - "No integrations"
+
+    - tier: "Starter"
+      price: "$999/month + $65/user"
+      target: "Small manufacturers (< $50M revenue)"
+      included:
+        - "10 users included, then $65/user"
+        - "5,000 products"
+        - "500k API calls/month"
+        - "BOM and work order management"
+        - "Basic quality tracking"
+        - "Email support"
+      overage_rates:
+        - "Products: $0.05 per additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$3,999/month + $99/user"
+      target: "Mid-size manufacturers ($50M-$500M revenue)"
+      included:
+        - "25 users included, then $99/user"
+        - "100,000 products"
+        - "5M API calls/month"
+        - "Advanced quality management"
+        - "Supplier management"
+        - "Maintenance management"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "Products: $0.03 per additional"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $12,999+/month)"
+      target: "Large manufacturers, aerospace/defense"
+      included:
+        - "Unlimited users"
+        - "Unlimited products"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (ERP, MES, PLM)"
+        - "Advanced security (SOC 2, ITAR compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "ISO 9001"
+        description: "Quality management system standard"
+        impact: "Document control, nonconformance tracking, audit trails"
+
+      - name: "AS9100 (Aerospace)"
+        description: "Aerospace quality management requirements"
+        impact: "Configuration management, special process tracking, FAIR documentation"
+
+      - name: "IATF 16949 (Automotive)"
+        description: "Automotive quality management requirements"
+        impact: "APQP/PPAP support, SPC integration, warranty tracking"
+
+      - name: "FDA 21 CFR Part 820 (Medical Devices)"
+        description: "Quality system regulation for medical devices"
+        impact: "DHF/DMR/DHR management, CAPA, design controls"
+
+      - name: "OSHA Requirements"
+        description: "Workplace safety requirements"
+        impact: "Safety incident tracking, training records, equipment inspections"
+
+      - name: "ITAR/EAR (Defense)"
+        description: "Export control regulations"
+        impact: "Access controls, export license tracking, data segregation"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "ERP Systems"
+        providers: ["SAP S/4HANA", "Oracle ERP Cloud", "Microsoft Dynamics 365", "Epicor"]
+        use_case: "Sync orders, inventory, and financials"
+
+      - name: "MES/MOM Systems"
+        providers: ["Siemens Opcenter", "Rockwell FactoryTalk", "AVEVA", "Dassault DELMIA"]
+        use_case: "Production execution and shop floor data"
+
+      - name: "PLM Systems"
+        providers: ["Siemens Teamcenter", "PTC Windchill", "Dassault ENOVIA", "Autodesk Fusion"]
+        use_case: "Product design, BOM, and change management"
+
+      - name: "QMS Systems"
+        providers: ["MasterControl", "Veeva Vault", "ETQ Reliance", "Greenlight Guru"]
+        use_case: "Document control, CAPA, audit management"
+
+      - name: "CMMS/EAM Systems"
+        providers: ["IBM Maximo", "SAP PM", "Fiix", "UpKeep"]
+        use_case: "Equipment maintenance and work orders"
+
+      - name: "IIoT Platforms"
+        providers: ["PTC ThingWorx", "Siemens MindSphere", "AWS IoT", "Azure IoT"]
+        use_case: "Sensor data, machine monitoring, predictive maintenance"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Products tracked"
+        benchmark: "Average customer manages 25,000 active products"
+
+      - metric: "First pass yield"
+        benchmark: "Improve FPY by 8% with graph-based root cause analysis"
+
+      - metric: "Supplier risk visibility"
+        benchmark: "Reduce supply disruptions by 35% with network analysis"
+
+      - metric: "Audit preparation time"
+        benchmark: "Reduce audit prep from 2 weeks to 2 days"
+
+  status: "coming_soon"
+  expected_release: "Q2 2026"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Manufacturing & Industrial domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/manufacturing/SETUP.md"
+    api_reference: "docs/domains/manufacturing/API.md"
+    migration_guide: "docs/domains/manufacturing/MIGRATION.md"
+
+  contact:
+    domain_owner: "manufacturing-team@binelek.com"
+    support: "support@binelek.com"

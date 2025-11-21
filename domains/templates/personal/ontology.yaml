@@ -1,0 +1,290 @@
+ontology:
+  entities:
+    - name: Goal
+      description: "Personal goal or objective"
+      label: "Goal"
+      attributes:
+        - name: title
+          type: string
+          required: true
+        - name: description
+          type: string
+          required: false
+        - name: category
+          type: enum
+          values: ["career", "health", "finance", "relationships", "learning", "personal"]
+          required: true
+        - name: status
+          type: enum
+          values: ["planning", "active", "achieved", "abandoned"]
+          default: "active"
+        - name: targetDate
+          type: date
+          required: false
+        - name: progress
+          type: integer
+          required: false
+          default: 0
+          description: "Progress percentage (0-100)"
+        - name: priority
+          type: enum
+          values: ["low", "medium", "high"]
+          default: "medium"
+
+    - name: Habit
+      description: "Recurring habit to track"
+      label: "Habit"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: description
+          type: string
+          required: false
+        - name: frequency
+          type: enum
+          values: ["daily", "weekly", "monthly"]
+          default: "daily"
+        - name: currentStreak
+          type: integer
+          required: false
+          default: 0
+        - name: longestStreak
+          type: integer
+          required: false
+          default: 0
+        - name: active
+          type: boolean
+          default: true
+        - name: startDate
+          type: date
+          required: true
+
+    - name: Task
+      description: "To-do item"
+      label: "Task"
+      attributes:
+        - name: title
+          type: string
+          required: true
+        - name: description
+          type: string
+          required: false
+        - name: status
+          type: enum
+          values: ["todo", "in_progress", "completed", "cancelled"]
+          default: "todo"
+        - name: priority
+          type: enum
+          values: ["low", "medium", "high", "urgent"]
+          default: "medium"
+        - name: dueDate
+          type: date
+          required: false
+        - name: completedDate
+          type: date
+          required: false
+        - name: estimatedMinutes
+          type: integer
+          required: false
+
+    - name: Note
+      description: "Knowledge note or document"
+      label: "Note"
+      attributes:
+        - name: title
+          type: string
+          required: true
+        - name: content
+          type: string
+          required: true
+        - name: tags
+          type: array
+          item_type: string
+          required: false
+        - name: category
+          type: enum
+          values: ["journal", "learning", "idea", "reference", "meeting"]
+          required: false
+        - name: favorite
+          type: boolean
+          default: false
+
+    - name: Asset
+      description: "Financial asset or account"
+      label: "Asset"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: type
+          type: enum
+          values: ["bank_account", "investment", "crypto", "real_estate", "other"]
+          required: true
+        - name: currentValue
+          type: decimal
+          required: true
+        - name: currency
+          type: string
+          required: true
+          default: "USD"
+        - name: institution
+          type: string
+          required: false
+
+    - name: Expense
+      description: "Personal expense"
+      label: "Expense"
+      attributes:
+        - name: description
+          type: string
+          required: true
+        - name: amount
+          type: decimal
+          required: true
+        - name: currency
+          type: string
+          required: true
+          default: "USD"
+        - name: category
+          type: enum
+          values: ["housing", "food", "transportation", "healthcare", "entertainment", "shopping", "other"]
+          required: true
+        - name: date
+          type: date
+          required: true
+        - name: recurring
+          type: boolean
+          default: false
+
+    - name: HealthMetric
+      description: "Health tracking data"
+      label: "Health Metric"
+      attributes:
+        - name: metricType
+          type: enum
+          values: ["weight", "sleep", "exercise", "heart_rate", "blood_pressure", "mood"]
+          required: true
+        - name: value
+          type: decimal
+          required: true
+        - name: unit
+          type: string
+          required: true
+        - name: date
+          type: datetime
+          required: true
+        - name: notes
+          type: string
+          required: false
+
+    - name: Contact
+      description: "Personal or professional contact"
+      label: "Contact"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: relationship
+          type: enum
+          values: ["family", "friend", "colleague", "mentor", "other"]
+          required: false
+        - name: email
+          type: string
+          required: false
+        - name: phone
+          type: string
+          required: false
+        - name: birthday
+          type: date
+          required: false
+        - name: notes
+          type: string
+          required: false
+        - name: lastContactDate
+          type: date
+          required: false
+
+    - name: Project
+      description: "Personal project"
+      label: "Project"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: description
+          type: string
+          required: false
+        - name: status
+          type: enum
+          values: ["planning", "active", "completed", "on_hold"]
+          default: "planning"
+        - name: startDate
+          type: date
+          required: false
+        - name: targetCompletionDate
+          type: date
+          required: false
+
+  relationships:
+    - name: GOAL_HAS_TASK
+      from: Goal
+      to: Task
+      type: one-to-many
+      description: "Goal contains multiple tasks"
+
+    - name: GOAL_MILESTONE
+      from: Goal
+      to: Goal
+      type: one-to-many
+      description: "Goal has sub-goals as milestones"
+
+    - name: SUPPORTS_HABIT
+      from: Goal
+      to: Habit
+      type: one-to-many
+      description: "Goal supported by habits"
+
+    - name: NOTE_REFERENCES
+      from: Note
+      to: Note
+      type: many-to-many
+      description: "Bidirectional note links"
+
+    - name: NOTE_ABOUT_GOAL
+      from: Note
+      to: Goal
+      type: many-to-one
+
+    - name: NOTE_ABOUT_PROJECT
+      from: Note
+      to: Project
+      type: many-to-one
+
+    - name: PROJECT_TASK
+      from: Project
+      to: Task
+      type: one-to-many
+
+    - name: CONTACT_NOTE
+      from: Note
+      to: Contact
+      type: many-to-one
+      description: "Notes about a contact"
+
+  indexes:
+    - entity: Task
+      type: btree
+      fields: [status, dueDate]
+
+    - entity: Note
+      type: btree
+      fields: [favorite]
+
+    - entity: HealthMetric
+      type: btree
+      fields: [metricType, date]
+
+    - entity: Expense
+      type: btree
+      fields: [date, category]

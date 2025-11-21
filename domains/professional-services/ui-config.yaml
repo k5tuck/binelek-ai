@@ -1,0 +1,958 @@
+# Professional Services UI Configuration
+# Frontend presentation layer for professional services domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for professional services project and resource management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#0F766E"      # Teal
+    secondary_color: "#7C3AED"    # Purple
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/professional-services-logo.svg"
+    favicon_url: "/assets/favicons/professional-services.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "clients"
+        label: "Clients"
+        icon: "building-2"
+        route: "/clients"
+        badge_query: "count_active_clients"
+
+      - id: "projects"
+        label: "Projects"
+        icon: "folder-kanban"
+        route: "/projects"
+        badge_query: "count_active_projects"
+
+      - id: "pipeline"
+        label: "Pipeline"
+        icon: "git-branch"
+        route: "/pipeline"
+        submenu:
+          - id: "proposals"
+            label: "Proposals"
+            route: "/pipeline/proposals"
+          - id: "opportunities"
+            label: "Opportunities"
+            route: "/pipeline/opportunities"
+
+      - id: "resources"
+        label: "Resources"
+        icon: "users"
+        route: "/resources"
+
+      - id: "time"
+        label: "Time & Expenses"
+        icon: "clock"
+        route: "/time"
+        submenu:
+          - id: "timesheet"
+            label: "My Timesheet"
+            route: "/time/my-timesheet"
+          - id: "approvals"
+            label: "Approvals"
+            route: "/time/approvals"
+          - id: "expenses"
+            label: "Expenses"
+            route: "/time/expenses"
+
+      - id: "billing"
+        label: "Billing"
+        icon: "receipt"
+        route: "/billing"
+        badge_query: "count_pending_invoices"
+
+      - id: "skills"
+        label: "Skills"
+        icon: "star"
+        route: "/skills"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Practice Dashboard"
+      description: "Overview of projects, resources, and financials"
+      layout: "grid"
+
+      widgets:
+        - id: "revenue_mtd"
+          type: "metric_card"
+          title: "Revenue (MTD)"
+          query: "sum_revenue_mtd"
+          format: "currency"
+          icon: "dollar-sign"
+          color: "#10B981"
+          size: "small"
+
+        - id: "utilization"
+          type: "metric_card"
+          title: "Utilization"
+          query: "average_utilization"
+          format: "percentage"
+          icon: "activity"
+          color: "#0F766E"
+          size: "small"
+
+        - id: "pipeline_value"
+          type: "metric_card"
+          title: "Pipeline Value"
+          query: "sum_pipeline_value"
+          format: "currency"
+          icon: "trending-up"
+          color: "#7C3AED"
+          size: "small"
+
+        - id: "active_projects"
+          type: "metric_card"
+          title: "Active Projects"
+          query: "count_active_projects"
+          icon: "folder"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "project_health"
+          type: "entity_list"
+          title: "Project Health"
+          entity_type: "Project"
+          query:
+            filter:
+              status: "Active"
+            sort:
+              field: "end_date"
+              direction: "ASC"
+            limit: 10
+          columns:
+            - project_name
+            - client_name
+            - status
+            - budget_hours
+            - actual_hours
+            - actual_margin
+          size: "large"
+
+        - id: "revenue_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Revenue Trend"
+          query: "monthly_revenue"
+          x_axis: "month"
+          y_axis: "revenue"
+          compare_previous_year: true
+          size: "large"
+
+        - id: "proposals_pipeline"
+          type: "entity_list"
+          title: "Proposal Pipeline"
+          entity_type: "Proposal"
+          query:
+            filter:
+              status: ["Sent", "Under Consideration"]
+            sort:
+              field: "proposed_value"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - proposal_name
+            - client_name
+            - proposed_value
+            - probability
+            - expiration_date
+          size: "medium"
+
+        - id: "resource_availability"
+          type: "entity_list"
+          title: "Available Resources"
+          query: "available_resources"
+          columns:
+            - full_name
+            - department
+            - available_percentage
+            - skills
+          size: "medium"
+
+        - id: "utilization_by_dept"
+          type: "chart"
+          chart_type: "bar"
+          title: "Utilization by Department"
+          query: "utilization_by_department"
+          size: "medium"
+
+        - id: "unbilled_time"
+          type: "metric_card"
+          title: "Unbilled Time"
+          query: "sum_unbilled_time"
+          format: "currency"
+          icon: "alert-circle"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "ar_aging"
+          type: "chart"
+          chart_type: "bar"
+          title: "AR Aging"
+          query: "ar_aging_buckets"
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Resource Dashboard
+    # ----------------------------------------------------------------------
+    - id: "resource-management"
+      name: "Resource Management Dashboard"
+      description: "Team allocation and utilization"
+      layout: "grid"
+
+      widgets:
+        - id: "allocation_calendar"
+          type: "calendar"
+          title: "Resource Allocation"
+          query: "resource_allocations"
+          group_by: "resource"
+          size: "large"
+
+        - id: "skills_matrix"
+          type: "heatmap"
+          title: "Skills Matrix"
+          query: "team_skills_matrix"
+          x_axis: "skill"
+          y_axis: "resource"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Client List
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "client_name"
+              label: "Client"
+              sortable: true
+              render: "link"
+
+            - field: "client_type"
+              label: "Type"
+              filterable: true
+
+            - field: "industry"
+              label: "Industry"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Prospect": "secondary"
+                "Active": "success"
+                "Inactive": "warning"
+                "Former": "secondary"
+
+            - field: "lifetime_revenue"
+              label: "Lifetime Revenue"
+              format: "currency"
+              sortable: true
+
+            - field: "outstanding_balance"
+              label: "Outstanding"
+              format: "currency"
+
+            - field: "primary_contact_name"
+              label: "Contact"
+
+        - type: "grid"
+          card_template:
+            title_field: "client_name"
+            subtitle_field: "industry"
+            badge_field: "status"
+            metadata_fields:
+              - lifetime_revenue
+              - active_projects_count
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "client_type"
+          type: "select"
+          multiple: true
+
+        - field: "industry"
+          type: "select"
+          multiple: true
+
+      actions:
+        - id: "add_client"
+          label: "New Client"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+
+    # ----------------------------------------------------------------------
+    # Project List
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "project_name"
+              label: "Project"
+              sortable: true
+              render: "link"
+
+            - field: "project_code"
+              label: "Code"
+              sortable: true
+
+            - field: "client_name"
+              label: "Client"
+              sortable: true
+
+            - field: "project_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Proposal": "secondary"
+                "Sold": "info"
+                "Active": "success"
+                "On Hold": "warning"
+                "Completed": "primary"
+
+            - field: "contract_value"
+              label: "Value"
+              format: "currency"
+              sortable: true
+
+            - field: "actual_margin"
+              label: "Margin"
+              format: "percentage"
+              sortable: true
+
+            - field: "end_date"
+              label: "End Date"
+              format: "date"
+              sortable: true
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Proposal"
+            - "Sold"
+            - "Active"
+            - "On Hold"
+            - "Completed"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "project_type"
+          type: "select"
+          multiple: true
+
+        - field: "client_id"
+          type: "lookup"
+          label: "Client"
+          entity_type: "Client"
+
+    # ----------------------------------------------------------------------
+    # Resource List
+    # ----------------------------------------------------------------------
+    - entity_type: "Resource"
+      id: "resource_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "job_title"
+              label: "Title"
+              sortable: true
+
+            - field: "department"
+              label: "Department"
+              filterable: true
+
+            - field: "level"
+              label: "Level"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "default_bill_rate"
+              label: "Bill Rate"
+              format: "currency"
+
+            - field: "current_utilization"
+              label: "Utilization"
+              format: "percentage"
+
+            - field: "location"
+              label: "Location"
+
+        - type: "grid"
+          card_template:
+            image_field: "photo_url"
+            title_field: "full_name"
+            subtitle_field: "job_title"
+            badge_field: "status"
+            metadata_fields:
+              - department
+              - level
+              - current_utilization
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "department"
+          type: "select"
+          multiple: true
+
+        - field: "level"
+          type: "select"
+          multiple: true
+
+        - field: "skills"
+          type: "tag_select"
+          label: "Skills"
+
+    # ----------------------------------------------------------------------
+    # Time Entry List
+    # ----------------------------------------------------------------------
+    - entity_type: "Time"
+      id: "time_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "date"
+              label: "Date"
+              sortable: true
+              format: "date"
+
+            - field: "resource_name"
+              label: "Resource"
+
+            - field: "project_name"
+              label: "Project"
+
+            - field: "task_name"
+              label: "Task"
+
+            - field: "hours"
+              label: "Hours"
+              sortable: true
+
+            - field: "billable"
+              label: "Billable"
+              render: "yes_no"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "billable_amount"
+              label: "Amount"
+              format: "currency"
+
+      filters:
+        - field: "date"
+          type: "date_range"
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "billable"
+          type: "boolean"
+
+        - field: "project_id"
+          type: "lookup"
+          entity_type: "Project"
+
+    # ----------------------------------------------------------------------
+    # Invoice List
+    # ----------------------------------------------------------------------
+    - entity_type: "Billing"
+      id: "billing_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "invoice_number"
+              label: "Invoice #"
+              sortable: true
+              render: "link"
+
+            - field: "client_name"
+              label: "Client"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Draft": "secondary"
+                "Sent": "info"
+                "Partially Paid": "warning"
+                "Paid": "success"
+                "Overdue": "danger"
+
+            - field: "invoice_date"
+              label: "Date"
+              format: "date"
+              sortable: true
+
+            - field: "due_date"
+              label: "Due"
+              format: "date"
+              sortable: true
+
+            - field: "total_amount"
+              label: "Amount"
+              format: "currency"
+              sortable: true
+
+            - field: "balance_due"
+              label: "Balance"
+              format: "currency"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "due_date"
+          type: "date_range"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Client Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "client_name"
+        subtitle_field: "industry"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "client_info"
+              title: "Client Information"
+              layout: "two_column"
+              fields:
+                - client_type
+                - industry
+                - status
+                - client_since
+                - annual_revenue
+                - employee_count
+
+            - id: "contact"
+              title: "Primary Contact"
+              layout: "two_column"
+              fields:
+                - primary_contact_name
+                - primary_contact_email
+                - primary_contact_phone
+
+            - id: "summary_metrics"
+              title: "Summary"
+              layout: "two_column"
+              fields:
+                - lifetime_revenue
+                - outstanding_balance
+                - active_projects_count
+
+        - id: "projects"
+          label: "Projects"
+          icon: "folder-kanban"
+
+          sections:
+            - id: "project_list"
+              title: "Projects"
+              type: "relationship_list"
+              relationship: "HAS_PROJECT"
+              direction: "outgoing"
+              display_fields:
+                - project_name
+                - status
+                - contract_value
+                - actual_margin
+
+        - id: "proposals"
+          label: "Proposals"
+          icon: "file-text"
+
+          sections:
+            - id: "proposal_list"
+              title: "Proposals"
+              type: "relationship_list"
+              relationship: "HAS_PROPOSAL"
+              direction: "outgoing"
+              display_fields:
+                - proposal_name
+                - status
+                - proposed_value
+                - probability
+
+        - id: "billing"
+          label: "Billing"
+          icon: "receipt"
+
+          sections:
+            - id: "invoices"
+              title: "Invoices"
+              type: "relationship_list"
+              relationship: "BILLS_TO"
+              direction: "incoming"
+              display_fields:
+                - invoice_number
+                - status
+                - total_amount
+                - balance_due
+
+    # ----------------------------------------------------------------------
+    # Project Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "project_name"
+        subtitle_field: "client_name"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "project_info"
+              title: "Project Information"
+              layout: "two_column"
+              fields:
+                - project_code
+                - project_type
+                - status
+                - start_date
+                - end_date
+
+            - id: "financials"
+              title: "Financials"
+              layout: "two_column"
+              fields:
+                - contract_value
+                - billed_amount
+                - collected_amount
+                - estimated_margin
+                - actual_margin
+
+            - id: "hours"
+              title: "Hours"
+              layout: "two_column"
+              fields:
+                - budget_hours
+                - actual_hours
+
+        - id: "team"
+          label: "Team"
+          icon: "users"
+
+          sections:
+            - id: "project_team"
+              title: "Project Team"
+              type: "relationship_list"
+              relationship: "WORKS_ON"
+              direction: "incoming"
+              display_fields:
+                - full_name
+                - role
+                - allocation_percentage
+                - bill_rate
+
+        - id: "deliverables"
+          label: "Deliverables"
+          icon: "package"
+
+          sections:
+            - id: "deliverable_list"
+              title: "Deliverables"
+              type: "relationship_list"
+              relationship: "HAS_DELIVERABLE"
+              direction: "outgoing"
+              display_fields:
+                - deliverable_name
+                - status
+                - due_date
+                - assigned_to
+
+        - id: "time"
+          label: "Time"
+          icon: "clock"
+
+          sections:
+            - id: "time_entries"
+              title: "Time Entries"
+              type: "relationship_list"
+              relationship: "TIME_FOR_PROJECT"
+              direction: "incoming"
+              display_fields:
+                - date
+                - resource_name
+                - hours
+                - billable
+                - status
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Project Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Project Information"
+          fields:
+            - field: "project_name"
+              required: true
+
+            - field: "project_code"
+
+            - field: "client_id"
+              required: true
+              widget: "lookup"
+              entity_type: "Client"
+
+            - field: "project_type"
+              required: true
+
+            - field: "status"
+
+        - id: "timeline"
+          title: "Timeline"
+          fields:
+            - field: "start_date"
+              width: "half"
+
+            - field: "end_date"
+              width: "half"
+
+            - field: "description"
+              widget: "rich_text_editor"
+
+        - id: "budget"
+          title: "Budget & Financials"
+          fields:
+            - field: "contract_value"
+              width: "half"
+
+            - field: "budget_amount"
+              width: "half"
+
+            - field: "budget_hours"
+
+            - field: "billing_frequency"
+
+            - field: "po_number"
+
+    # ----------------------------------------------------------------------
+    # Time Entry Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Time"
+      id: "time_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "time_entry"
+          title: "Time Entry"
+          fields:
+            - field: "date"
+              required: true
+
+            - field: "project_id"
+              required: true
+              widget: "lookup"
+              entity_type: "Project"
+
+            - field: "task_name"
+
+            - field: "hours"
+              required: true
+              widget: "time_picker"
+
+            - field: "description"
+
+            - field: "billable"
+              widget: "toggle"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "utilization_report"
+      name: "Utilization Report"
+      description: "Resource utilization analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+        - field: "department"
+          type: "select"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - average_utilization
+            - total_billable_hours
+            - total_non_billable_hours
+            - revenue_per_resource
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Utilization by Resource"
+
+        - type: "table"
+          title: "Resource Details"
+          columns:
+            - full_name
+            - department
+            - billable_hours
+            - total_hours
+            - utilization
+
+    - id: "project_profitability"
+      name: "Project Profitability Report"
+      description: "Project financial performance"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_revenue
+            - total_cost
+            - gross_margin
+            - average_margin
+
+        - type: "table"
+          title: "Project Details"
+          columns:
+            - project_name
+            - client_name
+            - revenue
+            - cost
+            - margin_percentage
+
+    - id: "pipeline_report"
+      name: "Pipeline Report"
+      description: "Sales pipeline analysis"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_pipeline
+            - weighted_pipeline
+            - average_deal_size
+            - win_rate
+
+        - type: "chart"
+          chart_type: "funnel"
+          title: "Pipeline by Stage"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

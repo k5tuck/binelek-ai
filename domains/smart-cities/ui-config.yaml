@@ -1,0 +1,1103 @@
+# ====================================
+# Smart Cities & Urban Planning
+# UI Configuration
+# ====================================
+# This file defines the UI/UX configuration for the Smart Cities domain
+# including navigation, dashboards, forms, and visualizations
+
+ui:
+  # Theme Configuration
+  theme:
+    primary_color: "#0EA5E9"  # Sky blue
+    secondary_color: "#10B981"  # Green
+    accent_color: "#F59E0B"  # Amber
+    danger_color: "#EF4444"  # Red
+    icon: "building-2"
+
+  # Navigation Structure
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "City Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+        order: 1
+
+      - id: "infrastructure"
+        label: "Infrastructure"
+        icon: "building"
+        route: "/infrastructure"
+        order: 2
+        submenu:
+          - id: "assets"
+            label: "Asset Inventory"
+            icon: "boxes"
+            route: "/infrastructure/assets"
+          - id: "maintenance"
+            label: "Maintenance Schedule"
+            icon: "wrench"
+            route: "/infrastructure/maintenance"
+          - id: "conditions"
+            label: "Condition Assessments"
+            icon: "clipboard-check"
+            route: "/infrastructure/conditions"
+
+      - id: "iot"
+        label: "IoT & Sensors"
+        icon: "wifi"
+        route: "/iot"
+        order: 3
+        submenu:
+          - id: "devices"
+            label: "Device Fleet"
+            icon: "cpu"
+            route: "/iot/devices"
+          - id: "environmental"
+            label: "Environmental Monitoring"
+            icon: "cloud"
+            route: "/iot/environmental"
+          - id: "alerts"
+            label: "Alerts & Anomalies"
+            icon: "bell"
+            route: "/iot/alerts"
+
+      - id: "energy"
+        label: "Energy & Grid"
+        icon: "zap"
+        route: "/energy"
+        order: 4
+        submenu:
+          - id: "generation"
+            label: "Generation Assets"
+            icon: "sun"
+            route: "/energy/generation"
+          - id: "grid"
+            label: "Grid Management"
+            icon: "network"
+            route: "/energy/grid"
+          - id: "ev-charging"
+            label: "EV Charging Network"
+            icon: "battery-charging"
+            route: "/energy/ev-charging"
+          - id: "renewables"
+            label: "Renewable Tracking"
+            icon: "leaf"
+            route: "/energy/renewables"
+
+      - id: "traffic"
+        label: "Traffic & Transportation"
+        icon: "traffic-cone"
+        route: "/traffic"
+        order: 5
+        submenu:
+          - id: "live-traffic"
+            label: "Live Traffic View"
+            icon: "camera"
+            route: "/traffic/live"
+          - id: "signals"
+            label: "Traffic Signals"
+            icon: "octagon"
+            route: "/traffic/signals"
+          - id: "analytics"
+            label: "Flow Analytics"
+            icon: "trending-up"
+            route: "/traffic/analytics"
+          - id: "parking"
+            label: "Parking Management"
+            icon: "square-parking"
+            route: "/traffic/parking"
+
+      - id: "planning"
+        label: "Planning & Zoning"
+        icon: "map"
+        route: "/planning"
+        order: 6
+        submenu:
+          - id: "zones"
+            label: "Zoning Districts"
+            icon: "map-pin"
+            route: "/planning/zones"
+          - id: "projects"
+            label: "Development Projects"
+            icon: "construction"
+            route: "/planning/projects"
+          - id: "permits"
+            label: "Permits & Approvals"
+            icon: "file-check"
+            route: "/planning/permits"
+          - id: "land-use"
+            label: "Land Use Analysis"
+            icon: "pie-chart"
+            route: "/planning/land-use"
+
+      - id: "services"
+        label: "Public Services"
+        icon: "shield"
+        route: "/services"
+        order: 7
+        submenu:
+          - id: "emergency"
+            label: "Emergency Services"
+            icon: "siren"
+            route: "/services/emergency"
+          - id: "facilities"
+            label: "Public Facilities"
+            icon: "landmark"
+            route: "/services/facilities"
+          - id: "coverage"
+            label: "Service Coverage"
+            icon: "radar"
+            route: "/services/coverage"
+
+      - id: "analytics"
+        label: "Analytics & Insights"
+        icon: "bar-chart-3"
+        route: "/analytics"
+        order: 8
+        submenu:
+          - id: "sustainability"
+            label: "Sustainability Metrics"
+            icon: "sprout"
+            route: "/analytics/sustainability"
+          - id: "performance"
+            label: "City Performance"
+            icon: "gauge"
+            route: "/analytics/performance"
+          - id: "reports"
+            label: "Reports & KPIs"
+            icon: "file-text"
+            route: "/analytics/reports"
+
+  # Dashboard Configuration
+  dashboards:
+    - id: "city-overview"
+      name: "City Overview Dashboard"
+      description: "Real-time city metrics and KPIs"
+      default: true
+      layout: "grid"
+      refresh_interval: 30  # seconds
+
+      widgets:
+        # Row 1: Key Metrics
+        - id: "infrastructure-count"
+          type: "metric_card"
+          title: "Infrastructure Assets"
+          entity_type: "InfrastructureAsset"
+          metric: "count"
+          icon: "building"
+          color: "#0EA5E9"
+          position: { row: 1, col: 1, width: 3 }
+
+        - id: "iot-online"
+          type: "metric_card"
+          title: "IoT Devices Online"
+          entity_type: "IoTDevice"
+          metric: "count"
+          filter: { status: "Online" }
+          icon: "wifi"
+          color: "#10B981"
+          position: { row: 1, col: 4, width: 3 }
+
+        - id: "energy-output"
+          type: "metric_card"
+          title: "Current Energy Output"
+          entity_type: "EnergyAsset"
+          metric: "sum"
+          field: "currentOutput"
+          unit: "MW"
+          icon: "zap"
+          color: "#F59E0B"
+          position: { row: 1, col: 7, width: 3 }
+
+        - id: "renewable-percentage"
+          type: "metric_card"
+          title: "Renewable Energy %"
+          entity_type: "EnergyAsset"
+          metric: "percentage"
+          filter: { renewableSource: true }
+          icon: "leaf"
+          color: "#10B981"
+          position: { row: 1, col: 10, width: 3 }
+
+        # Row 2: Maps and Visualizations
+        - id: "city-map"
+          type: "map"
+          title: "City Infrastructure Map"
+          layers:
+            - entity_type: "InfrastructureAsset"
+              icon: "building"
+              color_by: "condition"
+            - entity_type: "IoTDevice"
+              icon: "radio"
+              color_by: "status"
+            - entity_type: "EnergyAsset"
+              icon: "zap"
+              color: "#F59E0B"
+            - entity_type: "Zone"
+              type: "polygon"
+              color_by: "zoneType"
+              opacity: 0.3
+          position: { row: 2, col: 1, width: 8, height: 2 }
+
+        - id: "traffic-status"
+          type: "list"
+          title: "Traffic Hotspots"
+          entity_type: "TrafficAsset"
+          filter: { currentTrafficFlow: ["Heavy", "Congested", "Stopped"] }
+          sort: { field: "averageDailyTraffic", order: "desc" }
+          limit: 10
+          display_fields: ["name", "location", "currentTrafficFlow", "averageDailyTraffic"]
+          position: { row: 2, col: 9, width: 4, height: 2 }
+
+        # Row 3: Time Series Charts
+        - id: "energy-trends"
+          type: "time_series_chart"
+          title: "Energy Generation Trends (24h)"
+          entity_type: "EnergyAsset"
+          time_range: "24h"
+          metrics:
+            - field: "currentOutput"
+              label: "Total Output"
+              color: "#0EA5E9"
+            - field: "currentOutput"
+              label: "Renewable"
+              filter: { renewableSource: true }
+              color: "#10B981"
+          position: { row: 4, col: 1, width: 6 }
+
+        - id: "air-quality-trends"
+          type: "time_series_chart"
+          title: "Air Quality Index (7 days)"
+          entity_type: "EnvironmentalReading"
+          filter: { readingType: "Air Quality" }
+          time_range: "7d"
+          metrics:
+            - field: "value"
+              label: "AQI"
+              color: "#F59E0B"
+          threshold_lines:
+            - value: 50
+              label: "Good"
+              color: "#10B981"
+            - value: 100
+              label: "Moderate"
+              color: "#F59E0B"
+            - value: 150
+              label: "Unhealthy"
+              color: "#EF4444"
+          position: { row: 4, col: 7, width: 6 }
+
+        # Row 4: Status Breakdowns
+        - id: "asset-condition"
+          type: "pie_chart"
+          title: "Infrastructure Condition"
+          entity_type: "InfrastructureAsset"
+          group_by: "condition"
+          colors:
+            "Excellent": "#10B981"
+            "Good": "#3B82F6"
+            "Fair": "#F59E0B"
+            "Poor": "#F97316"
+            "Critical": "#EF4444"
+          position: { row: 5, col: 1, width: 4 }
+
+        - id: "iot-status"
+          type: "donut_chart"
+          title: "IoT Device Status"
+          entity_type: "IoTDevice"
+          group_by: "status"
+          colors:
+            "Online": "#10B981"
+            "Offline": "#6B7280"
+            "Maintenance": "#F59E0B"
+            "Faulty": "#EF4444"
+          position: { row: 5, col: 5, width: 4 }
+
+        - id: "development-projects"
+          type: "bar_chart"
+          title: "Development Projects by Status"
+          entity_type: "DevelopmentProject"
+          group_by: "status"
+          colors:
+            "Proposed": "#9CA3AF"
+            "Approved": "#3B82F6"
+            "In Progress": "#F59E0B"
+            "Completed": "#10B981"
+            "On Hold": "#F97316"
+          position: { row: 5, col: 9, width: 4 }
+
+    # Infrastructure Dashboard
+    - id: "infrastructure-dashboard"
+      name: "Infrastructure Management"
+      description: "Asset inventory and maintenance tracking"
+      widgets:
+        - id: "asset-inventory"
+          type: "table"
+          title: "Infrastructure Assets"
+          entity_type: "InfrastructureAsset"
+          columns:
+            - field: "name"
+              label: "Asset Name"
+              sortable: true
+              searchable: true
+            - field: "assetType"
+              label: "Type"
+              filterable: true
+            - field: "location"
+              label: "Location"
+              render: "address"
+            - field: "condition"
+              label: "Condition"
+              render: "badge"
+            - field: "lastInspectionDate"
+              label: "Last Inspection"
+              render: "date"
+            - field: "estimatedValue"
+              label: "Value"
+              render: "currency"
+          actions:
+            - label: "View Details"
+              icon: "eye"
+              route: "/infrastructure/assets/{id}"
+            - label: "Schedule Maintenance"
+              icon: "wrench"
+              action: "schedule_maintenance"
+            - label: "Update Condition"
+              icon: "edit"
+              action: "update_condition"
+          position: { row: 1, col: 1, width: 12 }
+
+    # IoT Dashboard
+    - id: "iot-dashboard"
+      name: "IoT Device Monitoring"
+      description: "Real-time sensor data and device health"
+      widgets:
+        - id: "iot-map"
+          type: "map"
+          title: "IoT Device Locations"
+          layers:
+            - entity_type: "IoTDevice"
+              cluster: true
+              icon_by: "deviceType"
+              color_by: "status"
+          position: { row: 1, col: 1, width: 8 }
+
+        - id: "device-alerts"
+          type: "alert_feed"
+          title: "Device Alerts"
+          entity_type: "IoTDevice"
+          filter: { status: ["Offline", "Faulty"] }
+          sort: { field: "lastCommunication", order: "desc" }
+          position: { row: 1, col: 9, width: 4 }
+
+  # Entity List Views
+  entity_lists:
+    InfrastructureAsset:
+      default_view: "table"
+      views:
+        - type: "table"
+          columns: ["name", "assetType", "location", "condition", "estimatedValue"]
+          filters: ["assetType", "condition", "ownerDepartment"]
+          sort_by: "name"
+        - type: "map"
+          cluster: true
+          color_by: "condition"
+        - type: "grid"
+          card_fields: ["name", "assetType", "condition", "estimatedValue"]
+      quick_actions:
+        - label: "Schedule Inspection"
+          icon: "calendar"
+        - label: "Update Condition"
+          icon: "edit"
+        - label: "Export Report"
+          icon: "download"
+
+    IoTDevice:
+      default_view: "table"
+      views:
+        - type: "table"
+          columns: ["deviceId", "deviceType", "location", "status", "batteryLevel", "lastCommunication"]
+          filters: ["deviceType", "status", "manufacturer"]
+          sort_by: "lastCommunication"
+          sort_order: "desc"
+        - type: "map"
+          cluster: true
+          color_by: "status"
+        - type: "grid"
+          card_fields: ["deviceId", "deviceType", "status", "batteryLevel"]
+      quick_actions:
+        - label: "View Telemetry"
+          icon: "activity"
+        - label: "Reboot Device"
+          icon: "refresh-cw"
+        - label: "Configure Alerts"
+          icon: "bell"
+
+    EnergyAsset:
+      default_view: "table"
+      views:
+        - type: "table"
+          columns: ["name", "energyType", "capacity", "currentOutput", "efficiency", "renewableSource"]
+          filters: ["energyType", "renewableSource", "status"]
+          sort_by: "currentOutput"
+          sort_order: "desc"
+        - type: "map"
+          color_by: "energyType"
+        - type: "grid"
+          card_fields: ["name", "energyType", "currentOutput", "efficiency"]
+      quick_actions:
+        - label: "View Performance"
+          icon: "trending-up"
+        - label: "Configure Grid"
+          icon: "network"
+        - label: "Export Data"
+          icon: "download"
+
+    TrafficAsset:
+      default_view: "map"
+      views:
+        - type: "map"
+          color_by: "currentTrafficFlow"
+          heatmap: true
+        - type: "table"
+          columns: ["name", "assetType", "location", "currentTrafficFlow", "averageDailyTraffic"]
+          filters: ["assetType", "currentTrafficFlow"]
+          sort_by: "averageDailyTraffic"
+          sort_order: "desc"
+      quick_actions:
+        - label: "View Camera Feed"
+          icon: "video"
+        - label: "Traffic Analytics"
+          icon: "bar-chart"
+        - label: "Adjust Timing"
+          icon: "clock"
+
+    Zone:
+      default_view: "map"
+      views:
+        - type: "map"
+          polygon_display: true
+          color_by: "zoneType"
+          opacity: 0.4
+        - type: "table"
+          columns: ["name", "zoneType", "area", "populationDensity", "allowedUses"]
+          filters: ["zoneType", "overlay"]
+          sort_by: "name"
+      quick_actions:
+        - label: "View Regulations"
+          icon: "book"
+        - label: "Land Use Analysis"
+          icon: "pie-chart"
+        - label: "Export Shapefile"
+          icon: "download"
+
+    DevelopmentProject:
+      default_view: "table"
+      views:
+        - type: "table"
+          columns: ["name", "projectType", "status", "budget", "startDate", "estimatedCompletion"]
+          filters: ["projectType", "status", "developer"]
+          sort_by: "startDate"
+          sort_order: "desc"
+        - type: "timeline"
+          group_by: "status"
+        - type: "map"
+          color_by: "status"
+      quick_actions:
+        - label: "View Timeline"
+          icon: "calendar"
+        - label: "Update Status"
+          icon: "edit"
+        - label: "Generate Report"
+          icon: "file-text"
+
+    EnvironmentalReading:
+      default_view: "chart"
+      views:
+        - type: "time_series_chart"
+          group_by: "readingType"
+        - type: "map"
+          color_by: "readingType"
+          heatmap: true
+        - type: "table"
+          columns: ["readingType", "value", "unit", "location", "timestamp"]
+          filters: ["readingType", "severity"]
+          sort_by: "timestamp"
+          sort_order: "desc"
+      quick_actions:
+        - label: "View Trends"
+          icon: "trending-up"
+        - label: "Configure Alerts"
+          icon: "bell"
+        - label: "Export Data"
+          icon: "download"
+
+    PublicService:
+      default_view: "map"
+      views:
+        - type: "map"
+          icon_by: "serviceType"
+        - type: "table"
+          columns: ["name", "serviceType", "capacity", "coverageRadius", "staffCount"]
+          filters: ["serviceType", "status"]
+          sort_by: "name"
+      quick_actions:
+        - label: "Coverage Analysis"
+          icon: "radar"
+        - label: "Response Times"
+          icon: "clock"
+        - label: "Resource Allocation"
+          icon: "users"
+
+  # Entity Detail Views
+  entity_details:
+    InfrastructureAsset:
+      layout: "tabs"
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - title: "Basic Information"
+              fields: ["name", "assetType", "description", "location", "address"]
+            - title: "Asset Details"
+              fields: ["yearBuilt", "dimensions", "materials", "estimatedValue", "ownerDepartment"]
+            - title: "Condition"
+              fields: ["condition", "lastInspectionDate", "nextInspectionDate", "criticalIssues"]
+        - id: "maintenance"
+          label: "Maintenance History"
+          component: "MaintenanceTimeline"
+        - id: "financials"
+          label: "Financials"
+          sections:
+            - title: "Valuation"
+              fields: ["estimatedValue", "replacementCost", "depreciation"]
+            - title: "Maintenance Costs"
+              component: "MaintenanceCostChart"
+        - id: "documents"
+          label: "Documents"
+          component: "DocumentManager"
+        - id: "relationships"
+          label: "Relationships"
+          component: "RelationshipGraph"
+
+    IoTDevice:
+      layout: "tabs"
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - title: "Device Information"
+              fields: ["deviceId", "deviceType", "manufacturer", "model", "firmwareVersion"]
+            - title: "Status"
+              fields: ["status", "batteryLevel", "signalStrength", "lastCommunication"]
+            - title: "Location"
+              fields: ["location", "installationDate", "servesArea"]
+        - id: "telemetry"
+          label: "Telemetry"
+          component: "TelemetryDashboard"
+        - id: "alerts"
+          label: "Alerts & Events"
+          component: "AlertHistory"
+        - id: "configuration"
+          label: "Configuration"
+          component: "DeviceConfig"
+
+    EnergyAsset:
+      layout: "tabs"
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - title: "Asset Information"
+              fields: ["name", "energyType", "renewableSource", "location"]
+            - title: "Capacity & Output"
+              fields: ["capacity", "currentOutput", "peakOutput", "efficiency"]
+        - id: "performance"
+          label: "Performance"
+          component: "EnergyPerformanceDashboard"
+        - id: "grid"
+          label: "Grid Connection"
+          component: "GridTopology"
+        - id: "maintenance"
+          label: "Maintenance"
+          component: "MaintenanceSchedule"
+
+  # Form Configurations
+  forms:
+    InfrastructureAsset:
+      create:
+        title: "Add New Infrastructure Asset"
+        steps:
+          - title: "Basic Information"
+            fields:
+              - name: "name"
+                required: true
+              - name: "assetType"
+                required: true
+              - name: "description"
+          - title: "Location"
+            fields:
+              - name: "location"
+                required: true
+                widget: "map_picker"
+              - name: "address"
+              - name: "district"
+          - title: "Asset Details"
+            fields:
+              - name: "yearBuilt"
+              - name: "dimensions"
+              - name: "materials"
+              - name: "estimatedValue"
+                widget: "currency"
+              - name: "ownerDepartment"
+          - title: "Condition"
+            fields:
+              - name: "condition"
+                required: true
+              - name: "lastInspectionDate"
+                widget: "date_picker"
+              - name: "nextInspectionDate"
+                widget: "date_picker"
+      edit:
+        title: "Edit Infrastructure Asset"
+        layout: "accordion"
+        sections:
+          - title: "Basic Information"
+            fields: ["name", "assetType", "description"]
+          - title: "Location"
+            fields: ["location", "address", "district"]
+          - title: "Asset Details"
+            fields: ["yearBuilt", "dimensions", "materials", "estimatedValue", "ownerDepartment"]
+          - title: "Condition"
+            fields: ["condition", "lastInspectionDate", "nextInspectionDate", "criticalIssues"]
+
+    IoTDevice:
+      create:
+        title: "Register IoT Device"
+        steps:
+          - title: "Device Identity"
+            fields:
+              - name: "deviceId"
+                required: true
+                help_text: "Unique device identifier"
+              - name: "deviceType"
+                required: true
+              - name: "manufacturer"
+              - name: "model"
+          - title: "Installation"
+            fields:
+              - name: "location"
+                required: true
+                widget: "map_picker"
+              - name: "installationDate"
+                widget: "date_picker"
+              - name: "servesArea"
+          - title: "Configuration"
+            fields:
+              - name: "dataCollectionFrequency"
+                widget: "duration_picker"
+              - name: "alertThresholds"
+                widget: "json_editor"
+      edit:
+        title: "Edit IoT Device"
+        layout: "tabs"
+        tabs:
+          - title: "Device Info"
+            fields: ["deviceId", "deviceType", "manufacturer", "model", "firmwareVersion"]
+          - title: "Location & Installation"
+            fields: ["location", "installationDate", "servesArea"]
+          - title: "Configuration"
+            fields: ["dataCollectionFrequency", "alertThresholds", "maintenanceSchedule"]
+
+    EnergyAsset:
+      create:
+        title: "Add Energy Asset"
+        steps:
+          - title: "Asset Information"
+            fields:
+              - name: "name"
+                required: true
+              - name: "energyType"
+                required: true
+              - name: "renewableSource"
+                widget: "checkbox"
+          - title: "Location"
+            fields:
+              - name: "location"
+                required: true
+                widget: "map_picker"
+              - name: "serviceArea"
+          - title: "Capacity & Specifications"
+            fields:
+              - name: "capacity"
+                required: true
+                widget: "number"
+                unit: "MW"
+              - name: "panelCount"
+                conditional: { field: "energyType", value: "Solar Farm" }
+              - name: "turbineCount"
+                conditional: { field: "energyType", value: "Wind Farm" }
+              - name: "storageCapacity"
+                conditional: { field: "energyType", value: "Battery Storage" }
+                unit: "MWh"
+          - title: "Grid Connection"
+            fields:
+              - name: "gridConnectionPoint"
+              - name: "substationId"
+              - name: "commissionDate"
+                widget: "date_picker"
+
+  # Search Configuration
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search infrastructure, devices, projects..."
+      entities:
+        - InfrastructureAsset
+        - IoTDevice
+        - EnergyAsset
+        - TrafficAsset
+        - Zone
+        - DevelopmentProject
+        - PublicService
+      fields:
+        InfrastructureAsset: ["name", "assetType", "address", "description"]
+        IoTDevice: ["deviceId", "deviceType", "location", "manufacturer"]
+        EnergyAsset: ["name", "energyType", "location"]
+        TrafficAsset: ["name", "location", "assetType"]
+        Zone: ["name", "zoneType", "allowedUses"]
+        DevelopmentProject: ["name", "projectType", "developer", "description"]
+        PublicService: ["name", "serviceType", "address"]
+      filters:
+        - name: "Entity Type"
+          field: "_type"
+          type: "multi-select"
+        - name: "Location"
+          field: "location"
+          type: "geo_radius"
+        - name: "Status/Condition"
+          field: "status,condition"
+          type: "multi-select"
+
+    faceted_search:
+      enabled: true
+      facets:
+        - field: "assetType"
+          label: "Asset Type"
+          order: "count_desc"
+        - field: "condition"
+          label: "Condition"
+        - field: "deviceType"
+          label: "Device Type"
+        - field: "energyType"
+          label: "Energy Type"
+        - field: "renewableSource"
+          label: "Renewable"
+        - field: "zoneType"
+          label: "Zone Type"
+
+  # Map Configuration
+  maps:
+    default_center: [37.7749, -122.4194]  # San Francisco (customize per city)
+    default_zoom: 12
+    tile_provider: "OpenStreetMap"  # or "Mapbox", "Google Maps"
+
+    layer_groups:
+      - id: "infrastructure"
+        label: "Infrastructure"
+        layers:
+          - entity_type: "InfrastructureAsset"
+            filter: { assetType: "Building" }
+            icon: "building"
+            color: "#3B82F6"
+          - entity_type: "InfrastructureAsset"
+            filter: { assetType: "Bridge" }
+            icon: "bridge"
+            color: "#8B5CF6"
+          - entity_type: "InfrastructureAsset"
+            filter: { assetType: "Park" }
+            icon: "tree"
+            color: "#10B981"
+
+      - id: "iot-sensors"
+        label: "IoT Sensors"
+        layers:
+          - entity_type: "IoTDevice"
+            cluster: true
+            icon_by: "deviceType"
+            color_by: "status"
+
+      - id: "energy"
+        label: "Energy Grid"
+        layers:
+          - entity_type: "EnergyAsset"
+            icon_by: "energyType"
+            size_by: "capacity"
+
+      - id: "traffic"
+        label: "Traffic"
+        layers:
+          - entity_type: "TrafficAsset"
+            color_by: "currentTrafficFlow"
+            real_time: true
+
+      - id: "zoning"
+        label: "Zoning"
+        layers:
+          - entity_type: "Zone"
+            type: "polygon"
+            color_by: "zoneType"
+            opacity: 0.3
+
+    heatmaps:
+      - id: "traffic-density"
+        label: "Traffic Density"
+        entity_type: "TrafficAsset"
+        weight_by: "averageDailyTraffic"
+      - id: "air-quality"
+        label: "Air Quality"
+        entity_type: "EnvironmentalReading"
+        filter: { readingType: "Air Quality" }
+        weight_by: "value"
+
+  # Analytics & Reports
+  analytics:
+    dashboards:
+      - id: "sustainability"
+        name: "Sustainability Dashboard"
+        widgets:
+          - type: "kpi"
+            title: "Renewable Energy Percentage"
+            calculation: "(renewable_output / total_output) * 100"
+          - type: "chart"
+            title: "Carbon Emissions Trend"
+            data_source: "emissions_time_series"
+          - type: "map"
+            title: "Green Infrastructure"
+            layers: ["parks", "green_roofs", "tree_canopy"]
+
+    reports:
+      - id: "monthly-infrastructure"
+        name: "Monthly Infrastructure Report"
+        schedule: "monthly"
+        sections: ["asset_inventory", "condition_summary", "maintenance_costs", "capital_improvements"]
+
+      - id: "energy-performance"
+        name: "Energy Performance Report"
+        schedule: "weekly"
+        sections: ["generation_summary", "renewable_percentage", "grid_efficiency", "cost_analysis"]
+
+      - id: "traffic-analysis"
+        name: "Traffic Analysis Report"
+        schedule: "daily"
+        sections: ["congestion_summary", "incident_count", "average_speeds", "signal_performance"]
+
+  # Alerts & Notifications
+  alerts:
+    channels:
+      - email
+      - sms
+      - push_notification
+      - webhook
+
+    templates:
+      - id: "infrastructure-critical"
+        name: "Critical Infrastructure Condition"
+        trigger: "condition == 'Critical'"
+        entity_types: ["InfrastructureAsset"]
+        priority: "high"
+        message: "Asset {name} is in critical condition. Immediate attention required."
+
+      - id: "iot-offline"
+        name: "IoT Device Offline"
+        trigger: "status == 'Offline' && duration > 1h"
+        entity_types: ["IoTDevice"]
+        priority: "medium"
+        message: "Device {deviceId} has been offline for over 1 hour."
+
+      - id: "air-quality-poor"
+        name: "Poor Air Quality Alert"
+        trigger: "readingType == 'Air Quality' && value > 150"
+        entity_types: ["EnvironmentalReading"]
+        priority: "high"
+        message: "Air quality index exceeds 150 (unhealthy). Consider public advisory."
+
+      - id: "energy-outage"
+        name: "Energy Asset Outage"
+        trigger: "status == 'Offline'"
+        entity_types: ["EnergyAsset"]
+        priority: "critical"
+        message: "Energy asset {name} is offline. Grid impact: {capacity}MW."
+
+  # Workflows
+  workflows:
+    - id: "infrastructure-inspection"
+      name: "Infrastructure Inspection Workflow"
+      trigger: "scheduled"
+      steps:
+        - action: "generate_inspection_list"
+          params: { due_within: "30 days" }
+        - action: "assign_inspectors"
+        - action: "send_notifications"
+        - action: "create_work_orders"
+
+    - id: "iot-anomaly-detection"
+      name: "IoT Anomaly Detection"
+      trigger: "real_time"
+      steps:
+        - action: "analyze_telemetry"
+        - action: "detect_anomalies"
+        - action: "create_alert"
+          condition: "anomaly_detected"
+        - action: "notify_team"
+
+    - id: "permit-approval"
+      name: "Development Permit Approval"
+      trigger: "manual"
+      steps:
+        - action: "zoning_compliance_check"
+        - action: "environmental_review"
+        - action: "public_comment_period"
+        - action: "final_approval"
+        - action: "issue_permit"
+
+  # Permissions & Access Control
+  permissions:
+    roles:
+      - id: "city-admin"
+        name: "City Administrator"
+        permissions: ["*"]  # Full access
+
+      - id: "planner"
+        name: "City Planner"
+        permissions:
+          - "zone:read"
+          - "zone:write"
+          - "development-project:*"
+          - "infrastructure-asset:read"
+
+      - id: "public-works"
+        name: "Public Works Manager"
+        permissions:
+          - "infrastructure-asset:*"
+          - "iot-device:read"
+          - "maintenance:*"
+
+      - id: "energy-manager"
+        name: "Energy Manager"
+        permissions:
+          - "energy-asset:*"
+          - "iot-device:read"
+          - "analytics:read"
+
+      - id: "traffic-engineer"
+        name: "Traffic Engineer"
+        permissions:
+          - "traffic-asset:*"
+          - "iot-device:read"
+          - "analytics:read"
+
+      - id: "citizen"
+        name: "Public Citizen"
+        permissions:
+          - "zone:read"
+          - "development-project:read"
+          - "public-service:read"
+          - "environmental-reading:read"
+
+  # Mobile App Configuration
+  mobile:
+    enabled: true
+    features:
+      - field_inspections
+      - photo_capture
+      - offline_mode
+      - barcode_scanning
+      - gps_tracking
+
+    screens:
+      - id: "field-inspection"
+        title: "Field Inspection"
+        entity_type: "InfrastructureAsset"
+        fields: ["name", "condition", "criticalIssues", "photos"]
+
+      - id: "iot-diagnostics"
+        title: "Device Diagnostics"
+        entity_type: "IoTDevice"
+        fields: ["deviceId", "status", "signalStrength", "batteryLevel"]
+
+  # Integrations UI
+  integrations:
+    - id: "gis-import"
+      name: "GIS Data Import"
+      description: "Import infrastructure and zoning data from GIS systems"
+      icon: "map"
+      config_fields:
+        - name: "gis_system"
+          label: "GIS System"
+          type: "select"
+          options: ["ArcGIS", "QGIS", "Google Earth Engine"]
+        - name: "api_endpoint"
+          label: "API Endpoint"
+          type: "url"
+        - name: "layer_mapping"
+          label: "Layer Mapping"
+          type: "json"
+
+    - id: "iot-platform"
+      name: "IoT Platform Integration"
+      description: "Connect to IoT platform for real-time device data"
+      icon: "wifi"
+      config_fields:
+        - name: "platform"
+          label: "IoT Platform"
+          type: "select"
+          options: ["AWS IoT", "Azure IoT Hub", "ThingWorx"]
+        - name: "connection_string"
+          label: "Connection String"
+          type: "password"
+        - name: "device_filter"
+          label: "Device Filter"
+          type: "text"
+
+    - id: "traffic-system"
+      name: "Traffic Management System"
+      description: "Integrate with traffic control systems"
+      icon: "traffic-cone"
+      config_fields:
+        - name: "vendor"
+          label: "System Vendor"
+          type: "select"
+          options: ["Siemens", "Cubic", "Kapsch"]
+        - name: "api_key"
+          label: "API Key"
+          type: "password"
+
+  # Customization Options
+  customization:
+    branding:
+      logo_placement: "top-left"
+      primary_color_override: true
+      custom_css: true
+
+    feature_toggles:
+      - id: "real-time-traffic"
+        label: "Real-Time Traffic Monitoring"
+        default: true
+      - id: "predictive-maintenance"
+        label: "Predictive Maintenance AI"
+        default: true
+      - id: "citizen-portal"
+        label: "Citizen Engagement Portal"
+        default: false
+      - id: "mobile-app"
+        label: "Mobile Field App"
+        default: true
+
+    locale:
+      supported_languages: ["en", "es", "fr", "de", "zh"]
+      default_language: "en"
+      date_format: "MM/DD/YYYY"
+      time_format: "12h"
+      currency: "USD"
+      units: "imperial"  # or "metric"

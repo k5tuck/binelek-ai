@@ -1,0 +1,868 @@
+# Finance UI Configuration
+# Frontend presentation layer for wealth management and financial services
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for finance and wealth management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#F59E0B"      # Amber/Gold
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#10B981"       # Green (for gains)
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"       # Red (for losses)
+
+    logo_url: "/assets/logos/finance-logo.svg"
+    favicon_url: "/assets/favicons/finance.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "clients"
+        label: "Clients"
+        icon: "👥"
+        route: "/clients"
+        badge_query: "count_active_clients"
+
+      - id: "households"
+        label: "Households"
+        icon: "🏠"
+        route: "/households"
+
+      - id: "accounts"
+        label: "Accounts"
+        icon: "🏦"
+        route: "/accounts"
+
+      - id: "portfolios"
+        label: "Portfolios"
+        icon: "📈"
+        route: "/portfolios"
+
+      - id: "transactions"
+        label: "Transactions"
+        icon: "💸"
+        route: "/transactions"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📄"
+        route: "/reports"
+        submenu:
+          - id: "performance"
+            label: "Performance Reports"
+            route: "/reports/performance"
+          - id: "compliance"
+            label: "Compliance Reports"
+            route: "/reports/compliance"
+          - id: "tax"
+            label: "Tax Reports"
+            route: "/reports/tax"
+
+      - id: "compliance"
+        label: "Compliance"
+        icon: "⚖️"
+        route: "/compliance"
+        badge_query: "count_pending_kyc"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Advisor Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Advisor Dashboard"
+      description: "Overview of book of business and key metrics"
+      layout: "grid"
+
+      widgets:
+        - id: "total_aum"
+          type: "metric_card"
+          title: "Total AUM"
+          query: "sum_advisor_aum"
+          format: "currency_large"
+          icon: "💰"
+          color: "#F59E0B"
+          size: "small"
+          trend: "ytd_aum_change"
+
+        - id: "client_count"
+          type: "metric_card"
+          title: "Active Clients"
+          query: "count_active_clients"
+          icon: "👥"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "ytd_performance"
+          type: "metric_card"
+          title: "YTD Performance"
+          query: "avg_portfolio_ytd_return"
+          format: "percentage"
+          icon: "📈"
+          color: "#10B981"
+          size: "small"
+
+        - id: "pending_kyc"
+          type: "metric_card"
+          title: "Pending KYC"
+          query: "count_pending_kyc"
+          icon: "⚠️"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "aum_by_asset_class"
+          type: "chart"
+          chart_type: "pie"
+          title: "AUM by Asset Class"
+          query: "aum_by_asset_class"
+          size: "medium"
+          color_palette:
+            - "#3B82F6"  # Equity
+            - "#10B981"  # Fixed Income
+            - "#F59E0B"  # Cash
+            - "#8B5CF6"  # Alternatives
+
+        - id: "aum_growth"
+          type: "chart"
+          chart_type: "line"
+          title: "AUM Growth (12 Months)"
+          query: "monthly_aum_history"
+          x_axis: "month"
+          y_axis: "aum"
+          size: "large"
+
+        - id: "top_clients"
+          type: "entity_list"
+          title: "Top Clients by AUM"
+          entity_type: "Client"
+          query:
+            filter:
+              client_status: "Active"
+            sort:
+              field: "total_aum"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - full_name
+            - total_aum
+            - ytd_return
+            - risk_tolerance
+          size: "medium"
+
+        - id: "recent_transactions"
+          type: "entity_list"
+          title: "Recent Transactions"
+          entity_type: "Transaction"
+          query:
+            sort:
+              field: "transaction_date"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - transaction_date
+            - client_name
+            - transaction_type
+            - symbol
+            - amount
+          size: "medium"
+
+        - id: "kyc_expiring"
+          type: "entity_list"
+          title: "KYC Expiring Soon"
+          entity_type: "Client"
+          query:
+            filter:
+              kyc_expiration_date: "next_30_days"
+            sort:
+              field: "kyc_expiration_date"
+              direction: "ASC"
+          columns:
+            - full_name
+            - kyc_expiration_date
+            - kyc_status
+          size: "medium"
+          highlight: true
+
+    # ----------------------------------------------------------------------
+    # Client Portfolio Dashboard
+    # ----------------------------------------------------------------------
+    - id: "client_portfolio"
+      name: "Client Portfolio View"
+      description: "Detailed portfolio view for individual client"
+      layout: "grid"
+
+      filters:
+        - field: "client_id"
+          type: "select"
+          required: true
+
+      widgets:
+        - id: "portfolio_value"
+          type: "metric_card"
+          title: "Total Portfolio Value"
+          query: "client_total_portfolio_value"
+          format: "currency"
+
+        - id: "ytd_gain_loss"
+          type: "metric_card"
+          title: "YTD Gain/Loss"
+          query: "client_ytd_gain_loss"
+          format: "currency"
+          trend: true
+
+        - id: "unrealized_gain_loss"
+          type: "metric_card"
+          title: "Unrealized Gain/Loss"
+          query: "client_unrealized_gain_loss"
+          format: "currency"
+
+        - id: "asset_allocation"
+          type: "chart"
+          chart_type: "pie"
+          title: "Current Asset Allocation"
+          query: "client_asset_allocation"
+
+        - id: "performance_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Portfolio Performance"
+          query: "client_performance_history"
+          x_axis: "date"
+          y_axis: "value"
+
+        - id: "account_summary"
+          type: "entity_list"
+          title: "Accounts"
+          entity_type: "Account"
+          query:
+            filter:
+              client_id: "$client_id"
+              account_status: "Active"
+          columns:
+            - account_name
+            - account_type
+            - custodian
+            - current_value
+            - ytd_return
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Client List
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+              width: "200px"
+
+            - field: "client_status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Prospect": "warning"
+                "Active": "success"
+                "Inactive": "secondary"
+                "Closed": "dark"
+              width: "100px"
+
+            - field: "total_aum"
+              label: "AUM"
+              sortable: true
+              format: "currency"
+
+            - field: "risk_tolerance"
+              label: "Risk Profile"
+              filterable: true
+
+            - field: "advisor_name"
+              label: "Advisor"
+              filterable: true
+
+            - field: "kyc_status"
+              label: "KYC Status"
+              render: "badge"
+              color_map:
+                "Completed": "success"
+                "In Progress": "warning"
+                "Expired": "danger"
+                "Not Started": "secondary"
+
+            - field: "onboarding_date"
+              label: "Onboarded"
+              sortable: true
+              format: "date"
+
+      filters:
+        - field: "client_status"
+          type: "select"
+          label: "Status"
+          multiple: true
+          options:
+            - "Prospect"
+            - "Active"
+            - "Inactive"
+
+        - field: "risk_tolerance"
+          type: "select"
+          label: "Risk Tolerance"
+          multiple: true
+
+        - field: "advisor_id"
+          type: "select"
+          label: "Advisor"
+
+        - field: "total_aum"
+          type: "range"
+          label: "AUM Range"
+          format: "currency"
+
+      actions:
+        - id: "add_client"
+          label: "Add Client"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Account List
+    # ----------------------------------------------------------------------
+    - entity_type: "Account"
+      id: "account_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "account_number"
+              label: "Account #"
+              sortable: true
+              width: "120px"
+
+            - field: "account_name"
+              label: "Account Name"
+              render: "link"
+
+            - field: "client_name"
+              label: "Client"
+
+            - field: "account_type"
+              label: "Type"
+              filterable: true
+
+            - field: "custodian"
+              label: "Custodian"
+              filterable: true
+
+            - field: "current_value"
+              label: "Value"
+              sortable: true
+              format: "currency"
+
+            - field: "ytd_return"
+              label: "YTD Return"
+              sortable: true
+              format: "percentage"
+              render: "colored_percentage"
+
+            - field: "account_status"
+              label: "Status"
+              render: "badge"
+
+      filters:
+        - field: "account_type"
+          type: "select"
+          multiple: true
+
+        - field: "custodian"
+          type: "select"
+          multiple: true
+
+        - field: "account_status"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Transaction List
+    # ----------------------------------------------------------------------
+    - entity_type: "Transaction"
+      id: "transaction_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "transaction_date"
+              label: "Date"
+              sortable: true
+              format: "date"
+
+            - field: "account_name"
+              label: "Account"
+
+            - field: "transaction_type"
+              label: "Type"
+              filterable: true
+              render: "badge"
+
+            - field: "symbol"
+              label: "Symbol"
+
+            - field: "quantity"
+              label: "Quantity"
+              format: "number"
+
+            - field: "price"
+              label: "Price"
+              format: "currency"
+
+            - field: "amount"
+              label: "Amount"
+              format: "currency"
+              render: "colored_currency"
+
+      filters:
+        - field: "transaction_date"
+          type: "date_range"
+          label: "Date Range"
+
+        - field: "transaction_type"
+          type: "select"
+          multiple: true
+
+        - field: "symbol"
+          type: "text"
+          label: "Symbol"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Client Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "client_type"
+        badge_field: "client_status"
+        key_metrics:
+          - field: "total_aum"
+            label: "Total AUM"
+            format: "currency"
+          - field: "ytd_return"
+            label: "YTD Return"
+            format: "percentage"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "personal_info"
+              title: "Personal Information"
+              layout: "two_column"
+              fields:
+                - full_name
+                - date_of_birth
+                - age
+                - email
+                - phone
+                - address
+
+            - id: "financial_profile"
+              title: "Financial Profile"
+              layout: "two_column"
+              fields:
+                - annual_income
+                - net_worth
+                - liquid_net_worth
+                - employment_status
+                - occupation
+
+            - id: "risk_profile"
+              title: "Investment Profile"
+              layout: "two_column"
+              fields:
+                - risk_tolerance
+                - investment_experience
+                - time_horizon
+                - investment_objectives
+
+        - id: "accounts"
+          label: "Accounts"
+          icon: "🏦"
+
+          sections:
+            - id: "account_summary"
+              title: "Account Summary"
+              type: "relationship_list"
+              relationship: "OWNS_ACCOUNT"
+              direction: "outgoing"
+              filter:
+                account_status: "Active"
+              display_fields:
+                - account_name
+                - account_type
+                - custodian
+                - current_value
+                - ytd_return
+
+        - id: "holdings"
+          label: "Holdings"
+          icon: "📊"
+
+          sections:
+            - id: "portfolio_summary"
+              title: "Portfolio Composition"
+              type: "chart"
+              chart_type: "treemap"
+              query: "client_holdings_treemap"
+
+            - id: "holdings_list"
+              title: "All Holdings"
+              type: "aggregated_list"
+              query: "client_all_holdings"
+              columns:
+                - symbol
+                - security_name
+                - asset_class
+                - quantity
+                - current_value
+                - unrealized_gain_loss
+
+        - id: "performance"
+          label: "Performance"
+          icon: "📈"
+
+          sections:
+            - id: "performance_chart"
+              title: "Performance History"
+              type: "chart"
+              chart_type: "line"
+              query: "client_performance_history"
+
+            - id: "performance_metrics"
+              title: "Performance Metrics"
+              layout: "two_column"
+              fields:
+                - field: "ytd_return"
+                  format: "percentage"
+                - field: "one_year_return"
+                  format: "percentage"
+                - field: "three_year_return"
+                  format: "percentage"
+                - field: "five_year_return"
+                  format: "percentage"
+                - field: "inception_return"
+                  format: "percentage"
+
+        - id: "goals"
+          label: "Goals"
+          icon: "🎯"
+
+          sections:
+            - id: "active_goals"
+              title: "Financial Goals"
+              type: "relationship_list"
+              relationship: "HAS_GOAL"
+              display_fields:
+                - goal_name
+                - goal_type
+                - target_amount
+                - current_amount
+                - target_date
+                - status
+
+        - id: "compliance"
+          label: "Compliance"
+          icon: "⚖️"
+
+          sections:
+            - id: "kyc_info"
+              title: "KYC Information"
+              layout: "two_column"
+              fields:
+                - kyc_status
+                - kyc_completion_date
+                - kyc_expiration_date
+                - identity_verified
+                - identity_verification_method
+
+            - id: "aml_info"
+              title: "AML Information"
+              layout: "two_column"
+              fields:
+                - pep_status
+                - high_risk_jurisdiction
+                - source_of_funds
+
+    # ----------------------------------------------------------------------
+    # Account Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Account"
+      id: "account_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "account_name"
+        subtitle_field: "account_number"
+        badge_field: "account_status"
+        key_metrics:
+          - field: "current_value"
+            label: "Value"
+            format: "currency"
+          - field: "ytd_return"
+            label: "YTD"
+            format: "percentage"
+
+      tabs:
+        - id: "summary"
+          label: "Summary"
+          sections:
+            - id: "account_details"
+              title: "Account Details"
+              layout: "two_column"
+              fields:
+                - account_number
+                - account_type
+                - tax_status
+                - custodian
+                - opened_date
+                - management_style
+
+            - id: "performance"
+              title: "Performance"
+              layout: "two_column"
+              fields:
+                - current_value
+                - cash_balance
+                - cost_basis
+                - unrealized_gain_loss
+                - ytd_return
+                - inception_return
+
+        - id: "holdings"
+          label: "Holdings"
+          sections:
+            - id: "holdings_list"
+              type: "relationship_list"
+              relationship: "HAS_HOLDING"
+              display_fields:
+                - symbol
+                - security_name
+                - asset_class
+                - quantity
+                - current_price
+                - current_value
+                - unrealized_gain_loss
+
+        - id: "transactions"
+          label: "Transactions"
+          sections:
+            - id: "transaction_history"
+              type: "relationship_list"
+              relationship: "HAS_TRANSACTION"
+              sort:
+                field: "transaction_date"
+                direction: "DESC"
+              display_fields:
+                - transaction_date
+                - transaction_type
+                - symbol
+                - quantity
+                - price
+                - amount
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Client Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "client_type"
+          title: "Client Type"
+          fields:
+            - field: "client_type"
+              required: true
+
+        - id: "personal_info"
+          title: "Personal Information"
+          conditional: "client_type == 'Individual'"
+          fields:
+            - field: "first_name"
+              required: true
+              width: "half"
+
+            - field: "last_name"
+              required: true
+              width: "half"
+
+            - field: "date_of_birth"
+              required: true
+              width: "half"
+
+            - field: "ssn_tin"
+              required: true
+              width: "half"
+              widget: "masked_input"
+
+        - id: "contact_info"
+          title: "Contact Information"
+          fields:
+            - email
+            - phone
+            - address
+
+        - id: "financial_profile"
+          title: "Financial Profile"
+          fields:
+            - annual_income
+            - net_worth
+            - employment_status
+            - occupation
+
+        - id: "investment_profile"
+          title: "Investment Profile"
+          fields:
+            - risk_tolerance
+            - investment_experience
+            - time_horizon
+            - field: "investment_objectives"
+              widget: "tag_input"
+
+        - id: "kyc"
+          title: "KYC & Compliance"
+          fields:
+            - identity_verification_method
+            - pep_status
+            - field: "source_of_funds"
+              widget: "textarea"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "performance_report"
+      name: "Performance Report"
+      description: "Portfolio performance analysis"
+      parameters:
+        - field: "client_id"
+          type: "select"
+          required: true
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - beginning_value
+            - ending_value
+            - net_contributions
+            - total_return
+            - time_weighted_return
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Portfolio Growth"
+
+        - type: "table"
+          title: "Account Performance"
+          columns:
+            - account_name
+            - beginning_value
+            - ending_value
+            - return_percentage
+
+    - id: "tax_report"
+      name: "Realized Gains/Losses Report"
+      description: "Tax reporting for realized capital gains and losses"
+      parameters:
+        - field: "tax_year"
+          type: "select"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - short_term_gains
+            - long_term_gains
+            - total_capital_gains
+
+        - type: "table"
+          title: "Realized Transactions"
+          columns:
+            - sale_date
+            - symbol
+            - quantity
+            - cost_basis
+            - sale_price
+            - gain_loss
+            - holding_period
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  regulatory_compliance: true

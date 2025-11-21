@@ -1,0 +1,216 @@
+ontology:
+  entities:
+    - name: Table
+      description: "Restaurant table"
+      label: "Table"
+      attributes:
+        - name: number
+          type: string
+          required: true
+        - name: capacity
+          type: integer
+          required: true
+        - name: status
+          type: enum
+          values: ["available", "occupied", "reserved", "cleaning"]
+          default: "available"
+        - name: section
+          type: string
+          required: false
+
+    - name: Reservation
+      description: "Table reservation"
+      label: "Reservation"
+      attributes:
+        - name: customerName
+          type: string
+          required: true
+        - name: phone
+          type: string
+          required: true
+        - name: email
+          type: string
+          required: false
+        - name: partySize
+          type: integer
+          required: true
+        - name: reservationTime
+          type: datetime
+          required: true
+        - name: status
+          type: enum
+          values: ["confirmed", "seated", "completed", "cancelled", "no_show"]
+          default: "confirmed"
+        - name: specialRequests
+          type: string
+          required: false
+
+    - name: MenuItem
+      description: "Menu item"
+      label: "Menu Item"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: description
+          type: string
+          required: false
+        - name: price
+          type: decimal
+          required: true
+        - name: category
+          type: enum
+          values: ["appetizer", "entree", "dessert", "beverage", "special"]
+          required: true
+        - name: available
+          type: boolean
+          default: true
+        - name: preparationTime
+          type: integer
+          required: false
+          description: "Time in minutes"
+        - name: imageUrl
+          type: string
+          required: false
+
+    - name: Order
+      description: "Customer order"
+      label: "Order"
+      attributes:
+        - name: orderNumber
+          type: string
+          required: true
+        - name: orderType
+          type: enum
+          values: ["dine_in", "takeout", "delivery"]
+          required: true
+        - name: status
+          type: enum
+          values: ["pending", "preparing", "ready", "served", "paid", "cancelled"]
+          default: "pending"
+        - name: orderTime
+          type: datetime
+          required: true
+        - name: subtotal
+          type: decimal
+          required: true
+        - name: tax
+          type: decimal
+          required: false
+        - name: tip
+          type: decimal
+          required: false
+        - name: total
+          type: decimal
+          required: true
+        - name: paymentMethod
+          type: enum
+          values: ["cash", "card", "mobile"]
+          required: false
+
+    - name: OrderItem
+      description: "Item in an order"
+      label: "Order Item"
+      attributes:
+        - name: quantity
+          type: integer
+          required: true
+        - name: price
+          type: decimal
+          required: true
+        - name: specialInstructions
+          type: string
+          required: false
+        - name: status
+          type: enum
+          values: ["pending", "preparing", "ready", "served"]
+          default: "pending"
+
+    - name: Ingredient
+      description: "Kitchen ingredient"
+      label: "Ingredient"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: unit
+          type: enum
+          values: ["kg", "g", "lbs", "oz", "l", "ml", "units"]
+          required: true
+        - name: currentStock
+          type: decimal
+          required: true
+        - name: minimumStock
+          type: decimal
+          required: true
+        - name: unitCost
+          type: decimal
+          required: true
+
+    - name: Staff
+      description: "Restaurant staff member"
+      label: "Staff"
+      attributes:
+        - name: firstName
+          type: string
+          required: true
+        - name: lastName
+          type: string
+          required: true
+        - name: role
+          type: enum
+          values: ["server", "cook", "bartender", "host", "manager"]
+          required: true
+        - name: hourlyRate
+          type: decimal
+          required: false
+        - name: active
+          type: boolean
+          default: true
+
+  relationships:
+    - name: RESERVATION_FOR
+      from: Reservation
+      to: Table
+      type: many-to-one
+
+    - name: ORDER_AT
+      from: Order
+      to: Table
+      type: many-to-one
+
+    - name: ORDER_CONTAINS
+      from: Order
+      to: OrderItem
+      type: one-to-many
+
+    - name: ITEM_MENU
+      from: OrderItem
+      to: MenuItem
+      type: many-to-one
+
+    - name: SERVED_BY
+      from: Order
+      to: Staff
+      type: many-to-one
+
+    - name: RECIPE_INGREDIENT
+      from: MenuItem
+      to: Ingredient
+      type: many-to-many
+      properties:
+        - name: quantity
+          type: decimal
+
+  indexes:
+    - entity: Table
+      type: btree
+      fields: [number]
+      unique: true
+    - entity: Order
+      type: btree
+      fields: [orderNumber]
+      unique: true
+    - entity: Reservation
+      type: btree
+      fields: [reservationTime]

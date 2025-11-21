@@ -1,0 +1,1058 @@
+# Media & Entertainment Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Media & entertainment domain ontology covering content, rights, talent, and distribution"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Content Entity
+    # ------------------------------------------------------------------------
+    - name: Content
+      display_name: "Content"
+      description: "Media content asset (film, TV show, music, digital content)"
+      icon: "🎬"
+      color: "#8B5CF6"
+
+      attributes:
+        # Core Identification
+        - name: title
+          type: string
+          required: true
+          description: "Content title"
+          indexed: true
+
+        - name: original_title
+          type: string
+          description: "Original language title"
+
+        - name: content_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Internal content identifier"
+
+        - name: isan
+          type: string
+          description: "International Standard Audiovisual Number"
+
+        - name: isrc
+          type: string
+          description: "International Standard Recording Code (for music)"
+
+        # Content Type & Classification
+        - name: content_type
+          type: enum
+          required: true
+          values:
+            - "Feature Film"
+            - "TV Series"
+            - "TV Episode"
+            - "Documentary"
+            - "Music Album"
+            - "Music Single"
+            - "Music Video"
+            - "Short Film"
+            - "Web Series"
+            - "Podcast"
+            - "Live Event"
+            - "Commercial"
+          default: "Feature Film"
+
+        - name: genre
+          type: array
+          item_type: string
+          description: "Content genres"
+
+        - name: sub_genre
+          type: array
+          item_type: string
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "In Development"
+            - "Pre-Production"
+            - "In Production"
+            - "Post-Production"
+            - "Completed"
+            - "Released"
+            - "Archived"
+          default: "In Development"
+
+        # Technical Specifications
+        - name: runtime_minutes
+          type: number
+          min: 0
+          description: "Runtime in minutes"
+
+        - name: release_year
+          type: number
+          min: 1880
+          max: 2100
+
+        - name: production_year
+          type: number
+          min: 1880
+          max: 2100
+
+        - name: language
+          type: string
+          description: "Primary language"
+
+        - name: available_languages
+          type: array
+          item_type: string
+
+        - name: subtitle_languages
+          type: array
+          item_type: string
+
+        - name: aspect_ratio
+          type: string
+          description: "e.g., 16:9, 2.39:1"
+
+        - name: resolution
+          type: enum
+          values: ["SD", "HD", "4K", "8K"]
+
+        # Ratings & Classification
+        - name: mpaa_rating
+          type: enum
+          values: ["G", "PG", "PG-13", "R", "NC-17", "NR"]
+
+        - name: tv_rating
+          type: enum
+          values: ["TV-Y", "TV-Y7", "TV-G", "TV-PG", "TV-14", "TV-MA"]
+
+        - name: content_warnings
+          type: array
+          item_type: string
+
+        # Financial
+        - name: production_budget
+          type: money
+          description: "Total production budget"
+
+        - name: marketing_budget
+          type: money
+
+        - name: total_revenue
+          type: money
+          description: "Total revenue generated"
+
+        - name: roi
+          type: number
+          computed: true
+          description: "Return on investment percentage"
+
+        # Dates
+        - name: release_date
+          type: date
+          description: "Original release date"
+
+        - name: theatrical_release_date
+          type: date
+
+        - name: streaming_release_date
+          type: date
+
+        - name: home_video_release_date
+          type: date
+
+        # Marketing
+        - name: synopsis
+          type: text
+          description: "Plot synopsis"
+
+        - name: logline
+          type: string
+          description: "One-line description"
+
+        - name: keywords
+          type: array
+          item_type: string
+          description: "Searchable keywords"
+
+        - name: poster_url
+          type: url
+
+        - name: trailer_url
+          type: url
+
+      indexes:
+        - fields: ["content_type", "status"]
+          name: "idx_content_type_status"
+        - fields: ["release_year"]
+          name: "idx_release_year"
+        - fields: ["title"]
+          name: "idx_title"
+          type: "fulltext"
+
+      validation_rules:
+        - rule: "runtime_minutes must be > 0 for completed content"
+        - rule: "release_date must be set if status is Released"
+
+    # ------------------------------------------------------------------------
+    # Rights Entity
+    # ------------------------------------------------------------------------
+    - name: Rights
+      display_name: "Rights"
+      description: "Content rights and licensing information"
+      icon: "📜"
+      color: "#10B981"
+
+      attributes:
+        - name: rights_type
+          type: enum
+          required: true
+          values:
+            - "Theatrical"
+            - "Home Video"
+            - "Streaming/VOD"
+            - "Free TV"
+            - "Pay TV"
+            - "Airline"
+            - "Hotel"
+            - "Educational"
+            - "Merchandising"
+            - "Music Sync"
+            - "Music Mechanical"
+            - "Music Performance"
+            - "All Media"
+
+        - name: territory
+          type: string
+          required: true
+          description: "Territory/region for rights"
+          indexed: true
+
+        - name: exclusivity
+          type: enum
+          values: ["Exclusive", "Non-Exclusive", "Semi-Exclusive"]
+          default: "Exclusive"
+
+        - name: start_date
+          type: date
+          required: true
+
+        - name: end_date
+          type: date
+          required: true
+
+        - name: perpetual
+          type: boolean
+          default: false
+
+        - name: license_fee
+          type: money
+          description: "License fee paid/received"
+
+        - name: minimum_guarantee
+          type: money
+
+        - name: royalty_rate
+          type: number
+          description: "Royalty percentage"
+          unit: "percentage"
+
+        - name: advance
+          type: money
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Available"
+            - "Licensed"
+            - "Pending"
+            - "Expired"
+            - "Reserved"
+          default: "Available"
+
+        - name: holdback_until
+          type: date
+          description: "Date until which rights cannot be licensed"
+
+        - name: contract_reference
+          type: string
+          description: "Reference to contract document"
+
+      indexes:
+        - fields: ["territory", "rights_type"]
+          name: "idx_territory_type"
+        - fields: ["end_date"]
+          name: "idx_expiration"
+
+    # ------------------------------------------------------------------------
+    # Talent Entity
+    # ------------------------------------------------------------------------
+    - name: Talent
+      display_name: "Talent"
+      description: "Creative talent (actors, directors, writers, musicians)"
+      icon: "⭐"
+      color: "#F59E0B"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: stage_name
+          type: string
+          description: "Professional/stage name"
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: talent_type
+          type: enum
+          required: true
+          multiple: true
+          values:
+            - "Actor"
+            - "Director"
+            - "Producer"
+            - "Writer"
+            - "Composer"
+            - "Musician"
+            - "Singer"
+            - "Cinematographer"
+            - "Editor"
+            - "Voice Actor"
+            - "Host"
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: date_of_birth
+          type: date
+
+        - name: nationality
+          type: string
+
+        - name: biography
+          type: text
+
+        - name: headshot_url
+          type: url
+
+        - name: imdb_id
+          type: string
+          description: "IMDB identifier"
+
+        - name: social_media
+          type: object
+          description: "Social media handles"
+
+        - name: representation
+          type: string
+          description: "Agent/manager name"
+
+        - name: union_membership
+          type: array
+          item_type: string
+          description: "e.g., SAG-AFTRA, WGA, DGA"
+
+        - name: day_rate
+          type: money
+          description: "Standard day rate"
+
+        - name: availability_status
+          type: enum
+          values: ["Available", "On Project", "On Hiatus", "Retired"]
+          default: "Available"
+
+      indexes:
+        - fields: ["full_name"]
+          name: "idx_talent_name"
+        - fields: ["talent_type"]
+          name: "idx_talent_type"
+
+    # ------------------------------------------------------------------------
+    # Distribution Entity
+    # ------------------------------------------------------------------------
+    - name: Distribution
+      display_name: "Distribution"
+      description: "Content distribution deal or release"
+      icon: "📡"
+      color: "#3B82F6"
+
+      attributes:
+        - name: distribution_type
+          type: enum
+          required: true
+          values:
+            - "Theatrical"
+            - "Streaming"
+            - "Broadcast"
+            - "Cable"
+            - "Home Video"
+            - "Digital Download"
+            - "Physical Media"
+
+        - name: platform
+          type: string
+          required: true
+          description: "Distribution platform name"
+          indexed: true
+
+        - name: territory
+          type: string
+          required: true
+
+        - name: release_date
+          type: date
+
+        - name: window_start
+          type: date
+
+        - name: window_end
+          type: date
+
+        - name: status
+          type: enum
+          values:
+            - "Planned"
+            - "In Negotiation"
+            - "Contracted"
+            - "Active"
+            - "Completed"
+            - "Cancelled"
+          default: "Planned"
+
+        - name: revenue_model
+          type: enum
+          values:
+            - "License Fee"
+            - "Revenue Share"
+            - "Minimum Guarantee + Share"
+            - "TVOD"
+            - "AVOD"
+            - "SVOD"
+
+        - name: license_fee
+          type: money
+
+        - name: revenue_share_percentage
+          type: number
+          unit: "percentage"
+
+        - name: minimum_guarantee
+          type: money
+
+        - name: actual_revenue
+          type: money
+
+        - name: views
+          type: number
+
+        - name: unique_viewers
+          type: number
+
+      indexes:
+        - fields: ["platform", "territory"]
+          name: "idx_platform_territory"
+        - fields: ["release_date"]
+          name: "idx_release_date"
+
+    # ------------------------------------------------------------------------
+    # Audience Entity
+    # ------------------------------------------------------------------------
+    - name: Audience
+      display_name: "Audience"
+      description: "Audience segment or demographic"
+      icon: "👥"
+      color: "#EC4899"
+
+      attributes:
+        - name: segment_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: segment_type
+          type: enum
+          required: true
+          values:
+            - "Demographic"
+            - "Behavioral"
+            - "Geographic"
+            - "Psychographic"
+            - "Custom"
+
+        - name: age_range
+          type: string
+          description: "e.g., 18-34"
+
+        - name: gender
+          type: enum
+          values: ["Male", "Female", "All", "Other"]
+
+        - name: geography
+          type: array
+          item_type: string
+
+        - name: interests
+          type: array
+          item_type: string
+
+        - name: size_estimate
+          type: number
+          description: "Estimated audience size"
+
+        - name: engagement_score
+          type: number
+          min: 0
+          max: 100
+
+        - name: household_income
+          type: string
+
+        - name: platform_preferences
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["segment_type"]
+          name: "idx_segment_type"
+
+    # ------------------------------------------------------------------------
+    # Campaign Entity
+    # ------------------------------------------------------------------------
+    - name: Campaign
+      display_name: "Campaign"
+      description: "Marketing or advertising campaign"
+      icon: "📣"
+      color: "#14B8A6"
+
+      attributes:
+        - name: campaign_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: campaign_type
+          type: enum
+          required: true
+          values:
+            - "Launch"
+            - "Awareness"
+            - "Engagement"
+            - "Acquisition"
+            - "Retention"
+            - "Awards"
+
+        - name: status
+          type: enum
+          values:
+            - "Planning"
+            - "Active"
+            - "Paused"
+            - "Completed"
+            - "Cancelled"
+          default: "Planning"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: budget
+          type: money
+
+        - name: actual_spend
+          type: money
+
+        - name: channels
+          type: array
+          item_type: string
+          description: "Marketing channels used"
+
+        - name: impressions
+          type: number
+
+        - name: clicks
+          type: number
+
+        - name: conversions
+          type: number
+
+        - name: ctr
+          type: number
+          computed: true
+          description: "Click-through rate"
+          unit: "percentage"
+
+        - name: roas
+          type: number
+          description: "Return on ad spend"
+
+        - name: objectives
+          type: text
+
+        - name: creative_assets
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["status", "campaign_type"]
+          name: "idx_campaign_status_type"
+
+    # ------------------------------------------------------------------------
+    # Revenue Entity
+    # ------------------------------------------------------------------------
+    - name: Revenue
+      display_name: "Revenue"
+      description: "Revenue record from content exploitation"
+      icon: "💰"
+      color: "#22C55E"
+
+      attributes:
+        - name: revenue_type
+          type: enum
+          required: true
+          values:
+            - "Box Office"
+            - "License Fee"
+            - "Streaming Revenue"
+            - "Advertising"
+            - "Merchandising"
+            - "Royalties"
+            - "Syndication"
+            - "Physical Sales"
+            - "Digital Sales"
+
+        - name: amount
+          type: money
+          required: true
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        - name: period_start
+          type: date
+          required: true
+
+        - name: period_end
+          type: date
+          required: true
+
+        - name: territory
+          type: string
+          indexed: true
+
+        - name: platform
+          type: string
+          indexed: true
+
+        - name: units_sold
+          type: number
+
+        - name: status
+          type: enum
+          values: ["Reported", "Confirmed", "Collected", "Disputed"]
+          default: "Reported"
+
+        - name: invoice_reference
+          type: string
+
+        - name: payment_date
+          type: date
+
+      indexes:
+        - fields: ["revenue_type", "period_start"]
+          name: "idx_revenue_type_period"
+        - fields: ["territory"]
+          name: "idx_revenue_territory"
+
+    # ------------------------------------------------------------------------
+    # Contract Entity
+    # ------------------------------------------------------------------------
+    - name: Contract
+      display_name: "Contract"
+      description: "Legal agreement for talent, rights, or distribution"
+      icon: "📝"
+      color: "#6366F1"
+
+      attributes:
+        - name: contract_name
+          type: string
+          required: true
+
+        - name: contract_type
+          type: enum
+          required: true
+          values:
+            - "Talent Agreement"
+            - "Distribution Agreement"
+            - "License Agreement"
+            - "Co-Production Agreement"
+            - "Acquisition Agreement"
+            - "Work for Hire"
+            - "Music License"
+
+        - name: status
+          type: enum
+          values:
+            - "Draft"
+            - "In Negotiation"
+            - "Executed"
+            - "Active"
+            - "Expired"
+            - "Terminated"
+          default: "Draft"
+
+        - name: effective_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: contract_value
+          type: money
+
+        - name: payment_terms
+          type: string
+
+        - name: document_url
+          type: url
+
+        - name: signed_date
+          type: date
+
+        - name: key_terms
+          type: text
+
+        - name: renewal_option
+          type: boolean
+          default: false
+
+        - name: auto_renew
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["contract_type", "status"]
+          name: "idx_contract_type_status"
+        - fields: ["expiration_date"]
+          name: "idx_contract_expiration"
+
+    # ------------------------------------------------------------------------
+    # Channel Entity
+    # ------------------------------------------------------------------------
+    - name: Channel
+      display_name: "Channel"
+      description: "Distribution or broadcast channel"
+      icon: "📺"
+      color: "#F97316"
+
+      attributes:
+        - name: channel_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: channel_type
+          type: enum
+          required: true
+          values:
+            - "Streaming Platform"
+            - "Broadcast Network"
+            - "Cable Network"
+            - "Digital Platform"
+            - "Social Media"
+            - "Theater Chain"
+
+        - name: territory
+          type: string
+          required: true
+
+        - name: reach
+          type: number
+          description: "Estimated audience reach"
+
+        - name: subscriber_count
+          type: number
+
+        - name: website
+          type: url
+
+        - name: contact_email
+          type: email
+
+        - name: contact_phone
+          type: phone
+
+        - name: preferred_content_types
+          type: array
+          item_type: string
+
+        - name: submission_guidelines
+          type: text
+
+        - name: active
+          type: boolean
+          default: true
+
+      indexes:
+        - fields: ["channel_type", "territory"]
+          name: "idx_channel_type_territory"
+
+    # ------------------------------------------------------------------------
+    # Production Entity
+    # ------------------------------------------------------------------------
+    - name: Production
+      display_name: "Production"
+      description: "Film or media production project"
+      icon: "🎥"
+      color: "#EF4444"
+
+      attributes:
+        - name: production_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: production_type
+          type: enum
+          required: true
+          values:
+            - "Feature Film"
+            - "TV Series"
+            - "TV Movie"
+            - "Documentary"
+            - "Music Video"
+            - "Commercial"
+            - "Web Series"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Development"
+            - "Pre-Production"
+            - "Production"
+            - "Post-Production"
+            - "Completed"
+            - "Shelved"
+          default: "Development"
+
+        - name: start_date
+          type: date
+
+        - name: wrap_date
+          type: date
+
+        - name: delivery_date
+          type: date
+
+        - name: budget
+          type: money
+
+        - name: actual_cost
+          type: money
+
+        - name: shoot_locations
+          type: array
+          item_type: string
+
+        - name: studio
+          type: string
+
+        - name: production_company
+          type: string
+
+        - name: financing_secured
+          type: boolean
+          default: false
+
+        - name: insurance_policy
+          type: string
+
+        - name: completion_bond
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_production_status"
+        - fields: ["delivery_date"]
+          name: "idx_delivery_date"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Rights Relationships
+    - name: OWNS_RIGHTS
+      from: Contract
+      to: Rights
+      description: "Contract grants content rights"
+      cardinality: one_to_many
+
+    - name: RIGHTS_FOR
+      from: Rights
+      to: Content
+      description: "Rights apply to content"
+      cardinality: many_to_one
+
+    # Distribution Relationships
+    - name: DISTRIBUTED_VIA
+      from: Content
+      to: Distribution
+      description: "Content distributed through deal"
+      cardinality: one_to_many
+
+    - name: DISTRIBUTION_ON
+      from: Distribution
+      to: Channel
+      description: "Distribution deal with channel"
+      cardinality: many_to_one
+
+    # Talent Relationships
+    - name: STARS_IN
+      from: Talent
+      to: Content
+      description: "Talent appears in content"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+          required: true
+        - name: character_name
+          type: string
+        - name: billing_order
+          type: number
+        - name: is_lead
+          type: boolean
+          default: false
+
+    - name: WORKED_ON
+      from: Talent
+      to: Production
+      description: "Talent worked on production"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+        - name: department
+          type: string
+
+    - name: CONTRACTED_WITH
+      from: Talent
+      to: Contract
+      description: "Talent has contract"
+      cardinality: many_to_many
+
+    # Revenue Relationships
+    - name: EARNS_FROM
+      from: Content
+      to: Revenue
+      description: "Content generates revenue"
+      cardinality: one_to_many
+
+    - name: REVENUE_FROM_CHANNEL
+      from: Revenue
+      to: Channel
+      description: "Revenue from specific channel"
+      cardinality: many_to_one
+
+    # Audience Relationships
+    - name: TARGETS
+      from: Campaign
+      to: Audience
+      description: "Campaign targets audience segment"
+      cardinality: many_to_many
+
+    - name: CAMPAIGN_FOR
+      from: Campaign
+      to: Content
+      description: "Campaign promotes content"
+      cardinality: many_to_one
+
+    # Production Relationships
+    - name: PRODUCES
+      from: Production
+      to: Content
+      description: "Production creates content"
+      cardinality: one_to_one
+
+    - name: PRODUCTION_CONTRACT
+      from: Production
+      to: Contract
+      description: "Production has associated contracts"
+      cardinality: one_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "find_available_rights"
+      description: "Find available rights for content in territory"
+      cypher: |
+        MATCH (c:Content {id: $content_id})<-[:RIGHTS_FOR]-(r:Rights)
+        WHERE r.territory = $territory
+          AND r.status = 'Available'
+          AND (r.end_date IS NULL OR r.end_date >= date())
+        RETURN r
+        ORDER BY r.rights_type
+
+    - name: "talent_filmography"
+      description: "Get all content for a talent"
+      cypher: |
+        MATCH (t:Talent {id: $talent_id})-[r:STARS_IN]->(c:Content)
+        RETURN c, r.role, r.character_name
+        ORDER BY c.release_year DESC
+
+    - name: "content_revenue_by_territory"
+      description: "Total revenue by territory for content"
+      cypher: |
+        MATCH (c:Content {id: $content_id})-[:EARNS_FROM]->(r:Revenue)
+        RETURN r.territory, sum(r.amount) AS total_revenue
+        ORDER BY total_revenue DESC
+
+    - name: "rights_expiring_soon"
+      description: "Find rights expiring in next 90 days"
+      cypher: |
+        MATCH (r:Rights)-[:RIGHTS_FOR]->(c:Content)
+        WHERE r.end_date >= date()
+          AND r.end_date <= date() + duration({days: 90})
+        RETURN r, c
+        ORDER BY r.end_date ASC
+
+    - name: "campaign_performance"
+      description: "Get campaign performance metrics"
+      cypher: |
+        MATCH (camp:Campaign)-[:CAMPAIGN_FOR]->(c:Content)
+        WHERE camp.id = $campaign_id
+        MATCH (c)-[:EARNS_FROM]->(rev:Revenue)
+        WHERE rev.period_start >= camp.start_date
+        RETURN camp, sum(rev.amount) AS attributed_revenue
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  last_updated: "2024-01-15"

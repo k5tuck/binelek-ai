@@ -1,0 +1,1093 @@
+# Government & Public Sector Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Government domain ontology covering citizens, services, cases, permits, and assets"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Citizen Entity
+    # ------------------------------------------------------------------------
+    - name: Citizen
+      display_name: "Citizen"
+      description: "Individual or household receiving government services"
+      icon: "user"
+      color: "#1E40AF"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+          required: true
+
+        - name: mailing_address
+          type: address
+
+        - name: date_of_birth
+          type: date
+
+        - name: ssn_last_four
+          type: string
+          description: "Last 4 digits of SSN for verification"
+
+        - name: citizen_id
+          type: string
+          indexed: true
+          unique_per_tenant: true
+          description: "Unique citizen identifier"
+
+        - name: preferred_language
+          type: enum
+          values: ["English", "Spanish", "Chinese", "Vietnamese", "Korean", "Other"]
+          default: "English"
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Mail", "Text"]
+          default: "Email"
+
+        - name: accessibility_needs
+          type: array
+          item_type: string
+          description: "e.g., 'Visual Impairment', 'Hearing Impairment', 'Mobility'"
+
+        - name: veteran_status
+          type: boolean
+          default: false
+
+        - name: household_size
+          type: number
+
+        - name: annual_income
+          type: money
+          description: "For means-tested programs"
+
+        - name: verified
+          type: boolean
+          default: false
+          description: "Identity verified"
+
+        - name: verification_date
+          type: date
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["citizen_id"]
+          unique: true
+          name: "idx_citizen_id"
+        - fields: ["email"]
+          name: "idx_citizen_email"
+        - fields: ["address"]
+          name: "idx_citizen_address"
+
+    # ------------------------------------------------------------------------
+    # Service Entity
+    # ------------------------------------------------------------------------
+    - name: Service
+      display_name: "Service"
+      description: "Government service or program available to citizens"
+      icon: "clipboard-check"
+      color: "#059669"
+
+      attributes:
+        - name: service_name
+          type: string
+          required: true
+
+        - name: service_code
+          type: string
+          indexed: true
+
+        - name: description
+          type: text
+
+        - name: service_type
+          type: enum
+          required: true
+          values:
+            - "Permit/License"
+            - "Social Service"
+            - "Public Safety"
+            - "Public Works"
+            - "Recreation"
+            - "Health"
+            - "Education"
+            - "Transportation"
+            - "Environmental"
+            - "Administrative"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Seasonal"
+          default: "Active"
+
+        - name: eligibility_criteria
+          type: text
+
+        - name: fee_amount
+          type: money
+
+        - name: processing_time_days
+          type: number
+          description: "Expected processing time"
+
+        - name: online_available
+          type: boolean
+          default: false
+
+        - name: in_person_required
+          type: boolean
+          default: false
+
+        - name: documentation_required
+          type: array
+          item_type: string
+
+        - name: contact_email
+          type: email
+
+        - name: contact_phone
+          type: phone
+
+        - name: location
+          type: address
+
+        - name: hours_of_operation
+          type: text
+
+      indexes:
+        - fields: ["service_code"]
+          name: "idx_service_code"
+        - fields: ["service_type"]
+          name: "idx_service_type"
+
+    # ------------------------------------------------------------------------
+    # Case Entity
+    # ------------------------------------------------------------------------
+    - name: Case
+      display_name: "Case"
+      description: "Service request or case for tracking"
+      icon: "folder"
+      color: "#7C3AED"
+
+      attributes:
+        - name: case_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: case_type
+          type: enum
+          required: true
+          values:
+            - "Service Request"
+            - "Complaint"
+            - "Investigation"
+            - "Inspection"
+            - "Application"
+            - "Appeal"
+            - "Inquiry"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "New"
+            - "Assigned"
+            - "In Progress"
+            - "Pending Review"
+            - "Pending Citizen"
+            - "Escalated"
+            - "Resolved"
+            - "Closed"
+          default: "New"
+
+        - name: priority
+          type: enum
+          values:
+            - "Low"
+            - "Medium"
+            - "High"
+            - "Critical"
+          default: "Medium"
+
+        - name: subject
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: created_date
+          type: datetime
+          required: true
+
+        - name: due_date
+          type: datetime
+
+        - name: resolved_date
+          type: datetime
+
+        - name: closed_date
+          type: datetime
+
+        - name: sla_target_date
+          type: datetime
+
+        - name: sla_status
+          type: enum
+          values: ["On Track", "At Risk", "Breached"]
+          computed: true
+
+        - name: source
+          type: enum
+          values:
+            - "Phone"
+            - "Email"
+            - "Web Portal"
+            - "Mobile App"
+            - "Walk-In"
+            - "311"
+            - "Social Media"
+          default: "Web Portal"
+
+        - name: location
+          type: geopoint
+          description: "Location of issue/request"
+
+        - name: address
+          type: address
+
+        - name: resolution
+          type: text
+
+        - name: satisfaction_rating
+          type: number
+          min: 1
+          max: 5
+
+        - name: attachments
+          type: array
+          item_type: url
+
+        - name: internal_notes
+          type: text
+
+      indexes:
+        - fields: ["case_number"]
+          unique: true
+          name: "idx_case_number"
+        - fields: ["status"]
+          name: "idx_case_status"
+        - fields: ["created_date"]
+          name: "idx_case_created"
+        - fields: ["due_date"]
+          name: "idx_case_due"
+
+    # ------------------------------------------------------------------------
+    # Permit Entity
+    # ------------------------------------------------------------------------
+    - name: Permit
+      display_name: "Permit"
+      description: "Permit or license application"
+      icon: "file-check"
+      color: "#0891B2"
+
+      attributes:
+        - name: permit_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: permit_type
+          type: enum
+          required: true
+          values:
+            - "Building"
+            - "Electrical"
+            - "Plumbing"
+            - "Mechanical"
+            - "Demolition"
+            - "Grading"
+            - "Sign"
+            - "Special Event"
+            - "Business License"
+            - "Liquor License"
+            - "Food Service"
+            - "Occupancy"
+            - "Fire"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Submitted"
+            - "Under Review"
+            - "Corrections Required"
+            - "Approved"
+            - "Issued"
+            - "Denied"
+            - "Expired"
+            - "Revoked"
+          default: "Draft"
+
+        - name: application_date
+          type: date
+          required: true
+
+        - name: issued_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: project_name
+          type: string
+
+        - name: project_address
+          type: address
+          required: true
+
+        - name: project_description
+          type: text
+
+        - name: valuation
+          type: money
+          description: "Project valuation"
+
+        - name: fee_amount
+          type: money
+
+        - name: fee_paid
+          type: boolean
+          default: false
+
+        - name: contractor_name
+          type: string
+
+        - name: contractor_license
+          type: string
+
+        - name: inspections_required
+          type: array
+          item_type: string
+
+        - name: inspections_completed
+          type: array
+          item_type: string
+
+        - name: conditions
+          type: text
+          description: "Approval conditions"
+
+        - name: attachments
+          type: array
+          item_type: url
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["permit_number"]
+          unique: true
+          name: "idx_permit_number"
+        - fields: ["status"]
+          name: "idx_permit_status"
+        - fields: ["permit_type"]
+          name: "idx_permit_type"
+        - fields: ["expiration_date"]
+          name: "idx_permit_expiration"
+
+    # ------------------------------------------------------------------------
+    # Asset Entity
+    # ------------------------------------------------------------------------
+    - name: Asset
+      display_name: "Asset"
+      description: "Government-owned asset or infrastructure"
+      icon: "package"
+      color: "#DC2626"
+
+      attributes:
+        - name: asset_name
+          type: string
+          required: true
+
+        - name: asset_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: asset_type
+          type: enum
+          required: true
+          values:
+            - "Building"
+            - "Vehicle"
+            - "Equipment"
+            - "Infrastructure"
+            - "Land"
+            - "IT Asset"
+            - "Furniture"
+
+        - name: asset_subtype
+          type: string
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "In Service"
+            - "Under Maintenance"
+            - "Out of Service"
+            - "Retired"
+            - "Disposed"
+          default: "In Service"
+
+        - name: location
+          type: geopoint
+
+        - name: address
+          type: address
+
+        - name: acquisition_date
+          type: date
+
+        - name: acquisition_cost
+          type: money
+
+        - name: current_value
+          type: money
+
+        - name: useful_life_years
+          type: number
+
+        - name: manufacturer
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+
+        - name: condition
+          type: enum
+          values: ["Excellent", "Good", "Fair", "Poor", "Critical"]
+
+        - name: last_inspection_date
+          type: date
+
+        - name: next_inspection_date
+          type: date
+
+        - name: maintenance_schedule
+          type: string
+
+        - name: warranty_expiration
+          type: date
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["asset_id"]
+          unique: true
+          name: "idx_asset_id"
+        - fields: ["asset_type"]
+          name: "idx_asset_type"
+        - fields: ["status"]
+          name: "idx_asset_status"
+
+    # ------------------------------------------------------------------------
+    # Employee Entity
+    # ------------------------------------------------------------------------
+    - name: Employee
+      display_name: "Employee"
+      description: "Government employee or contractor"
+      icon: "user-check"
+      color: "#4F46E5"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: employee_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: email
+          type: email
+          required: true
+
+        - name: phone
+          type: phone
+
+        - name: job_title
+          type: string
+
+        - name: employment_type
+          type: enum
+          values: ["Full-Time", "Part-Time", "Contractor", "Seasonal", "Intern"]
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "On Leave"
+            - "Terminated"
+          default: "Active"
+
+        - name: hire_date
+          type: date
+
+        - name: termination_date
+          type: date
+
+        - name: supervisor_id
+          type: string
+
+        - name: clearance_level
+          type: enum
+          values: ["None", "Basic", "Secret", "Top Secret"]
+          default: "None"
+
+        - name: certifications
+          type: array
+          item_type: string
+
+        - name: skills
+          type: array
+          item_type: string
+
+        - name: work_location
+          type: address
+
+      indexes:
+        - fields: ["employee_id"]
+          unique: true
+          name: "idx_employee_id"
+        - fields: ["email"]
+          name: "idx_employee_email"
+
+    # ------------------------------------------------------------------------
+    # Department Entity
+    # ------------------------------------------------------------------------
+    - name: Department
+      display_name: "Department"
+      description: "Government department or agency"
+      icon: "building"
+      color: "#0D9488"
+
+      attributes:
+        - name: department_name
+          type: string
+          required: true
+
+        - name: department_code
+          type: string
+          indexed: true
+
+        - name: description
+          type: text
+
+        - name: department_type
+          type: enum
+          values:
+            - "Executive"
+            - "Legislative"
+            - "Judicial"
+            - "Administrative"
+
+        - name: parent_department_id
+          type: string
+
+        - name: director_name
+          type: string
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        - name: budget
+          type: money
+
+        - name: employee_count
+          type: number
+
+        - name: website
+          type: url
+
+      indexes:
+        - fields: ["department_code"]
+          name: "idx_department_code"
+
+    # ------------------------------------------------------------------------
+    # Budget Entity
+    # ------------------------------------------------------------------------
+    - name: Budget
+      display_name: "Budget"
+      description: "Budget allocation or line item"
+      icon: "dollar-sign"
+      color: "#059669"
+
+      attributes:
+        - name: budget_name
+          type: string
+          required: true
+
+        - name: budget_code
+          type: string
+          indexed: true
+
+        - name: fiscal_year
+          type: string
+          required: true
+
+        - name: budget_type
+          type: enum
+          required: true
+          values:
+            - "Operating"
+            - "Capital"
+            - "Grant"
+            - "Special Revenue"
+
+        - name: allocated_amount
+          type: money
+          required: true
+
+        - name: spent_amount
+          type: money
+
+        - name: encumbered_amount
+          type: money
+
+        - name: remaining_amount
+          type: money
+          computed: true
+          formula: "allocated_amount - spent_amount - encumbered_amount"
+
+        - name: status
+          type: enum
+          values:
+            - "Draft"
+            - "Proposed"
+            - "Approved"
+            - "Active"
+            - "Closed"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["fiscal_year"]
+          name: "idx_budget_fy"
+        - fields: ["budget_code"]
+          name: "idx_budget_code"
+
+    # ------------------------------------------------------------------------
+    # Regulation Entity
+    # ------------------------------------------------------------------------
+    - name: Regulation
+      display_name: "Regulation"
+      description: "Law, ordinance, or regulation"
+      icon: "scale"
+      color: "#7C3AED"
+
+      attributes:
+        - name: regulation_name
+          type: string
+          required: true
+
+        - name: regulation_code
+          type: string
+          indexed: true
+
+        - name: regulation_type
+          type: enum
+          required: true
+          values:
+            - "Federal Law"
+            - "State Law"
+            - "Local Ordinance"
+            - "Administrative Rule"
+            - "Executive Order"
+
+        - name: status
+          type: enum
+          values:
+            - "Proposed"
+            - "Active"
+            - "Amended"
+            - "Repealed"
+          default: "Active"
+
+        - name: effective_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: summary
+          type: text
+
+        - name: full_text_url
+          type: url
+
+        - name: enforcement_agency
+          type: string
+
+        - name: penalty_description
+          type: text
+
+        - name: related_regulations
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["regulation_code"]
+          name: "idx_regulation_code"
+
+    # ------------------------------------------------------------------------
+    # Request Entity
+    # ------------------------------------------------------------------------
+    - name: Request
+      display_name: "Request"
+      description: "Citizen service request (311-style)"
+      icon: "message-circle"
+      color: "#F59E0B"
+
+      attributes:
+        - name: request_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: request_type
+          type: enum
+          required: true
+          values:
+            - "Pothole"
+            - "Streetlight"
+            - "Graffiti"
+            - "Abandoned Vehicle"
+            - "Noise Complaint"
+            - "Animal Control"
+            - "Trash/Litter"
+            - "Sidewalk Repair"
+            - "Tree Maintenance"
+            - "Water/Sewer"
+            - "Other"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Open"
+            - "Assigned"
+            - "In Progress"
+            - "Completed"
+            - "Duplicate"
+            - "Not Actionable"
+          default: "Open"
+
+        - name: priority
+          type: enum
+          values: ["Low", "Medium", "High", "Emergency"]
+          default: "Medium"
+
+        - name: description
+          type: text
+          required: true
+
+        - name: location
+          type: geopoint
+          required: true
+
+        - name: address
+          type: address
+
+        - name: submitted_date
+          type: datetime
+          required: true
+
+        - name: completed_date
+          type: datetime
+
+        - name: source
+          type: enum
+          values: ["App", "Web", "Phone", "Email", "Walk-In"]
+
+        - name: anonymous
+          type: boolean
+          default: false
+
+        - name: photos
+          type: array
+          item_type: url
+
+        - name: resolution_notes
+          type: text
+
+      indexes:
+        - fields: ["request_number"]
+          unique: true
+          name: "idx_request_number"
+        - fields: ["status"]
+          name: "idx_request_status"
+        - fields: ["location"]
+          type: "spatial"
+          name: "idx_request_location"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Citizen Relationships
+    - name: REQUESTS
+      from: Citizen
+      to: Case
+      description: "Citizen submits case/request"
+      cardinality: one_to_many
+
+    - name: APPLIES_FOR
+      from: Citizen
+      to: Permit
+      description: "Citizen applies for permit"
+      cardinality: one_to_many
+
+    - name: RECEIVES
+      from: Citizen
+      to: Service
+      description: "Citizen receives service"
+      cardinality: many_to_many
+      attributes:
+        - name: enrollment_date
+          type: date
+        - name: status
+          type: string
+
+    - name: SUBMITS_REQUEST
+      from: Citizen
+      to: Request
+      description: "Citizen submits service request"
+      cardinality: one_to_many
+
+    # Case Relationships
+    - name: ASSIGNED_TO
+      from: Case
+      to: Employee
+      description: "Case assigned to employee"
+      cardinality: many_to_one
+      attributes:
+        - name: assigned_date
+          type: date
+        - name: due_date
+          type: date
+
+    - name: CASE_FOR_SERVICE
+      from: Case
+      to: Service
+      description: "Case relates to service"
+      cardinality: many_to_one
+
+    - name: ESCALATED_TO
+      from: Case
+      to: Employee
+      description: "Case escalated to supervisor"
+      cardinality: many_to_one
+
+    # Permit Relationships
+    - name: PERMIT_FOR_PROPERTY
+      from: Permit
+      to: Asset
+      description: "Permit for property/asset"
+      cardinality: many_to_one
+
+    - name: REVIEWS
+      from: Employee
+      to: Permit
+      description: "Employee reviews permit"
+      cardinality: many_to_many
+      attributes:
+        - name: review_date
+          type: date
+        - name: decision
+          type: string
+        - name: comments
+          type: string
+
+    - name: APPROVES
+      from: Employee
+      to: Permit
+      description: "Employee approves permit"
+      cardinality: many_to_one
+
+    # Asset Relationships
+    - name: MANAGES
+      from: Department
+      to: Asset
+      description: "Department manages asset"
+      cardinality: one_to_many
+
+    - name: ASSIGNED_ASSET
+      from: Employee
+      to: Asset
+      description: "Asset assigned to employee"
+      cardinality: many_to_many
+
+    # Department Relationships
+    - name: WORKS_IN
+      from: Employee
+      to: Department
+      description: "Employee works in department"
+      cardinality: many_to_one
+
+    - name: PROVIDES
+      from: Department
+      to: Service
+      description: "Department provides service"
+      cardinality: one_to_many
+
+    - name: HAS_BUDGET
+      from: Department
+      to: Budget
+      description: "Department has budget allocation"
+      cardinality: one_to_many
+
+    # Regulation Relationships
+    - name: REGULATES
+      from: Regulation
+      to: Service
+      description: "Regulation governs service"
+      cardinality: many_to_many
+
+    - name: ENFORCES
+      from: Department
+      to: Regulation
+      description: "Department enforces regulation"
+      cardinality: many_to_many
+
+    # Request Relationships
+    - name: REQUEST_ASSIGNED_TO
+      from: Request
+      to: Employee
+      description: "Request assigned to employee"
+      cardinality: many_to_one
+
+    - name: SERVES
+      from: Department
+      to: Request
+      description: "Department handles request type"
+      cardinality: one_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "citizen_360"
+      description: "Complete view of citizen interactions"
+      cypher: |
+        MATCH (c:Citizen {id: $citizen_id})
+        OPTIONAL MATCH (c)-[:REQUESTS]->(case:Case)
+        OPTIONAL MATCH (c)-[:APPLIES_FOR]->(permit:Permit)
+        OPTIONAL MATCH (c)-[:RECEIVES]->(service:Service)
+        RETURN c, collect(DISTINCT case) as cases, collect(DISTINCT permit) as permits, collect(DISTINCT service) as services
+
+    - name: "open_cases_by_department"
+      description: "Open cases by department"
+      cypher: |
+        MATCH (d:Department)-[:PROVIDES]->(s:Service)<-[:CASE_FOR_SERVICE]-(c:Case)
+        WHERE c.status IN ['New', 'Assigned', 'In Progress']
+        RETURN d.department_name, count(c) as open_cases, avg(duration.inDays(c.created_date, date())) as avg_age_days
+        ORDER BY open_cases DESC
+
+    - name: "permit_pipeline"
+      description: "Permit applications by status"
+      cypher: |
+        MATCH (p:Permit)
+        RETURN p.status, count(p) as count, sum(p.valuation) as total_valuation
+        ORDER BY count DESC
+
+    - name: "asset_maintenance_due"
+      description: "Assets due for inspection/maintenance"
+      cypher: |
+        MATCH (a:Asset)
+        WHERE a.next_inspection_date <= date() + duration({days: 30})
+        RETURN a
+        ORDER BY a.next_inspection_date ASC
+
+    - name: "employee_workload"
+      description: "Case load by employee"
+      cypher: |
+        MATCH (e:Employee)<-[:ASSIGNED_TO]-(c:Case)
+        WHERE c.status IN ['Assigned', 'In Progress']
+        RETURN e.full_name, e.department_id, count(c) as active_cases, avg(duration.inDays(c.created_date, date())) as avg_case_age
+        ORDER BY active_cases DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

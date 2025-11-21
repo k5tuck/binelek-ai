@@ -1,0 +1,231 @@
+# Agriculture & Food Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: agriculture
+  name: "Agriculture & Food"
+  version: "1.0.0"
+  description: |
+    Comprehensive agriculture and food supply chain knowledge graph platform for farm management,
+    crop tracking, equipment monitoring, and food safety compliance. Supports crop production,
+    livestock, food processing, and distribution operations.
+
+  icon: "🌾"
+  color: "#22C55E"  # Green
+
+  industry:
+    sector: "Agriculture & Food"
+    subsectors:
+      - "Crop Production"
+      - "Livestock & Dairy"
+      - "Food Processing"
+      - "Food Distribution"
+      - "Organic & Specialty Farming"
+      - "AgTech & Precision Agriculture"
+
+    primary_use_cases:
+      - "Farm and field management"
+      - "Crop planning and yield tracking"
+      - "Equipment and input management"
+      - "Food safety and traceability"
+      - "Certification and compliance monitoring"
+      - "Supply chain optimization"
+
+  target_customers:
+    - type: "Commercial Farms"
+      size: "500-10,000 acres"
+      pain_points:
+        - "Fragmented data across fields and seasons"
+        - "Difficulty tracking input costs and yields"
+        - "Manual compliance documentation"
+        - "Limited visibility into equipment utilization"
+
+    - type: "Food Processors"
+      size: "Mid to Large"
+      pain_points:
+        - "Supply chain traceability requirements"
+        - "Batch tracking and recall management"
+        - "Quality control documentation"
+        - "Multi-supplier coordination"
+
+    - type: "Specialty & Organic Farms"
+      size: "50-500 acres"
+      pain_points:
+        - "Certification maintenance"
+        - "Premium market access"
+        - "Detailed record-keeping requirements"
+        - "Crop rotation planning"
+
+    - type: "Agricultural Cooperatives"
+      size: "Enterprise"
+      pain_points:
+        - "Member farm data aggregation"
+        - "Collective resource management"
+        - "Market coordination"
+        - "Shared equipment scheduling"
+
+  market_analysis:
+    market_size:
+      global_agtech: "$22.5B (2023)"
+      projected_2030: "$72.8B"
+      cagr: "18.2%"
+
+    key_trends:
+      - "Precision agriculture and IoT sensors"
+      - "AI-driven crop prediction"
+      - "Farm-to-table traceability"
+      - "Regenerative and sustainable farming"
+      - "Vertical farming and controlled environment"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "John Deere Operations Center (equipment/field)"
+        - "Trimble Ag (precision agriculture)"
+        - "FarmLogs (farm management)"
+        - "Agrivi (crop management)"
+
+      differentiation:
+        - "Graph-based relationship intelligence across supply chain"
+        - "Unified view from seed to shelf"
+        - "AI-driven yield prediction from connected data"
+        - "Cross-farm benchmarking and insights"
+        - "Complete certification and compliance tracking"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small farms, ag startups evaluating platform"
+      included:
+        - "1 user"
+        - "500 acres max"
+        - "10k API calls/month"
+        - "Basic field tracking"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$399/month + $25/user"
+      target: "Small to mid-size farms (500-2,000 acres)"
+      included:
+        - "3 users included, then $25/user"
+        - "2,000 acres"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Weather integration"
+        - "Email support"
+      overage_rates:
+        - "Acres: $0.10 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,299/month + $50/user"
+      target: "Large farms, food processors (2,000-10,000 acres)"
+      included:
+        - "10 users included, then $50/user"
+        - "10,000 acres"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "Certification tracking"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Acres: $0.08 per 100 additional"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $3,999+/month)"
+      target: "Agricultural cooperatives, large processors, vertically integrated operations"
+      included:
+        - "Unlimited users"
+        - "Unlimited acres"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (John Deere, Trimble, etc.)"
+        - "Advanced security (SOC 2, GDPR compliance)"
+        - "Multi-farm/multi-region support"
+
+  compliance_requirements:
+    regulations:
+      - name: "USDA Organic Certification"
+        description: "Requirements for organic production and handling"
+        impact: "Input tracking, field history, buffer zones, audit documentation"
+
+      - name: "FDA FSMA (Food Safety Modernization Act)"
+        description: "Preventive controls for food safety"
+        impact: "Traceability, hazard analysis, supplier verification"
+
+      - name: "GAP/GHP Certification"
+        description: "Good Agricultural and Handling Practices"
+        impact: "Field sanitation, worker training, water testing records"
+
+      - name: "State Pesticide Regulations"
+        description: "State-specific pesticide use requirements"
+        impact: "Application records, restricted entry intervals, worker protection"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Precision Ag Equipment"
+        providers: ["John Deere Operations Center", "Climate FieldView", "Trimble Ag"]
+        use_case: "Import field data, planting maps, yield data"
+
+      - name: "Farm Management"
+        providers: ["FarmLogs", "Agrivi", "Conservis"]
+        use_case: "Sync crop plans, activities, and costs"
+
+      - name: "Weather Services"
+        providers: ["DTN", "Weather Underground", "Climacell"]
+        use_case: "Weather forecasts and historical data"
+
+      - name: "IoT & Sensors"
+        providers: ["Semios", "CropX", "Arable"]
+        use_case: "Soil moisture, pest monitoring, micro-climate data"
+
+      - name: "Accounting & ERP"
+        providers: ["QuickBooks", "Sage", "AgriSync"]
+        use_case: "Cost tracking, invoicing, financial reporting"
+
+      - name: "Market & Pricing"
+        providers: ["CME Group", "USDA Market News", "Barchart"]
+        use_case: "Commodity prices, market trends"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Acres under management"
+        benchmark: "Average customer manages 3,500 acres"
+
+      - metric: "Input cost reduction"
+        benchmark: "Precision application reduces input costs by 15%"
+
+      - metric: "Yield prediction accuracy"
+        benchmark: "Graph-based prediction within 5% of actual"
+
+      - metric: "Compliance audit time"
+        benchmark: "Reduce audit prep from 2 weeks to 2 days"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  status: "Future"
+  target_release: "2027"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Agriculture & Food domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/agriculture/SETUP.md"
+    api_reference: "docs/domains/agriculture/API.md"
+    migration_guide: "docs/domains/agriculture/MIGRATION.md"
+
+  contact:
+    domain_owner: "agriculture-team@binelek.com"
+    support: "support@binelek.com"

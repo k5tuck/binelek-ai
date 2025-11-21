@@ -1,0 +1,762 @@
+# Agriculture & Food UI Configuration
+# Frontend presentation layer for agriculture domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for farm management and food supply chain"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#22C55E"      # Green
+    secondary_color: "#84CC16"    # Lime
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/agriculture-logo.svg"
+    favicon_url: "/assets/favicons/agriculture.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "farms"
+        label: "Farms"
+        icon: "🏡"
+        route: "/farms"
+
+      - id: "fields"
+        label: "Fields"
+        icon: "🗺️"
+        route: "/fields"
+        badge_query: "count_active_fields"
+
+      - id: "crops"
+        label: "Crops"
+        icon: "🌱"
+        route: "/crops"
+        submenu:
+          - id: "current"
+            label: "Current Season"
+            route: "/crops/current"
+          - id: "planning"
+            label: "Planning"
+            route: "/crops/planning"
+          - id: "history"
+            label: "History"
+            route: "/crops/history"
+
+      - id: "equipment"
+        label: "Equipment"
+        icon: "🚜"
+        route: "/equipment"
+
+      - id: "inputs"
+        label: "Inputs"
+        icon: "🧪"
+        route: "/inputs"
+
+      - id: "harvest"
+        label: "Harvest"
+        icon: "🌾"
+        route: "/harvest"
+
+      - id: "processing"
+        label: "Processing"
+        icon: "🏭"
+        route: "/processing"
+
+      - id: "certifications"
+        label: "Certifications"
+        icon: "📜"
+        route: "/certifications"
+
+      - id: "weather"
+        label: "Weather"
+        icon: "🌤️"
+        route: "/weather"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Farm Dashboard"
+      description: "Overview of farms, crops, and operations"
+      layout: "grid"
+
+      widgets:
+        - id: "total_acres"
+          type: "metric_card"
+          title: "Total Acres"
+          query: "sum_total_acres"
+          icon: "🗺️"
+          color: "#22C55E"
+          size: "small"
+
+        - id: "active_crops"
+          type: "metric_card"
+          title: "Active Crops"
+          query: "count_active_crops"
+          icon: "🌱"
+          color: "#84CC16"
+          size: "small"
+
+        - id: "equipment_available"
+          type: "metric_card"
+          title: "Equipment Available"
+          query: "count_available_equipment"
+          icon: "🚜"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "expiring_certs"
+          type: "metric_card"
+          title: "Expiring Certifications"
+          query: "count_expiring_certifications"
+          icon: "📜"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "crop_status"
+          type: "entity_list"
+          title: "Crop Status"
+          entity_type: "Crop"
+          query:
+            filter:
+              status: ["Planted", "Growing", "Mature"]
+            sort:
+              field: "expected_harvest_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - crop_name
+            - variety
+            - planted_acres
+            - status
+            - expected_harvest_date
+          size: "medium"
+
+        - id: "weather_forecast"
+          type: "custom"
+          component: "WeatherWidget"
+          title: "7-Day Forecast"
+          size: "medium"
+
+        - id: "yield_chart"
+          type: "chart"
+          chart_type: "bar"
+          title: "Yields by Crop Type"
+          query: "yield_by_crop_type"
+          x_axis: "crop_type"
+          y_axis: "avg_yield"
+          size: "large"
+
+        - id: "field_map"
+          type: "map"
+          title: "Field Map"
+          query:
+            entity_type: "Field"
+          marker_color_by: "current_crop"
+          show_boundaries: true
+          size: "large"
+
+        - id: "input_costs"
+          type: "chart"
+          chart_type: "pie"
+          title: "Input Costs by Type"
+          query: "input_costs_by_type"
+          size: "medium"
+
+        - id: "harvest_timeline"
+          type: "chart"
+          chart_type: "gantt"
+          title: "Harvest Timeline"
+          query: "harvest_schedule"
+          size: "large"
+
+    # ----------------------------------------------------------------------
+    # Field Operations Dashboard
+    # ----------------------------------------------------------------------
+    - id: "operations"
+      name: "Field Operations Dashboard"
+      description: "Track planting, spraying, and harvesting"
+      layout: "grid"
+
+      widgets:
+        - id: "planting_progress"
+          type: "metric_card"
+          title: "Planting Progress"
+          query: "planting_percentage"
+          format: "percentage"
+
+        - id: "spraying_needed"
+          type: "metric_card"
+          title: "Fields Need Spraying"
+          query: "count_fields_need_spraying"
+
+        - id: "harvest_ready"
+          type: "metric_card"
+          title: "Ready for Harvest"
+          query: "count_harvest_ready"
+
+        - id: "operations_calendar"
+          type: "calendar"
+          title: "Operations Calendar"
+          query: "field_operations_calendar"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Field List
+    # ----------------------------------------------------------------------
+    - entity_type: "Field"
+      id: "field_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "field_name"
+              label: "Field Name"
+              sortable: true
+              width: "200px"
+              render: "link"
+
+            - field: "acres"
+              label: "Acres"
+              sortable: true
+              width: "80px"
+
+            - field: "soil_type"
+              label: "Soil Type"
+
+            - field: "irrigation_type"
+              label: "Irrigation"
+
+            - field: "current_crop"
+              label: "Current Crop"
+
+            - field: "last_soil_test_date"
+              label: "Last Soil Test"
+              format: "date"
+
+        - type: "map"
+          location_field: "location"
+          boundary_field: "boundary"
+          marker_color_by: "current_crop"
+          popup_fields:
+            - field_name
+            - acres
+            - current_crop
+
+      filters:
+        - field: "soil_type"
+          type: "select"
+          multiple: true
+
+        - field: "irrigation_type"
+          type: "select"
+
+        - field: "acres"
+          type: "range"
+          min: 0
+          max: 1000
+
+      actions:
+        - id: "add_field"
+          label: "Add Field"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "Shapefile"]
+
+    # ----------------------------------------------------------------------
+    # Crop List
+    # ----------------------------------------------------------------------
+    - entity_type: "Crop"
+      id: "crop_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "crop_name"
+              label: "Crop"
+              sortable: true
+
+            - field: "variety"
+              label: "Variety"
+
+            - field: "planted_acres"
+              label: "Acres"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Planted": "info"
+                "Growing": "success"
+                "Mature": "warning"
+                "Harvested": "secondary"
+
+            - field: "planting_date"
+              label: "Planted"
+              format: "date"
+
+            - field: "expected_harvest_date"
+              label: "Expected Harvest"
+              format: "date"
+
+            - field: "expected_yield"
+              label: "Expected Yield"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Planned"
+            - "Planted"
+            - "Growing"
+            - "Mature"
+            - "Harvested"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "crop_type"
+          type: "select"
+          multiple: true
+
+        - field: "crop_year"
+          type: "select"
+
+        - field: "organic"
+          type: "boolean"
+
+    # ----------------------------------------------------------------------
+    # Equipment List
+    # ----------------------------------------------------------------------
+    - entity_type: "Equipment"
+      id: "equipment_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "equipment_name"
+              label: "Equipment"
+              sortable: true
+
+            - field: "equipment_type"
+              label: "Type"
+              filterable: true
+
+            - field: "make"
+              label: "Make"
+
+            - field: "model"
+              label: "Model"
+
+            - field: "year"
+              label: "Year"
+
+            - field: "hours"
+              label: "Hours"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Available": "success"
+                "In Use": "info"
+                "Maintenance": "warning"
+                "Out of Service": "danger"
+
+            - field: "next_service_date"
+              label: "Next Service"
+              format: "date"
+
+      filters:
+        - field: "equipment_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Field Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Field"
+      id: "field_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "field_name"
+        subtitle_field: "acres"
+        badge_field: "current_crop"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "key_details"
+              title: "Field Details"
+              layout: "two_column"
+              fields:
+                - field: "acres"
+                  label: "Acres"
+
+                - field: "soil_type"
+                  label: "Soil Type"
+
+                - field: "soil_ph"
+                  label: "Soil pH"
+
+                - field: "organic_matter"
+                  label: "Organic Matter"
+                  format: "percentage"
+
+                - field: "drainage"
+                  label: "Drainage"
+
+                - field: "irrigation_type"
+                  label: "Irrigation"
+
+                - field: "tillage_practice"
+                  label: "Tillage Practice"
+
+            - id: "location"
+              title: "Location"
+              layout: "full_width"
+              fields:
+                - field: "boundary"
+                  label: "Field Boundary"
+                  render: "map_boundary"
+
+        - id: "crop_history"
+          label: "Crop History"
+          icon: "🌱"
+
+          sections:
+            - id: "crops"
+              title: "Crop History"
+              type: "relationship_list"
+              relationship: "GROWS"
+              direction: "outgoing"
+              display_fields:
+                - crop_name
+                - crop_year
+                - planted_acres
+                - actual_yield
+                - status
+
+        - id: "soil"
+          label: "Soil Data"
+          icon: "🧪"
+
+          sections:
+            - id: "soil_tests"
+              title: "Soil Test History"
+              type: "custom"
+              component: "SoilTestChart"
+
+        - id: "weather"
+          label: "Weather"
+          icon: "🌤️"
+
+          sections:
+            - id: "weather_history"
+              title: "Weather History"
+              type: "relationship_list"
+              relationship: "WEATHER_FOR"
+              direction: "incoming"
+
+    # ----------------------------------------------------------------------
+    # Crop Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Crop"
+      id: "crop_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "crop_name"
+        subtitle_field: "variety"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "crop_details"
+              title: "Crop Details"
+              layout: "two_column"
+              fields:
+                - crop_name
+                - variety
+                - crop_type
+                - status
+                - planted_acres
+                - planting_date
+                - expected_harvest_date
+                - organic
+
+        - id: "inputs"
+          label: "Inputs"
+          icon: "🧪"
+
+          sections:
+            - id: "applied_inputs"
+              title: "Applied Inputs"
+              type: "relationship_list"
+              relationship: "INPUT_APPLIED"
+              direction: "incoming"
+              display_fields:
+                - input_name
+                - input_type
+                - application_date
+                - rate
+
+        - id: "yield"
+          label: "Yield"
+          icon: "📊"
+
+          sections:
+            - id: "yield_data"
+              title: "Yield Information"
+              layout: "two_column"
+              fields:
+                - expected_yield
+                - actual_yield
+                - yield_unit
+
+        - id: "harvest"
+          label: "Harvest"
+          icon: "🌾"
+
+          sections:
+            - id: "harvest_records"
+              title: "Harvest Records"
+              type: "relationship_list"
+              relationship: "HARVESTED_FROM"
+              direction: "incoming"
+              display_fields:
+                - harvest_date
+                - quantity
+                - moisture
+                - quality_grade
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Field Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Field"
+      id: "field_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "field_name"
+              required: true
+
+            - field: "field_id"
+
+            - field: "acres"
+              required: true
+
+        - id: "location"
+          title: "Location"
+          fields:
+            - field: "boundary"
+              widget: "map_draw"
+
+        - id: "soil"
+          title: "Soil Information"
+          fields:
+            - field: "soil_type"
+
+            - field: "soil_ph"
+
+            - field: "organic_matter"
+
+            - field: "drainage"
+
+        - id: "practices"
+          title: "Practices"
+          fields:
+            - field: "irrigation_type"
+
+            - field: "tillage_practice"
+
+    # ----------------------------------------------------------------------
+    # Crop Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Crop"
+      id: "crop_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "crop_info"
+          title: "Crop Information"
+          fields:
+            - crop_name
+            - variety
+            - crop_type
+            - planted_acres
+            - organic
+
+        - id: "dates"
+          title: "Dates"
+          fields:
+            - planting_date
+            - expected_harvest_date
+
+        - id: "yield"
+          title: "Yield Expectations"
+          fields:
+            - expected_yield
+            - yield_unit
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search fields, crops, equipment..."
+      entity_types:
+        - Field
+        - Crop
+        - Equipment
+        - Input
+
+    facets:
+      - field: "crop_type"
+        label: "Crop Type"
+      - field: "status"
+        label: "Status"
+      - field: "organic"
+        label: "Organic"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "yield_report"
+      name: "Yield Analysis Report"
+      description: "Analyze crop yields by field, variety, and year"
+      parameters:
+        - field: "crop_year"
+          type: "select"
+          required: true
+
+        - field: "crop_type"
+          type: "select"
+          multiple: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_acres_harvested
+            - total_yield
+            - average_yield_per_acre
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Yield by Field"
+
+        - type: "table"
+          title: "Yield Details"
+          columns:
+            - field_name
+            - crop_name
+            - planted_acres
+            - actual_yield
+            - yield_per_acre
+
+    - id: "input_cost_report"
+      name: "Input Cost Report"
+      description: "Track input costs by crop and field"
+      parameters:
+        - field: "crop_year"
+          type: "select"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_input_cost
+            - cost_per_acre
+            - cost_by_type
+
+        - type: "chart"
+          chart_type: "pie"
+          title: "Costs by Input Type"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

@@ -1,0 +1,237 @@
+# Insurance Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: insurance
+  name: "Insurance"
+  version: "1.0.0"
+  description: |
+    Comprehensive insurance knowledge graph platform for policy management, claims processing,
+    risk assessment, and fraud detection. Supports property & casualty, life, health, and
+    specialty insurance operations.
+
+  icon: "shield"
+  color: "#0EA5E9"  # Sky Blue
+
+  industry:
+    sector: "Insurance"
+    subsectors:
+      - "Property & Casualty"
+      - "Life Insurance"
+      - "Health Insurance"
+      - "Commercial Insurance"
+      - "Reinsurance"
+      - "Specialty Lines"
+
+    primary_use_cases:
+      - "Policy administration and management"
+      - "Claims processing and tracking"
+      - "Risk assessment and underwriting"
+      - "Fraud detection and investigation"
+      - "Agent and broker management"
+      - "Regulatory compliance reporting"
+      - "Customer 360 view"
+
+  target_customers:
+    - type: "Regional Insurance Carriers"
+      size: "$100M-$1B premium"
+      pain_points:
+        - "Legacy policy administration systems"
+        - "Siloed claims and underwriting data"
+        - "Limited fraud detection capabilities"
+        - "Manual regulatory reporting"
+
+    - type: "National Insurance Companies"
+      size: "$1B+ premium"
+      pain_points:
+        - "Complex multi-state/multi-line operations"
+        - "Agent relationship management at scale"
+        - "Predictive modeling across product lines"
+        - "Real-time risk aggregation"
+
+    - type: "Managing General Agents (MGAs)"
+      size: "$50M-$500M premium"
+      pain_points:
+        - "Carrier relationship management"
+        - "Binding authority tracking"
+        - "Commission reconciliation"
+        - "Book of business analytics"
+
+    - type: "Third-Party Administrators (TPAs)"
+      size: "Various"
+      pain_points:
+        - "Multi-carrier claims processing"
+        - "SLA compliance monitoring"
+        - "Client reporting and analytics"
+        - "Vendor management"
+
+  market_analysis:
+    market_size:
+      global_insurtech: "$10.5B (2023)"
+      projected_2030: "$152.4B"
+      cagr: "46.2%"
+
+    key_trends:
+      - "AI/ML for underwriting and claims"
+      - "Embedded insurance distribution"
+      - "Usage-based and parametric insurance"
+      - "Digital claims FNOL"
+      - "Predictive fraud detection"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Guidewire (P&C core systems)"
+        - "Duck Creek (cloud insurance platform)"
+        - "Applied Epic (agency management)"
+        - "Vertafore (distribution management)"
+        - "Majesco (digital insurance)"
+
+      differentiation:
+        - "Graph-based relationship intelligence"
+        - "Cross-line fraud pattern detection"
+        - "Real-time risk aggregation"
+        - "Unified agent and policyholder view"
+        - "Open API for ecosystem integration"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "InsurTech startups evaluating platform"
+      included:
+        - "1 user"
+        - "1,000 policies max"
+        - "10k API calls/month"
+        - "Basic policy management"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No claims processing"
+        - "No integrations"
+
+    - tier: "Starter"
+      price: "$1,499/month + $75/user"
+      target: "Small agencies, MGAs (< $50M premium)"
+      included:
+        - "10 users included, then $75/user"
+        - "25,000 policies"
+        - "500k API calls/month"
+        - "Policy and claims management"
+        - "Basic reporting"
+        - "Email support"
+      overage_rates:
+        - "Policies: $0.02 per additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$4,999/month + $125/user"
+      target: "Regional carriers, large MGAs ($50M-$500M premium)"
+      included:
+        - "25 users included, then $125/user"
+        - "250,000 policies"
+        - "5M API calls/month"
+        - "Full underwriting workflows"
+        - "Advanced fraud detection"
+        - "Regulatory reporting"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "Policies: $0.015 per additional"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $14,999+/month)"
+      target: "National carriers, large TPAs"
+      included:
+        - "Unlimited users"
+        - "Unlimited policies"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.95% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (rating engines, bureaus)"
+        - "Advanced security (SOC 2, HIPAA, state DOI compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "State Insurance Regulations"
+        description: "Each state has specific requirements for policy forms, rates, and claims handling"
+        impact: "Multi-state compliance engine, rate filing tracking, claims handling timelines"
+
+      - name: "NAIC Requirements"
+        description: "National Association of Insurance Commissioners model laws and regulations"
+        impact: "Standard data formats, annual statement reporting, market conduct compliance"
+
+      - name: "Anti-Fraud Laws"
+        description: "State and federal requirements for fraud detection and reporting"
+        impact: "SIU workflow integration, fraud indicator tracking, regulatory reporting"
+
+      - name: "HIPAA (Health Insurance)"
+        description: "Health information privacy and security requirements"
+        impact: "PHI protection, access controls, audit trails for health data"
+
+      - name: "GDPR/CCPA (Consumer Privacy)"
+        description: "Consumer data privacy and protection requirements"
+        impact: "Data deletion capabilities, consent tracking, privacy preference management"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Core Insurance Systems"
+        providers: ["Guidewire", "Duck Creek", "Majesco", "Insurity"]
+        use_case: "Bi-directional sync with policy admin and claims systems"
+
+      - name: "Rating Engines"
+        providers: ["Earnix", "Willis Towers Watson Radar", "Actuarial Systems"]
+        use_case: "Real-time premium calculation and underwriting decisions"
+
+      - name: "Data Bureaus"
+        providers: ["ISO/Verisk", "AAIS", "LexisNexis Risk Solutions", "TransUnion"]
+        use_case: "Pre-fill, loss history, credit scores, claims databases"
+
+      - name: "Agency Management"
+        providers: ["Applied Epic", "Vertafore AMS360", "HawkSoft", "EZLynx"]
+        use_case: "Agent appointments, commissions, book of business"
+
+      - name: "Payment Processing"
+        providers: ["One Inc", "PayPal/Venmo", "Stripe", "Bill.com"]
+        use_case: "Premium collection and claims disbursement"
+
+      - name: "Document Management"
+        providers: ["OnBase", "FileNet", "DocuSign", "Adobe Sign"]
+        use_case: "Policy documents, correspondence, e-signatures"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Policies under management"
+        benchmark: "Average customer manages 100,000 policies"
+
+      - metric: "Claims cycle time"
+        benchmark: "Reduce average claims processing from 15 days to 5 days"
+
+      - metric: "Fraud detection rate"
+        benchmark: "Identify 40% more fraudulent claims with graph analysis"
+
+      - metric: "Underwriting efficiency"
+        benchmark: "Reduce underwriting time by 60% with automated risk assessment"
+
+  status: "coming_soon"
+  expected_release: "Q1 2026"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Insurance domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/insurance/SETUP.md"
+    api_reference: "docs/domains/insurance/API.md"
+    migration_guide: "docs/domains/insurance/MIGRATION.md"
+
+  contact:
+    domain_owner: "insurance-team@binelek.com"
+    support: "support@binelek.com"

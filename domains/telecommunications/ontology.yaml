@@ -1,0 +1,1043 @@
+# Telecommunications Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Telecommunications domain ontology covering networks, customers, services, equipment, and operations"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Network Entity
+    # ------------------------------------------------------------------------
+    - name: Network
+      display_name: "Network"
+      description: "Telecommunications network or network segment"
+      icon: "🌐"
+      color: "#3B82F6"
+
+      attributes:
+        - name: network_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: network_type
+          type: enum
+          required: true
+          values:
+            - "Core"
+            - "Transport"
+            - "Access"
+            - "Edge"
+            - "Wireless RAN"
+            - "Fiber"
+            - "HFC"
+            - "Microwave"
+
+        - name: technology
+          type: enum
+          values:
+            - "5G NR"
+            - "LTE"
+            - "3G"
+            - "GPON"
+            - "DOCSIS"
+            - "Ethernet"
+            - "MPLS"
+            - "SD-WAN"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Planned"
+            - "Under Construction"
+            - "Decommissioned"
+          default: "Active"
+
+        - name: total_capacity_gbps
+          type: number
+          description: "Total network capacity in Gbps"
+
+        - name: current_utilization_percent
+          type: number
+          min: 0
+          max: 100
+
+        - name: coverage_area_sqkm
+          type: number
+
+        - name: total_elements
+          type: number
+
+        - name: redundancy_level
+          type: enum
+          values: ["None", "N+1", "2N", "Geographic"]
+
+        - name: latency_ms
+          type: number
+          description: "Average latency in milliseconds"
+
+        - name: uptime_percent
+          type: number
+          min: 0
+          max: 100
+
+        - name: region
+          type: string
+          indexed: true
+
+        - name: geometry
+          type: text
+          description: "GeoJSON coverage area"
+
+      indexes:
+        - fields: ["network_type"]
+          name: "idx_network_type"
+        - fields: ["status"]
+          name: "idx_network_status"
+
+    # ------------------------------------------------------------------------
+    # Customer Entity
+    # ------------------------------------------------------------------------
+    - name: Customer
+      display_name: "Customer"
+      description: "Telecommunications service customer"
+      icon: "👤"
+      color: "#10B981"
+
+      attributes:
+        - name: customer_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: account_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: customer_name
+          type: string
+          required: true
+
+        - name: customer_type
+          type: enum
+          required: true
+          values:
+            - "Residential"
+            - "Small Business"
+            - "Enterprise"
+            - "Government"
+            - "Wholesale"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Suspended"
+            - "Disconnected"
+            - "Pending Activation"
+          default: "Active"
+
+        - name: service_address
+          type: address
+          required: true
+
+        - name: billing_address
+          type: address
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: account_start_date
+          type: date
+
+        - name: contract_end_date
+          type: date
+
+        - name: credit_class
+          type: string
+
+        - name: current_balance
+          type: money
+
+        - name: monthly_recurring_revenue
+          type: money
+
+        - name: lifetime_value
+          type: money
+
+        - name: churn_risk_score
+          type: number
+          min: 0
+          max: 100
+          description: "Probability of customer churn"
+
+        - name: satisfaction_score
+          type: number
+          min: 0
+          max: 10
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Text", "App"]
+          default: "Email"
+
+        - name: paperless_billing
+          type: boolean
+          default: false
+
+        - name: autopay
+          type: boolean
+          default: false
+
+        - name: cpni_consent
+          type: boolean
+          default: false
+          description: "CPNI sharing consent"
+
+      indexes:
+        - fields: ["account_number"]
+          unique: true
+          name: "idx_customer_account"
+        - fields: ["customer_type"]
+          name: "idx_customer_type"
+        - fields: ["churn_risk_score"]
+          name: "idx_churn_risk"
+
+    # ------------------------------------------------------------------------
+    # Service Entity
+    # ------------------------------------------------------------------------
+    - name: Service
+      display_name: "Service"
+      description: "Telecommunications service subscription"
+      icon: "📱"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: service_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: service_type
+          type: enum
+          required: true
+          values:
+            - "Voice"
+            - "Data"
+            - "Video"
+            - "Internet"
+            - "Wireless"
+            - "IoT"
+            - "Cloud"
+            - "Security"
+
+        - name: product_name
+          type: string
+          required: true
+
+        - name: plan_name
+          type: string
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Suspended"
+            - "Pending"
+            - "Disconnected"
+          default: "Pending"
+
+        - name: activation_date
+          type: date
+
+        - name: termination_date
+          type: date
+
+        - name: monthly_charge
+          type: money
+
+        - name: contract_term_months
+          type: number
+
+        - name: early_termination_fee
+          type: money
+
+        # Service-specific attributes
+        - name: bandwidth_mbps
+          type: number
+          description: "Bandwidth in Mbps for data services"
+
+        - name: data_cap_gb
+          type: number
+          description: "Monthly data cap in GB"
+
+        - name: phone_number
+          type: string
+          description: "Phone number for voice/wireless"
+
+        - name: device_count
+          type: number
+          description: "Number of devices on service"
+
+        - name: channel_count
+          type: number
+          description: "Number of TV channels for video"
+
+        - name: sla_tier
+          type: enum
+          values: ["Standard", "Premium", "Enterprise", "Mission Critical"]
+
+      indexes:
+        - fields: ["service_type"]
+          name: "idx_service_type"
+        - fields: ["status"]
+          name: "idx_service_status"
+
+    # ------------------------------------------------------------------------
+    # Equipment Entity
+    # ------------------------------------------------------------------------
+    - name: Equipment
+      display_name: "Equipment"
+      description: "Network equipment or customer premises equipment"
+      icon: "🔧"
+      color: "#F59E0B"
+
+      attributes:
+        - name: equipment_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: equipment_type
+          type: enum
+          required: true
+          values:
+            - "Router"
+            - "Switch"
+            - "Base Station"
+            - "Antenna"
+            - "Modem"
+            - "ONT"
+            - "Set Top Box"
+            - "Small Cell"
+            - "Repeater"
+            - "Amplifier"
+            - "Server"
+            - "Firewall"
+
+        - name: equipment_class
+          type: enum
+          values:
+            - "Network"
+            - "CPE"
+            - "Core"
+            - "Edge"
+            - "Access"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "In Maintenance"
+            - "Failed"
+            - "In Inventory"
+          default: "Active"
+
+        - name: manufacturer
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+
+        - name: mac_address
+          type: string
+
+        - name: ip_address
+          type: string
+
+        - name: firmware_version
+          type: string
+
+        - name: installation_date
+          type: date
+
+        - name: warranty_expiration
+          type: date
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: address
+          type: address
+
+        - name: last_maintenance_date
+          type: date
+
+        - name: next_maintenance_date
+          type: date
+
+        - name: operating_temperature
+          type: number
+
+        - name: power_consumption_watts
+          type: number
+
+        - name: uptime_hours
+          type: number
+
+      indexes:
+        - fields: ["equipment_type"]
+          name: "idx_equipment_type"
+        - fields: ["status"]
+          name: "idx_equipment_status"
+        - fields: ["serial_number"]
+          name: "idx_equipment_serial"
+
+    # ------------------------------------------------------------------------
+    # Ticket Entity
+    # ------------------------------------------------------------------------
+    - name: Ticket
+      display_name: "Trouble Ticket"
+      description: "Customer or network issue ticket"
+      icon: "🎫"
+      color: "#EF4444"
+
+      attributes:
+        - name: ticket_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: ticket_type
+          type: enum
+          required: true
+          values:
+            - "Service Issue"
+            - "Billing Inquiry"
+            - "Installation"
+            - "Equipment Issue"
+            - "Network Outage"
+            - "Feature Request"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Open"
+            - "In Progress"
+            - "Pending Customer"
+            - "Escalated"
+            - "Resolved"
+            - "Closed"
+          default: "Open"
+
+        - name: priority
+          type: enum
+          values: ["Critical", "High", "Medium", "Low"]
+          default: "Medium"
+
+        - name: category
+          type: string
+
+        - name: subcategory
+          type: string
+
+        - name: subject
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: created_date
+          type: datetime
+          required: true
+
+        - name: due_date
+          type: datetime
+
+        - name: resolved_date
+          type: datetime
+
+        - name: closed_date
+          type: datetime
+
+        - name: resolution_code
+          type: string
+
+        - name: resolution_notes
+          type: text
+
+        - name: sla_breached
+          type: boolean
+          default: false
+
+        - name: assigned_to
+          type: string
+
+        - name: escalation_level
+          type: number
+          default: 0
+
+        - name: customer_satisfaction
+          type: number
+          min: 1
+          max: 5
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_ticket_status"
+        - fields: ["priority"]
+          name: "idx_ticket_priority"
+        - fields: ["created_date"]
+          name: "idx_ticket_date"
+
+    # ------------------------------------------------------------------------
+    # Coverage Entity
+    # ------------------------------------------------------------------------
+    - name: Coverage
+      display_name: "Coverage Area"
+      description: "Service coverage zone"
+      icon: "📍"
+      color: "#14B8A6"
+
+      attributes:
+        - name: coverage_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: coverage_type
+          type: enum
+          required: true
+          values:
+            - "5G"
+            - "LTE"
+            - "3G"
+            - "Fiber"
+            - "Cable"
+            - "DSL"
+            - "Fixed Wireless"
+            - "Satellite"
+
+        - name: status
+          type: enum
+          values: ["Active", "Planned", "Under Construction"]
+          default: "Active"
+
+        - name: signal_strength_dbm
+          type: number
+          description: "Average signal strength"
+
+        - name: population_covered
+          type: number
+
+        - name: households_passed
+          type: number
+
+        - name: area_sqkm
+          type: number
+
+        - name: geometry
+          type: text
+          description: "GeoJSON polygon"
+
+        - name: launch_date
+          type: date
+
+      indexes:
+        - fields: ["coverage_type"]
+          name: "idx_coverage_type"
+
+    # ------------------------------------------------------------------------
+    # Contract Entity
+    # ------------------------------------------------------------------------
+    - name: Contract
+      display_name: "Contract"
+      description: "Service contract or agreement"
+      icon: "📄"
+      color: "#6366F1"
+
+      attributes:
+        - name: contract_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: contract_type
+          type: enum
+          required: true
+          values:
+            - "Service Agreement"
+            - "Equipment Lease"
+            - "SLA"
+            - "Wholesale Agreement"
+            - "Interconnection"
+
+        - name: status
+          type: enum
+          values: ["Active", "Expired", "Terminated", "Pending"]
+          default: "Pending"
+
+        - name: start_date
+          type: date
+          required: true
+
+        - name: end_date
+          type: date
+          required: true
+
+        - name: auto_renew
+          type: boolean
+          default: false
+
+        - name: renewal_notice_days
+          type: number
+          default: 30
+
+        - name: monthly_value
+          type: money
+
+        - name: total_value
+          type: money
+
+        - name: early_termination_fee
+          type: money
+
+        - name: terms_url
+          type: url
+
+        - name: signed_date
+          type: date
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_contract_status"
+        - fields: ["end_date"]
+          name: "idx_contract_end"
+
+    # ------------------------------------------------------------------------
+    # Usage Entity
+    # ------------------------------------------------------------------------
+    - name: Usage
+      display_name: "Usage Record"
+      description: "Service usage measurement"
+      icon: "📊"
+      color: "#84CC16"
+
+      attributes:
+        - name: usage_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: usage_type
+          type: enum
+          required: true
+          values:
+            - "Data"
+            - "Voice"
+            - "SMS"
+            - "Video"
+            - "Roaming"
+
+        - name: timestamp
+          type: datetime
+          required: true
+
+        - name: duration_seconds
+          type: number
+          description: "Call duration"
+
+        - name: data_bytes
+          type: number
+          description: "Data transferred"
+
+        - name: message_count
+          type: number
+          description: "SMS count"
+
+        - name: originating_number
+          type: string
+
+        - name: terminating_number
+          type: string
+
+        - name: location
+          type: geopoint
+
+        - name: roaming
+          type: boolean
+          default: false
+
+        - name: rated_amount
+          type: money
+
+      indexes:
+        - fields: ["timestamp"]
+          name: "idx_usage_time"
+        - fields: ["usage_type"]
+          name: "idx_usage_type"
+
+    # ------------------------------------------------------------------------
+    # Site Entity
+    # ------------------------------------------------------------------------
+    - name: Site
+      display_name: "Site"
+      description: "Physical site (tower, central office, data center)"
+      icon: "🗼"
+      color: "#EC4899"
+
+      attributes:
+        - name: site_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: site_type
+          type: enum
+          required: true
+          values:
+            - "Cell Tower"
+            - "Rooftop"
+            - "Central Office"
+            - "Data Center"
+            - "Hub"
+            - "Cabinet"
+            - "Small Cell"
+
+        - name: status
+          type: enum
+          values: ["Active", "Planned", "Under Construction", "Decommissioned"]
+          default: "Active"
+
+        - name: address
+          type: address
+          required: true
+
+        - name: location
+          type: geopoint
+          required: true
+          indexed: true
+
+        - name: height_meters
+          type: number
+          description: "Tower height"
+
+        - name: owner
+          type: string
+
+        - name: lease_expiration
+          type: date
+
+        - name: monthly_lease_cost
+          type: money
+
+        - name: power_capacity_kw
+          type: number
+
+        - name: backup_power_hours
+          type: number
+
+        - name: tenant_count
+          type: number
+          description: "Number of tenants on site"
+
+        - name: max_tenants
+          type: number
+
+      indexes:
+        - fields: ["site_type"]
+          name: "idx_site_type"
+        - fields: ["location"]
+          name: "idx_site_location"
+          type: "spatial"
+
+    # ------------------------------------------------------------------------
+    # Spectrum Entity
+    # ------------------------------------------------------------------------
+    - name: Spectrum
+      display_name: "Spectrum License"
+      description: "Radio spectrum license or allocation"
+      icon: "📻"
+      color: "#A855F7"
+
+      attributes:
+        - name: license_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: license_name
+          type: string
+          required: true
+
+        - name: band
+          type: string
+          required: true
+          description: "Frequency band (e.g., AWS-3, C-Band)"
+
+        - name: frequency_mhz
+          type: number
+          description: "Center frequency in MHz"
+
+        - name: bandwidth_mhz
+          type: number
+
+        - name: license_type
+          type: enum
+          values:
+            - "Licensed"
+            - "Unlicensed"
+            - "Shared"
+            - "Experimental"
+
+        - name: geographic_area
+          type: string
+
+        - name: start_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: acquisition_cost
+          type: money
+
+        - name: annual_fee
+          type: money
+
+        - name: fcc_call_sign
+          type: string
+
+      indexes:
+        - fields: ["band"]
+          name: "idx_spectrum_band"
+        - fields: ["expiration_date"]
+          name: "idx_spectrum_expiration"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Customer-Service Relationships
+    - name: SUBSCRIBES_TO
+      from: Customer
+      to: Service
+      description: "Customer subscribes to service"
+      cardinality: one_to_many
+
+    # Service-Equipment Relationships
+    - name: PROVISIONED_ON
+      from: Service
+      to: Equipment
+      description: "Service provisioned on equipment"
+      cardinality: many_to_many
+      attributes:
+        - name: activation_date
+          type: date
+        - name: configuration
+          type: text
+
+    # Network-Equipment Relationships
+    - name: CONTAINS
+      from: Network
+      to: Equipment
+      description: "Network contains equipment"
+      cardinality: one_to_many
+
+    # Equipment Connectivity
+    - name: CONNECTS_TO
+      from: Equipment
+      to: Equipment
+      description: "Equipment connected to equipment"
+      cardinality: many_to_many
+      attributes:
+        - name: connection_type
+          type: enum
+          values: ["Fiber", "Ethernet", "Wireless", "Coax"]
+        - name: bandwidth_gbps
+          type: number
+        - name: port_number
+          type: string
+
+    # Site Relationships
+    - name: LOCATED_AT
+      from: Equipment
+      to: Site
+      description: "Equipment located at site"
+      cardinality: many_to_one
+
+    # Ticket Relationships
+    - name: OPENED_BY
+      from: Ticket
+      to: Customer
+      description: "Ticket opened by customer"
+      cardinality: many_to_one
+
+    - name: RELATED_TO
+      from: Ticket
+      to: Service
+      description: "Ticket related to service"
+      cardinality: many_to_one
+
+    - name: ESCALATES_TO
+      from: Ticket
+      to: Ticket
+      description: "Ticket escalated to parent ticket"
+      cardinality: many_to_one
+
+    # Coverage Relationships
+    - name: COVERS
+      from: Coverage
+      to: Site
+      description: "Coverage area from site"
+      cardinality: many_to_many
+
+    - name: SERVICES
+      from: Network
+      to: Coverage
+      description: "Network services coverage area"
+      cardinality: one_to_many
+
+    # Contract Relationships
+    - name: GOVERNED_BY
+      from: Service
+      to: Contract
+      description: "Service governed by contract"
+      cardinality: many_to_one
+
+    # Usage Relationships
+    - name: GENERATES
+      from: Service
+      to: Usage
+      description: "Service generates usage"
+      cardinality: one_to_many
+
+    # Spectrum Relationships
+    - name: USES_SPECTRUM
+      from: Site
+      to: Spectrum
+      description: "Site uses spectrum license"
+      cardinality: many_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "service_impact_analysis"
+      description: "Find customers impacted by equipment failure"
+      cypher: |
+        MATCH (e:Equipment {id: $equipment_id})
+        MATCH (s:Service)-[:PROVISIONED_ON]->(e)
+        MATCH (c:Customer)-[:SUBSCRIBES_TO]->(s)
+        RETURN collect(DISTINCT c) AS affected_customers,
+               count(DISTINCT c) AS customer_count,
+               sum(s.monthly_charge) AS revenue_at_risk
+
+    - name: "customer_360"
+      description: "Complete customer view with services, equipment, tickets"
+      cypher: |
+        MATCH (c:Customer {id: $customer_id})
+        OPTIONAL MATCH (c)-[:SUBSCRIBES_TO]->(s:Service)
+        OPTIONAL MATCH (s)-[:PROVISIONED_ON]->(e:Equipment)
+        OPTIONAL MATCH (t:Ticket)-[:OPENED_BY]->(c)
+        RETURN c,
+               collect(DISTINCT s) AS services,
+               collect(DISTINCT e) AS equipment,
+               collect(DISTINCT t) AS tickets
+
+    - name: "churn_risk_customers"
+      description: "Find high churn risk customers"
+      cypher: |
+        MATCH (c:Customer)
+        WHERE c.status = 'Active'
+          AND c.churn_risk_score >= $threshold
+        OPTIONAL MATCH (c)-[:SUBSCRIBES_TO]->(s:Service)
+        RETURN c,
+               collect(s) AS services,
+               sum(s.monthly_charge) AS mrr
+        ORDER BY c.churn_risk_score DESC, mrr DESC
+        LIMIT 50
+
+    - name: "network_path_trace"
+      description: "Trace connectivity path between two endpoints"
+      cypher: |
+        MATCH path = shortestPath(
+          (e1:Equipment {id: $source_id})-[:CONNECTS_TO*]-(e2:Equipment {id: $target_id})
+        )
+        RETURN path,
+               length(path) AS hops
+
+    - name: "site_utilization"
+      description: "Get site utilization and tenant info"
+      cypher: |
+        MATCH (s:Site {id: $site_id})
+        OPTIONAL MATCH (e:Equipment)-[:LOCATED_AT]->(s)
+        RETURN s,
+               count(e) AS equipment_count,
+               sum(e.power_consumption_watts) AS total_power_watts,
+               s.tenant_count * 1.0 / s.max_tenants AS utilization
+
+    - name: "ticket_resolution_metrics"
+      description: "Calculate ticket resolution metrics by category"
+      cypher: |
+        MATCH (t:Ticket)
+        WHERE t.status = 'Closed'
+          AND t.closed_date >= date() - duration({days: $days})
+        RETURN t.category,
+               count(t) AS ticket_count,
+               avg(duration.between(t.created_date, t.closed_date).hours) AS avg_resolution_hours,
+               avg(t.customer_satisfaction) AS avg_csat
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

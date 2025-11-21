@@ -1,0 +1,938 @@
+# Education & Research UI Configuration
+# Frontend presentation layer for education domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for education and research institution management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#6366F1"      # Indigo
+    secondary_color: "#8B5CF6"    # Violet
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/education-logo.svg"
+    favicon_url: "/assets/favicons/education.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "students"
+        label: "Students"
+        icon: "🎓"
+        route: "/students"
+        badge_query: "count_active_students"
+
+      - id: "faculty"
+        label: "Faculty"
+        icon: "👨‍🏫"
+        route: "/faculty"
+
+      - id: "courses"
+        label: "Courses"
+        icon: "📚"
+        route: "/courses"
+        submenu:
+          - id: "all_courses"
+            label: "All Courses"
+            route: "/courses"
+          - id: "enrollments"
+            label: "Enrollments"
+            route: "/courses/enrollments"
+          - id: "schedule"
+            label: "Schedule"
+            route: "/courses/schedule"
+
+      - id: "research"
+        label: "Research"
+        icon: "🔬"
+        route: "/research"
+        submenu:
+          - id: "projects"
+            label: "Projects"
+            route: "/research/projects"
+          - id: "publications"
+            label: "Publications"
+            route: "/research/publications"
+
+      - id: "grants"
+        label: "Grants"
+        icon: "💵"
+        route: "/grants"
+        badge_query: "count_pending_reports"
+
+      - id: "alumni"
+        label: "Alumni"
+        icon: "🎓"
+        route: "/alumni"
+
+      - id: "facilities"
+        label: "Facilities"
+        icon: "🏛️"
+        route: "/facilities"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Education Dashboard"
+      description: "Overview of students, faculty, research, and operations"
+      layout: "grid"
+
+      widgets:
+        - id: "total_students"
+          type: "metric_card"
+          title: "Total Students"
+          query: "count_total_students"
+          icon: "🎓"
+          color: "#6366F1"
+          size: "small"
+
+        - id: "active_faculty"
+          type: "metric_card"
+          title: "Active Faculty"
+          query: "count_active_faculty"
+          icon: "👨‍🏫"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "active_grants"
+          type: "metric_card"
+          title: "Active Grants"
+          query: "count_active_grants"
+          icon: "💵"
+          color: "#10B981"
+          size: "small"
+
+        - id: "total_grant_funding"
+          type: "metric_card"
+          title: "Total Grant Funding"
+          query: "sum_active_grant_funding"
+          format: "currency"
+          icon: "💰"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "enrollment_trends"
+          type: "chart"
+          chart_type: "line"
+          title: "Enrollment Trends (5 Years)"
+          query: "enrollment_by_year"
+          x_axis: "year"
+          y_axis: "total_enrollment"
+          size: "large"
+
+        - id: "student_by_program"
+          type: "chart"
+          chart_type: "pie"
+          title: "Students by Program"
+          query: "students_by_program_type"
+          size: "medium"
+
+        - id: "recent_publications"
+          type: "entity_list"
+          title: "Recent Publications"
+          entity_type: "Publication"
+          query:
+            sort:
+              field: "publication_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - title
+            - publication_type
+            - journal_name
+            - publication_date
+            - citation_count
+          size: "medium"
+
+        - id: "upcoming_grant_deadlines"
+          type: "entity_list"
+          title: "Upcoming Grant Deadlines"
+          entity_type: "Grant"
+          query:
+            filter:
+              status: ["Active", "Submitted"]
+            sort:
+              field: "next_report_due"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - title
+            - funding_agency
+            - award_amount
+            - next_report_due
+          size: "medium"
+
+        - id: "course_fill_rates"
+          type: "chart"
+          chart_type: "bar"
+          title: "Course Fill Rates by Department"
+          query: "course_fill_by_department"
+          size: "medium"
+
+        - id: "research_by_discipline"
+          type: "chart"
+          chart_type: "donut"
+          title: "Research Projects by Discipline"
+          query: "research_by_discipline"
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Research Dashboard
+    # ----------------------------------------------------------------------
+    - id: "research"
+      name: "Research & Grants Dashboard"
+      description: "Research projects, publications, and grant management"
+      layout: "grid"
+
+      widgets:
+        - id: "active_projects"
+          type: "metric_card"
+          title: "Active Projects"
+          query: "count_active_research"
+
+        - id: "total_publications"
+          type: "metric_card"
+          title: "Publications YTD"
+          query: "count_publications_ytd"
+
+        - id: "grant_success_rate"
+          type: "metric_card"
+          title: "Grant Success Rate"
+          query: "grant_success_rate"
+          format: "percentage"
+
+        - id: "collaboration_network"
+          type: "graph"
+          title: "Research Collaboration Network"
+          query: "faculty_collaboration_graph"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Student List
+    # ----------------------------------------------------------------------
+    - entity_type: "Student"
+      id: "student_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "student_id"
+              label: "ID"
+              sortable: true
+              width: "100px"
+
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              width: "200px"
+              render: "link"
+
+            - field: "email"
+              label: "Email"
+              sortable: true
+
+            - field: "student_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "enrollment_status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Enrolled": "success"
+                "Admitted": "info"
+                "Applied": "warning"
+                "Graduated": "secondary"
+                "On Leave": "warning"
+
+            - field: "major"
+              label: "Major"
+              sortable: true
+              filterable: true
+
+            - field: "gpa"
+              label: "GPA"
+              sortable: true
+              format: "decimal"
+
+            - field: "expected_graduation"
+              label: "Expected Grad"
+              sortable: true
+              format: "date"
+
+      filters:
+        - field: "enrollment_status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "student_type"
+          type: "select"
+          label: "Student Type"
+          multiple: true
+
+        - field: "major"
+          type: "select"
+          label: "Major"
+          multiple: true
+
+        - field: "gpa"
+          type: "range"
+          label: "GPA Range"
+          min: 0
+          max: 4.0
+          step: 0.1
+
+        - field: "expected_graduation"
+          type: "date_range"
+          label: "Expected Graduation"
+
+      actions:
+        - id: "add_student"
+          label: "Add Student"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+        - id: "bulk_email"
+          label: "Send Email"
+          icon: "📧"
+          type: "bulk_action"
+
+    # ----------------------------------------------------------------------
+    # Faculty List
+    # ----------------------------------------------------------------------
+    - entity_type: "Faculty"
+      id: "faculty_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "faculty_type"
+              label: "Position"
+              sortable: true
+
+            - field: "department"
+              label: "Department"
+              sortable: true
+              filterable: true
+
+            - field: "tenure_status"
+              label: "Tenure"
+              sortable: true
+
+            - field: "email"
+              label: "Email"
+
+            - field: "h_index"
+              label: "h-index"
+              sortable: true
+
+            - field: "total_publications"
+              label: "Publications"
+              sortable: true
+
+        - type: "grid"
+          card_template:
+            image_field: "photo_url"
+            title_field: "full_name"
+            subtitle_field: "faculty_type"
+            metadata_fields:
+              - department
+              - h_index
+
+      filters:
+        - field: "department"
+          type: "select"
+          multiple: true
+
+        - field: "faculty_type"
+          type: "select"
+          multiple: true
+
+        - field: "tenure_status"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Grant List
+    # ----------------------------------------------------------------------
+    - entity_type: "Grant"
+      id: "grant_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "title"
+              label: "Title"
+              sortable: true
+              render: "link"
+
+            - field: "funding_agency"
+              label: "Agency"
+              sortable: true
+
+            - field: "grant_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Awarded": "success"
+                "Active": "success"
+                "Submitted": "info"
+                "Under Review": "warning"
+                "Declined": "danger"
+
+            - field: "award_amount"
+              label: "Award"
+              format: "currency"
+              sortable: true
+
+            - field: "start_date"
+              label: "Start"
+              format: "date"
+
+            - field: "end_date"
+              label: "End"
+              format: "date"
+
+            - field: "next_report_due"
+              label: "Next Report"
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Pre-Proposal"
+            - "Submitted"
+            - "Under Review"
+            - "Awarded"
+            - "Active"
+            - "Closed"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "funding_agency"
+          type: "select"
+          multiple: true
+
+        - field: "grant_type"
+          type: "select"
+          multiple: true
+
+        - field: "award_amount"
+          type: "range"
+          label: "Award Amount"
+
+    # ----------------------------------------------------------------------
+    # Course List
+    # ----------------------------------------------------------------------
+    - entity_type: "Course"
+      id: "course_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "course_code"
+              label: "Code"
+              sortable: true
+
+            - field: "course_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "department"
+              label: "Department"
+              sortable: true
+
+            - field: "credits"
+              label: "Credits"
+              sortable: true
+
+            - field: "level"
+              label: "Level"
+
+            - field: "delivery_mode"
+              label: "Mode"
+
+            - field: "current_enrollment"
+              label: "Enrolled"
+
+            - field: "max_enrollment"
+              label: "Capacity"
+
+            - field: "term"
+              label: "Term"
+
+      filters:
+        - field: "department"
+          type: "select"
+          multiple: true
+
+        - field: "level"
+          type: "select"
+          multiple: true
+
+        - field: "delivery_mode"
+          type: "select"
+          multiple: true
+
+        - field: "term"
+          type: "select"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Student Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Student"
+      id: "student_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "major"
+        badge_field: "enrollment_status"
+        image_field: "photo_url"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "personal_info"
+              title: "Personal Information"
+              layout: "two_column"
+              fields:
+                - student_id
+                - email
+                - phone
+                - date_of_birth
+                - address
+                - citizenship
+
+            - id: "academic_info"
+              title: "Academic Information"
+              layout: "two_column"
+              fields:
+                - student_type
+                - enrollment_status
+                - major
+                - minor
+                - gpa
+                - credits_earned
+                - credits_attempted
+                - academic_standing
+                - expected_graduation
+
+        - id: "courses"
+          label: "Courses"
+          icon: "📚"
+
+          sections:
+            - id: "current_courses"
+              title: "Current Enrollment"
+              type: "relationship_list"
+              relationship: "ENROLLED_IN"
+              direction: "outgoing"
+              filter:
+                term: "current"
+              display_fields:
+                - course_code
+                - course_name
+                - credits
+                - grade
+                - status
+
+            - id: "course_history"
+              title: "Course History"
+              type: "relationship_list"
+              relationship: "ENROLLED_IN"
+              direction: "outgoing"
+              display_fields:
+                - course_code
+                - course_name
+                - term
+                - grade
+                - credits
+
+        - id: "credentials"
+          label: "Credentials"
+          icon: "🏆"
+
+          sections:
+            - id: "earned_credentials"
+              title: "Earned Credentials"
+              type: "relationship_list"
+              relationship: "EARNED"
+              direction: "outgoing"
+              display_fields:
+                - credential_type
+                - name
+                - date_issued
+                - status
+
+        - id: "advising"
+          label: "Advising"
+          icon: "👨‍🏫"
+
+          sections:
+            - id: "advisor"
+              title: "Academic Advisor"
+              type: "relationship_list"
+              relationship: "ADVISED_BY"
+              direction: "outgoing"
+              display_fields:
+                - full_name
+                - email
+                - office_location
+                - office_hours
+
+        - id: "activity"
+          label: "Activity"
+          icon: "📊"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+              events:
+                - "enrollment_created"
+                - "grade_posted"
+                - "status_changed"
+                - "credential_earned"
+
+    # ----------------------------------------------------------------------
+    # Faculty Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Faculty"
+      id: "faculty_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "faculty_type"
+        image_field: "photo_url"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - id: "basic_info"
+              title: "Basic Information"
+              layout: "two_column"
+              fields:
+                - employee_id
+                - email
+                - phone
+                - department
+                - faculty_type
+                - tenure_status
+                - office_location
+                - office_hours
+
+            - id: "biography"
+              title: "Biography"
+              layout: "full_width"
+              fields:
+                - field: "biography"
+                  render: "markdown"
+
+        - id: "research"
+          label: "Research"
+          sections:
+            - id: "projects"
+              title: "Research Projects"
+              type: "relationship_list"
+              relationship: "LEADS"
+              direction: "outgoing"
+              display_fields:
+                - title
+                - status
+                - start_date
+                - end_date
+
+            - id: "metrics"
+              title: "Research Metrics"
+              layout: "two_column"
+              fields:
+                - h_index
+                - total_citations
+                - total_publications
+                - orcid_id
+
+        - id: "publications"
+          label: "Publications"
+          sections:
+            - id: "authored"
+              title: "Publications"
+              type: "relationship_list"
+              relationship: "AUTHORED"
+              direction: "outgoing"
+              display_fields:
+                - title
+                - publication_type
+                - journal_name
+                - publication_date
+                - citation_count
+
+        - id: "teaching"
+          label: "Teaching"
+          sections:
+            - id: "courses"
+              title: "Courses"
+              type: "relationship_list"
+              relationship: "TEACHES"
+              direction: "outgoing"
+              display_fields:
+                - course_code
+                - course_name
+                - term
+
+        - id: "collaborations"
+          label: "Collaborations"
+          sections:
+            - id: "collaborators"
+              title: "Collaborators"
+              type: "relationship_list"
+              relationship: "COLLABORATES_WITH"
+              direction: "both"
+              display_fields:
+                - full_name
+                - department
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Student Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Student"
+      id: "student_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "personal"
+          title: "Personal Information"
+          fields:
+            - field: "first_name"
+              required: true
+            - field: "last_name"
+              required: true
+            - field: "email"
+              required: true
+            - field: "phone"
+            - field: "date_of_birth"
+            - field: "address"
+
+        - id: "academic"
+          title: "Academic Information"
+          fields:
+            - field: "student_type"
+              required: true
+            - field: "enrollment_status"
+              required: true
+            - field: "major"
+            - field: "minor"
+            - field: "expected_graduation"
+
+        - id: "additional"
+          title: "Additional Information"
+          fields:
+            - field: "citizenship"
+            - field: "residency_status"
+            - field: "financial_aid_status"
+            - field: "tags"
+              widget: "tag_input"
+            - field: "notes"
+              widget: "rich_text_editor"
+
+    # ----------------------------------------------------------------------
+    # Grant Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Grant"
+      id: "grant_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "basic_info"
+          title: "Grant Information"
+          fields:
+            - title
+            - funding_agency
+            - grant_type
+            - status
+
+        - id: "financials"
+          title: "Financial Details"
+          fields:
+            - award_amount
+            - direct_costs
+            - indirect_costs
+            - cost_share_amount
+
+        - id: "dates"
+          title: "Important Dates"
+          fields:
+            - submission_deadline
+            - award_date
+            - start_date
+            - end_date
+            - reporting_frequency
+            - next_report_due
+
+        - id: "compliance"
+          title: "Compliance Information"
+          fields:
+            - cfda_number
+            - fain
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "enrollment_report"
+      name: "Enrollment Report"
+      description: "Student enrollment statistics"
+      parameters:
+        - field: "term"
+          type: "select"
+          required: true
+        - field: "department"
+          type: "select"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_students
+            - new_enrollments
+            - retention_rate
+            - average_gpa
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Enrollment by Program"
+
+        - type: "table"
+          title: "Enrollment Details"
+
+    - id: "grant_report"
+      name: "Grant Activity Report"
+      description: "Grant submissions and awards"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+        - field: "funding_agency"
+          type: "select"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_submitted
+            - total_awarded
+            - success_rate
+            - total_funding
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Awards by Agency"
+
+    - id: "research_output"
+      name: "Research Output Report"
+      description: "Publications and citations"
+      parameters:
+        - field: "year"
+          type: "select"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_publications
+            - total_citations
+            - average_impact_factor
+
+        - type: "table"
+          title: "Publications"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

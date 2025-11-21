@@ -1,0 +1,860 @@
+# Hospitality & Travel UI Configuration
+# Frontend presentation layer for hospitality domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for hotel and hospitality management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#0EA5E9"      # Sky Blue
+    secondary_color: "#8B5CF6"    # Purple
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/hospitality-logo.svg"
+    favicon_url: "/assets/favicons/hospitality.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "reservations"
+        label: "Reservations"
+        icon: "📅"
+        route: "/reservations"
+        badge_query: "count_todays_arrivals"
+
+      - id: "guests"
+        label: "Guests"
+        icon: "👤"
+        route: "/guests"
+        submenu:
+          - id: "all"
+            label: "All Guests"
+            route: "/guests/all"
+          - id: "inhouse"
+            label: "In-House"
+            route: "/guests/inhouse"
+          - id: "loyalty"
+            label: "Loyalty Members"
+            route: "/guests/loyalty"
+
+      - id: "rooms"
+        label: "Rooms"
+        icon: "🛏️"
+        route: "/rooms"
+        badge_query: "count_available_rooms"
+
+      - id: "housekeeping"
+        label: "Housekeeping"
+        icon: "🧹"
+        route: "/housekeeping"
+
+      - id: "services"
+        label: "Services"
+        icon: "🛎️"
+        route: "/services"
+
+      - id: "events"
+        label: "Events"
+        icon: "🎪"
+        route: "/events"
+
+      - id: "reviews"
+        label: "Reviews"
+        icon: "⭐"
+        route: "/reviews"
+
+      - id: "staff"
+        label: "Staff"
+        icon: "👨‍💼"
+        route: "/staff"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Front Desk Dashboard"
+      description: "Real-time property operations overview"
+      layout: "grid"
+
+      widgets:
+        - id: "todays_arrivals"
+          type: "metric_card"
+          title: "Today's Arrivals"
+          query: "count_todays_arrivals"
+          icon: "🛬"
+          color: "#0EA5E9"
+          size: "small"
+
+        - id: "todays_departures"
+          type: "metric_card"
+          title: "Today's Departures"
+          query: "count_todays_departures"
+          icon: "🛫"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "occupancy_rate"
+          type: "metric_card"
+          title: "Occupancy"
+          query: "current_occupancy_rate"
+          format: "percentage"
+          icon: "🏨"
+          color: "#10B981"
+          size: "small"
+
+        - id: "available_rooms"
+          type: "metric_card"
+          title: "Available Rooms"
+          query: "count_available_rooms"
+          icon: "🛏️"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "arrivals_list"
+          type: "entity_list"
+          title: "Today's Arrivals"
+          entity_type: "Reservation"
+          query:
+            filter:
+              arrival_date: "today"
+              status: ["Confirmed", "Pending"]
+            sort:
+              field: "arrival_time"
+              direction: "ASC"
+            limit: 10
+          columns:
+            - guest_name
+            - room_type
+            - room_number
+            - arrival_time
+            - nights
+          size: "medium"
+
+        - id: "departures_list"
+          type: "entity_list"
+          title: "Today's Departures"
+          entity_type: "Reservation"
+          query:
+            filter:
+              departure_date: "today"
+              status: "Checked In"
+            sort:
+              field: "departure_time"
+              direction: "ASC"
+            limit: 10
+          columns:
+            - guest_name
+            - room_number
+            - departure_time
+            - balance_due
+          size: "medium"
+
+        - id: "revenue_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Revenue (Last 30 Days)"
+          query: "daily_revenue"
+          x_axis: "date"
+          y_axis: "total_revenue"
+          size: "large"
+
+        - id: "room_status_chart"
+          type: "chart"
+          chart_type: "donut"
+          title: "Room Status"
+          query: "room_status_distribution"
+          size: "medium"
+
+        - id: "vip_guests"
+          type: "entity_list"
+          title: "VIP Guests In-House"
+          entity_type: "Guest"
+          query:
+            filter:
+              guest_type: "VIP"
+              in_house: true
+            limit: 5
+          columns:
+            - full_name
+            - room_number
+            - loyalty_tier
+            - special_requests
+          size: "medium"
+
+        - id: "recent_reviews"
+          type: "entity_list"
+          title: "Recent Reviews"
+          entity_type: "Review"
+          query:
+            sort:
+              field: "review_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - rating
+            - source
+            - title
+            - review_date
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Revenue Dashboard
+    # ----------------------------------------------------------------------
+    - id: "revenue"
+      name: "Revenue Management Dashboard"
+      description: "Revenue and pricing analytics"
+      layout: "grid"
+
+      widgets:
+        - id: "revpar"
+          type: "metric_card"
+          title: "RevPAR"
+          query: "current_revpar"
+          format: "currency"
+
+        - id: "adr"
+          type: "metric_card"
+          title: "ADR"
+          query: "current_adr"
+          format: "currency"
+
+        - id: "total_revenue"
+          type: "metric_card"
+          title: "MTD Revenue"
+          query: "mtd_revenue"
+          format: "currency"
+
+        - id: "occupancy_forecast"
+          type: "chart"
+          chart_type: "line"
+          title: "Occupancy Forecast (Next 90 Days)"
+          query: "occupancy_forecast"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Reservation List
+    # ----------------------------------------------------------------------
+    - entity_type: "Reservation"
+      id: "reservation_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "confirmation_number"
+              label: "Conf #"
+              sortable: true
+              width: "120px"
+              render: "link"
+
+            - field: "guest_name"
+              label: "Guest"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Confirmed": "success"
+                "Checked In": "info"
+                "Pending": "warning"
+                "Cancelled": "secondary"
+                "No Show": "danger"
+
+            - field: "arrival_date"
+              label: "Arrival"
+              sortable: true
+              format: "date"
+
+            - field: "departure_date"
+              label: "Departure"
+              sortable: true
+              format: "date"
+
+            - field: "nights"
+              label: "Nights"
+              width: "60px"
+
+            - field: "room_type"
+              label: "Room Type"
+
+            - field: "room_number"
+              label: "Room #"
+              width: "80px"
+
+            - field: "total_revenue"
+              label: "Revenue"
+              format: "currency"
+
+            - field: "booking_source"
+              label: "Source"
+
+        - type: "calendar"
+          date_field: "arrival_date"
+          end_date_field: "departure_date"
+          title_field: "guest_name"
+          color_by: "status"
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "arrival_date"
+          type: "date_range"
+          label: "Arrival Date"
+
+        - field: "room_type"
+          type: "select"
+          multiple: true
+
+        - field: "booking_source"
+          type: "select"
+          multiple: true
+
+      actions:
+        - id: "add_reservation"
+          label: "New Reservation"
+          icon: "➕"
+          type: "create"
+
+        - id: "check_in"
+          label: "Check In"
+          icon: "🛬"
+          type: "action"
+          bulk: true
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # Guest List
+    # ----------------------------------------------------------------------
+    - entity_type: "Guest"
+      id: "guest_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+
+            - field: "email"
+              label: "Email"
+
+            - field: "phone"
+              label: "Phone"
+              format: "phone"
+
+            - field: "guest_type"
+              label: "Type"
+              render: "badge"
+
+            - field: "loyalty_tier"
+              label: "Loyalty"
+              render: "badge"
+              color_map:
+                "Diamond": "purple"
+                "Platinum": "info"
+                "Gold": "warning"
+                "Silver": "secondary"
+
+            - field: "lifetime_stays"
+              label: "Stays"
+              sortable: true
+
+            - field: "lifetime_revenue"
+              label: "Lifetime Value"
+              format: "currency"
+              sortable: true
+
+      filters:
+        - field: "guest_type"
+          type: "select"
+
+        - field: "loyalty_tier"
+          type: "select"
+
+        - field: "lifetime_revenue"
+          type: "range"
+          label: "Lifetime Value"
+
+    # ----------------------------------------------------------------------
+    # Room List
+    # ----------------------------------------------------------------------
+    - entity_type: "Room"
+      id: "room_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "room_number"
+              label: "Room #"
+              sortable: true
+              width: "80px"
+
+            - field: "room_type"
+              label: "Type"
+
+            - field: "room_category"
+              label: "Category"
+
+            - field: "floor"
+              label: "Floor"
+              width: "60px"
+
+            - field: "view"
+              label: "View"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Available": "success"
+                "Occupied": "info"
+                "Dirty": "warning"
+                "Out of Order": "danger"
+
+            - field: "housekeeping_status"
+              label: "HK Status"
+              render: "badge"
+
+        - type: "grid"
+          group_by: "floor"
+          card_template:
+            title_field: "room_number"
+            subtitle_field: "room_type"
+            badge_field: "status"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "room_type"
+          type: "select"
+          multiple: true
+
+        - field: "floor"
+          type: "select"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Reservation Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Reservation"
+      id: "reservation_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "confirmation_number"
+        subtitle_field: "guest_name"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "reservation_details"
+              title: "Reservation Details"
+              layout: "two_column"
+              fields:
+                - field: "confirmation_number"
+                  label: "Confirmation #"
+
+                - field: "status"
+                  render: "badge"
+
+                - field: "arrival_date"
+                  format: "date"
+
+                - field: "departure_date"
+                  format: "date"
+
+                - field: "nights"
+                  label: "Nights"
+
+                - field: "adults"
+                  label: "Adults"
+
+                - field: "children"
+                  label: "Children"
+
+            - id: "room_info"
+              title: "Room Information"
+              layout: "two_column"
+              fields:
+                - field: "room_type"
+                - field: "room_number"
+                - field: "daily_rate"
+                  format: "currency"
+
+        - id: "guest"
+          label: "Guest"
+          icon: "👤"
+
+          sections:
+            - id: "guest_info"
+              title: "Guest Information"
+              type: "relationship_single"
+              relationship: "BOOKS"
+              direction: "incoming"
+              display_fields:
+                - full_name
+                - email
+                - phone
+                - loyalty_tier
+                - room_preferences
+
+        - id: "billing"
+          label: "Billing"
+          icon: "💰"
+
+          sections:
+            - id: "charges"
+              title: "Charges"
+              layout: "two_column"
+              fields:
+                - field: "total_room_revenue"
+                  format: "currency"
+
+                - field: "total_revenue"
+                  format: "currency"
+
+                - field: "deposit_amount"
+                  format: "currency"
+
+                - field: "balance_due"
+                  format: "currency"
+
+                - field: "payment_status"
+                  render: "badge"
+
+        - id: "activity"
+          label: "Activity"
+          icon: "📊"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+
+    # ----------------------------------------------------------------------
+    # Guest Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Guest"
+      id: "guest_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "email"
+        badge_field: "loyalty_tier"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "guest_details"
+              title: "Guest Information"
+              layout: "two_column"
+              fields:
+                - first_name
+                - last_name
+                - email
+                - phone
+                - guest_type
+                - loyalty_tier
+                - loyalty_points
+
+        - id: "preferences"
+          label: "Preferences"
+          icon: "❤️"
+
+          sections:
+            - id: "prefs"
+              title: "Guest Preferences"
+              fields:
+                - field: "room_preferences"
+                  render: "tags"
+                - field: "dietary_restrictions"
+                  render: "tags"
+                - field: "preferred_contact_method"
+
+        - id: "history"
+          label: "Stay History"
+          icon: "📅"
+
+          sections:
+            - id: "reservations"
+              title: "Reservation History"
+              type: "relationship_list"
+              relationship: "BOOKS"
+              direction: "outgoing"
+              display_fields:
+                - confirmation_number
+                - arrival_date
+                - departure_date
+                - room_number
+                - total_revenue
+
+        - id: "loyalty"
+          label: "Loyalty"
+          icon: "🎁"
+
+          sections:
+            - id: "loyalty_summary"
+              title: "Loyalty Summary"
+              layout: "two_column"
+              fields:
+                - loyalty_tier
+                - loyalty_points
+                - lifetime_stays
+                - lifetime_revenue
+
+            - id: "loyalty_transactions"
+              title: "Point History"
+              type: "relationship_list"
+              relationship: "EARNS_POINTS"
+              direction: "outgoing"
+              display_fields:
+                - transaction_type
+                - points
+                - transaction_date
+                - description
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Reservation Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Reservation"
+      id: "reservation_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "guest"
+          title: "Guest Information"
+          fields:
+            - field: "guest_id"
+              widget: "entity_search"
+              entity_type: "Guest"
+              create_new: true
+
+        - id: "dates"
+          title: "Stay Details"
+          fields:
+            - field: "arrival_date"
+              required: true
+
+            - field: "departure_date"
+              required: true
+
+            - field: "adults"
+              width: "half"
+
+            - field: "children"
+              width: "half"
+
+        - id: "room"
+          title: "Room Selection"
+          fields:
+            - field: "room_type"
+              required: true
+
+            - field: "rate_code"
+
+            - field: "special_requests"
+              widget: "rich_text_editor"
+
+        - id: "payment"
+          title: "Payment"
+          fields:
+            - field: "guarantee_type"
+
+            - field: "deposit_amount"
+
+    # ----------------------------------------------------------------------
+    # Guest Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Guest"
+      id: "guest_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - first_name
+            - last_name
+            - email
+            - phone
+
+        - id: "preferences"
+          title: "Preferences"
+          fields:
+            - field: "room_preferences"
+              widget: "tag_input"
+
+            - field: "dietary_restrictions"
+              widget: "tag_input"
+
+            - preferred_contact_method
+
+        - id: "marketing"
+          title: "Marketing"
+          fields:
+            - field: "marketing_opt_in"
+              widget: "toggle"
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search guests, reservations, rooms..."
+      entity_types:
+        - Guest
+        - Reservation
+        - Room
+        - Event
+
+    facets:
+      - field: "status"
+        label: "Status"
+      - field: "room_type"
+        label: "Room Type"
+      - field: "loyalty_tier"
+        label: "Loyalty Tier"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "occupancy_report"
+      name: "Occupancy Report"
+      description: "Daily occupancy and revenue analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - average_occupancy
+            - revpar
+            - adr
+            - total_revenue
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Occupancy Trend"
+
+        - type: "table"
+          title: "Daily Breakdown"
+          columns:
+            - date
+            - rooms_sold
+            - occupancy
+            - adr
+            - revpar
+
+    - id: "guest_satisfaction"
+      name: "Guest Satisfaction Report"
+      description: "Review and feedback analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - average_rating
+            - review_count
+            - response_rate
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Ratings by Category"
+
+        - type: "table"
+          title: "Recent Reviews"
+          columns:
+            - review_date
+            - rating
+            - source
+            - sentiment
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

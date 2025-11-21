@@ -1,0 +1,797 @@
+# Healthcare UI Configuration
+# Frontend presentation layer for healthcare domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for healthcare and medical practice management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#EC4899"      # Pink
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/healthcare-logo.svg"
+    favicon_url: "/assets/favicons/healthcare.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "patients"
+        label: "Patients"
+        icon: "👥"
+        route: "/patients"
+        badge_query: "count_active_patients"
+
+      - id: "schedule"
+        label: "Schedule"
+        icon: "📅"
+        route: "/schedule"
+        badge_query: "count_todays_appointments"
+
+      - id: "encounters"
+        label: "Encounters"
+        icon: "🏥"
+        route: "/encounters"
+
+      - id: "referrals"
+        label: "Referrals"
+        icon: "🔀"
+        route: "/referrals"
+        badge_query: "count_pending_referrals"
+
+      - id: "lab_orders"
+        label: "Labs"
+        icon: "🔬"
+        route: "/lab-orders"
+        badge_query: "count_pending_labs"
+
+      - id: "providers"
+        label: "Providers"
+        icon: "👨‍⚕️"
+        route: "/providers"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+        submenu:
+          - id: "quality_measures"
+            label: "Quality Measures"
+            route: "/reports/quality"
+          - id: "population_health"
+            label: "Population Health"
+            route: "/reports/population"
+          - id: "practice_analytics"
+            label: "Practice Analytics"
+            route: "/reports/analytics"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Practice Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Practice Dashboard"
+      description: "Overview of practice operations and patient care"
+      layout: "grid"
+
+      widgets:
+        - id: "active_patients_count"
+          type: "metric_card"
+          title: "Active Patients"
+          query: "count_active_patients"
+          icon: "👥"
+          color: "#EC4899"
+          size: "small"
+
+        - id: "todays_appointments"
+          type: "metric_card"
+          title: "Today's Appointments"
+          query: "count_todays_appointments"
+          icon: "📅"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "pending_referrals"
+          type: "metric_card"
+          title: "Pending Referrals"
+          query: "count_pending_referrals"
+          icon: "🔀"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "overdue_labs"
+          type: "metric_card"
+          title: "Overdue Labs"
+          query: "count_overdue_labs"
+          icon: "🔬"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "todays_schedule"
+          type: "entity_list"
+          title: "Today's Schedule"
+          entity_type: "Appointment"
+          query:
+            filter:
+              appointment_date: "today"
+              status: ["Scheduled", "Confirmed", "Arrived", "In Progress"]
+            sort:
+              field: "appointment_date"
+              direction: "ASC"
+          columns:
+            - time
+            - patient_name
+            - appointment_type
+            - provider_name
+            - status
+          size: "large"
+
+        - id: "recent_encounters"
+          type: "entity_list"
+          title: "Recent Encounters"
+          entity_type: "Encounter"
+          query:
+            sort:
+              field: "encounter_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - patient_name
+            - encounter_type
+            - provider_name
+            - encounter_date
+            - status
+          size: "medium"
+
+        - id: "critical_results"
+          type: "entity_list"
+          title: "Critical Lab Results"
+          entity_type: "LabOrder"
+          query:
+            filter:
+              abnormal_flag: ["Critical High", "Critical Low"]
+              status: "Resulted"
+            sort:
+              field: "result_date"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - patient_name
+            - test_name
+            - result_value
+            - abnormal_flag
+            - result_date
+          size: "medium"
+          highlight: true
+
+        - id: "patient_visits_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Patient Visits (Last 30 Days)"
+          query: "daily_visit_count"
+          x_axis: "date"
+          y_axis: "visit_count"
+          size: "large"
+
+        - id: "top_diagnoses"
+          type: "chart"
+          chart_type: "bar"
+          title: "Top 10 Diagnoses (This Month)"
+          query: "top_diagnoses_this_month"
+          x_axis: "diagnosis"
+          y_axis: "count"
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Provider Dashboard
+    # ----------------------------------------------------------------------
+    - id: "provider"
+      name: "Provider Dashboard"
+      description: "Individual provider's patient panel and schedule"
+      layout: "grid"
+
+      filters:
+        - field: "provider_id"
+          type: "current_user"
+
+      widgets:
+        - id: "my_patient_panel"
+          type: "metric_card"
+          title: "My Patient Panel"
+          query: "count_my_patients"
+
+        - id: "my_todays_appointments"
+          type: "metric_card"
+          title: "My Appointments Today"
+          query: "count_my_appointments_today"
+
+        - id: "my_pending_tasks"
+          type: "metric_card"
+          title: "Pending Tasks"
+          query: "count_my_pending_tasks"
+
+        - id: "my_schedule"
+          type: "calendar"
+          title: "My Schedule"
+          query:
+            entity_type: "Appointment"
+            filter:
+              provider_id: "$current_user"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Patient List
+    # ----------------------------------------------------------------------
+    - entity_type: "Patient"
+      id: "patient_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "mrn"
+              label: "MRN"
+              sortable: true
+              width: "120px"
+
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+              width: "200px"
+
+            - field: "date_of_birth"
+              label: "DOB"
+              sortable: true
+              format: "date"
+
+            - field: "age"
+              label: "Age"
+              sortable: true
+              width: "60px"
+
+            - field: "gender"
+              label: "Gender"
+              width: "80px"
+
+            - field: "primary_care_provider"
+              label: "PCP"
+              width: "150px"
+
+            - field: "patient_status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Inactive": "secondary"
+                "Deceased": "dark"
+              width: "100px"
+
+            - field: "phone"
+              label: "Phone"
+              format: "phone"
+
+            - field: "last_visit_date"
+              label: "Last Visit"
+              sortable: true
+              format: "date"
+
+      filters:
+        - field: "patient_status"
+          type: "select"
+          label: "Status"
+          multiple: true
+          options:
+            - "Active"
+            - "Inactive"
+
+        - field: "primary_care_provider"
+          type: "select"
+          label: "Primary Care Provider"
+
+        - field: "age"
+          type: "range"
+          label: "Age Range"
+          min: 0
+          max: 120
+
+        - field: "gender"
+          type: "select"
+          label: "Gender"
+          multiple: true
+
+      actions:
+        - id: "add_patient"
+          label: "Add Patient"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel"]
+          hipaa_warning: true
+
+    # ----------------------------------------------------------------------
+    # Appointment List
+    # ----------------------------------------------------------------------
+    - entity_type: "Appointment"
+      id: "appointment_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "appointment_date"
+              label: "Date/Time"
+              sortable: true
+              format: "datetime"
+
+            - field: "patient_name"
+              label: "Patient"
+              render: "link"
+
+            - field: "provider_name"
+              label: "Provider"
+
+            - field: "appointment_type"
+              label: "Type"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Scheduled": "info"
+                "Confirmed": "success"
+                "Arrived": "primary"
+                "Completed": "secondary"
+                "Cancelled": "danger"
+                "No Show": "warning"
+
+            - field: "duration_minutes"
+              label: "Duration"
+              format: "duration"
+
+        - type: "calendar"
+          default_view: "week"
+          title_field: "patient_name"
+          start_field: "appointment_date"
+          duration_field: "duration_minutes"
+          color_by: "provider_name"
+
+      filters:
+        - field: "appointment_date"
+          type: "date_range"
+          label: "Date Range"
+          default: "today"
+
+        - field: "provider_id"
+          type: "select"
+          label: "Provider"
+
+        - field: "status"
+          type: "select"
+          multiple: true
+          label: "Status"
+
+    # ----------------------------------------------------------------------
+    # Encounter List
+    # ----------------------------------------------------------------------
+    - entity_type: "Encounter"
+      id: "encounter_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "encounter_date"
+              label: "Date"
+              sortable: true
+              format: "datetime"
+
+            - field: "patient_name"
+              label: "Patient"
+              render: "link"
+
+            - field: "provider_name"
+              label: "Provider"
+
+            - field: "encounter_type"
+              label: "Type"
+
+            - field: "chief_complaint"
+              label: "Chief Complaint"
+              truncate: 50
+
+            - field: "encounter_status"
+              label: "Status"
+              render: "badge"
+
+      filters:
+        - field: "encounter_date"
+          type: "date_range"
+          label: "Date Range"
+
+        - field: "encounter_type"
+          type: "select"
+          multiple: true
+
+        - field: "provider_id"
+          type: "select"
+          label: "Provider"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Patient Detail (Chart)
+    # ----------------------------------------------------------------------
+    - entity_type: "Patient"
+      id: "patient_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "mrn"
+        badge_field: "patient_status"
+        alert_fields:
+          - field: "allergies"
+            label: "Allergies"
+            color: "danger"
+            show_if_not_empty: true
+          - field: "dnr_status"
+            label: "DNR"
+            color: "warning"
+            show_if_true: true
+
+      tabs:
+        - id: "summary"
+          label: "Summary"
+          icon: "📋"
+
+          sections:
+            - id: "demographics"
+              title: "Demographics"
+              layout: "two_column"
+              fields:
+                - full_name
+                - date_of_birth
+                - age
+                - gender
+                - mrn
+                - phone
+                - email
+                - address
+
+            - id: "clinical_summary"
+              title: "Clinical Summary"
+              layout: "full_width"
+              fields:
+                - field: "allergies"
+                  label: "Allergies"
+                  render: "alert_list"
+                  color: "danger"
+
+                - field: "chronic_conditions"
+                  label: "Active Chronic Conditions"
+                  render: "tag_list"
+
+                - field: "current_medications"
+                  label: "Current Medications"
+                  render: "medication_list"
+
+                - field: "blood_type"
+                  label: "Blood Type"
+
+            - id: "care_team"
+              title: "Care Team"
+              type: "relationship_list"
+              relationship: "HAS_PRIMARY_CARE_PROVIDER"
+              display_fields:
+                - full_name
+                - specialty
+                - phone
+                - email
+
+        - id: "encounters"
+          label: "Encounters"
+          icon: "🏥"
+
+          sections:
+            - id: "encounter_history"
+              title: "Encounter History"
+              type: "relationship_list"
+              relationship: "HAD_ENCOUNTER"
+              direction: "outgoing"
+              sort:
+                field: "encounter_date"
+                direction: "DESC"
+              display_fields:
+                - encounter_date
+                - encounter_type
+                - provider_name
+                - chief_complaint
+                - encounter_status
+
+        - id: "diagnoses"
+          label: "Diagnoses"
+          icon: "🩺"
+
+          sections:
+            - id: "active_diagnoses"
+              title: "Active Diagnoses"
+              type: "relationship_list"
+              relationship: "HAS_DIAGNOSIS"
+              filter:
+                status: "Active"
+              display_fields:
+                - diagnosis_code
+                - diagnosis_description
+                - diagnosis_date
+                - severity
+
+            - id: "diagnosis_history"
+              title: "Diagnosis History"
+              type: "relationship_list"
+              relationship: "HAS_DIAGNOSIS"
+              sort:
+                field: "diagnosis_date"
+                direction: "DESC"
+
+        - id: "medications"
+          label: "Medications"
+          icon: "💊"
+
+          sections:
+            - id: "active_medications"
+              title: "Active Medications"
+              type: "relationship_list"
+              relationship: "PRESCRIBED_MEDICATION"
+              filter:
+                status: "Active"
+              display_fields:
+                - medication_name
+                - dosage
+                - frequency
+                - start_date
+                - prescriber_name
+
+            - id: "medication_history"
+              title: "Medication History"
+              type: "relationship_list"
+              relationship: "PRESCRIBED_MEDICATION"
+
+        - id: "labs"
+          label: "Labs"
+          icon: "🔬"
+
+          sections:
+            - id: "recent_labs"
+              title: "Recent Lab Results"
+              type: "relationship_list"
+              relationship: "HAS_LAB_ORDER"
+              filter:
+                status: "Resulted"
+              sort:
+                field: "result_date"
+                direction: "DESC"
+              limit: 20
+              display_fields:
+                - test_name
+                - result_value
+                - result_unit
+                - reference_range
+                - abnormal_flag
+                - result_date
+
+        - id: "referrals"
+          label: "Referrals"
+          icon: "🔀"
+
+          sections:
+            - id: "pending_referrals"
+              title: "Pending Referrals"
+              type: "relationship_list"
+              relationship: "REFERRED"
+              filter:
+                status: ["Pending", "Scheduled"]
+
+            - id: "referral_history"
+              title: "Referral History"
+              type: "relationship_list"
+              relationship: "REFERRED"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Patient Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Patient"
+      id: "patient_form"
+
+      layout: "wizard"
+      hipaa_consent_required: true
+
+      steps:
+        - id: "demographics"
+          title: "Demographics"
+          fields:
+            - field: "first_name"
+              required: true
+              width: "half"
+
+            - field: "last_name"
+              required: true
+              width: "half"
+
+            - field: "date_of_birth"
+              required: true
+              width: "half"
+              widget: "date_picker"
+
+            - field: "gender"
+              required: true
+              width: "half"
+
+            - field: "mrn"
+              required: true
+              auto_generate: true
+              width: "half"
+
+        - id: "contact_info"
+          title: "Contact Information"
+          fields:
+            - field: "phone"
+              width: "half"
+
+            - field: "mobile_phone"
+              width: "half"
+
+            - field: "email"
+              width: "full"
+
+            - field: "address"
+              width: "full"
+              widget: "address_autocomplete"
+
+        - id: "clinical_info"
+          title: "Clinical Information"
+          fields:
+            - field: "blood_type"
+
+            - field: "allergies"
+              widget: "tag_input"
+              placeholder: "Enter allergies (medications, foods, environmental)"
+
+            - field: "chronic_conditions"
+              widget: "tag_input"
+
+        - id: "insurance"
+          title: "Insurance"
+          optional: true
+          fields:
+            - insurance_provider
+            - insurance_member_id
+            - insurance_group_number
+
+    # ----------------------------------------------------------------------
+    # Encounter Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Encounter"
+      id: "encounter_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "encounter_details"
+          title: "Encounter Details"
+          fields:
+            - encounter_type
+            - encounter_date
+            - chief_complaint
+            - visit_reason
+
+        - id: "documentation"
+          title: "Clinical Documentation"
+          fields:
+            - field: "clinical_notes"
+              widget: "rich_text_editor"
+
+            - field: "assessment"
+              widget: "textarea"
+
+            - field: "plan"
+              widget: "textarea"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "quality_measures"
+      name: "Quality Measures Report"
+      description: "HEDIS/MIPS quality measure tracking"
+      parameters:
+        - field: "reporting_period"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - diabetes_a1c_control_rate
+            - hypertension_control_rate
+            - breast_cancer_screening_rate
+            - colorectal_cancer_screening_rate
+
+        - type: "table"
+          title: "Patient-Level Quality Gaps"
+          columns:
+            - patient_name
+            - measure_name
+            - due_date
+            - status
+
+    - id: "practice_productivity"
+      name: "Practice Productivity Report"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_encounters
+            - new_patients
+            - no_show_rate
+            - avg_encounters_per_day
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  hipaa_compliant: true

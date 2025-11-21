@@ -1,0 +1,972 @@
+# Healthcare Ontology Definition
+# Clinical entities, relationships, and healthcare-specific data models
+
+ontology:
+  version: "1.0.0"
+  description: "Healthcare domain ontology covering patients, providers, encounters, and clinical data"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Patient Entity
+    # ------------------------------------------------------------------------
+    - name: Patient
+      display_name: "Patient"
+      description: "Individual receiving healthcare services"
+      icon: "👤"
+      color: "#EC4899"
+      pii_level: "high"  # Contains PHI (Protected Health Information)
+
+      attributes:
+        # Demographics
+        - name: first_name
+          type: string
+          required: true
+          pii: true
+
+        - name: last_name
+          type: string
+          required: true
+          pii: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: date_of_birth
+          type: date
+          required: true
+          pii: true
+
+        - name: age
+          type: number
+          computed: true
+          description: "Calculated from date of birth"
+
+        - name: gender
+          type: enum
+          required: true
+          values:
+            - "Male"
+            - "Female"
+            - "Other"
+            - "Prefer not to say"
+
+        - name: sex_assigned_at_birth
+          type: enum
+          values: ["Male", "Female", "Intersex"]
+
+        - name: gender_identity
+          type: string
+
+        - name: preferred_pronouns
+          type: string
+          example: "she/her, he/him, they/them"
+
+        # Contact Information
+        - name: email
+          type: email
+          pii: true
+          indexed: true
+
+        - name: phone
+          type: phone
+          pii: true
+
+        - name: mobile_phone
+          type: phone
+          pii: true
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Text", "Patient Portal"]
+          default: "Email"
+
+        - name: address
+          type: address
+          pii: true
+
+        # Identifiers
+        - name: mrn
+          type: string
+          description: "Medical Record Number"
+          required: true
+          unique_per_tenant: true
+          indexed: true
+          pii: true
+
+        - name: ssn
+          type: string
+          description: "Social Security Number"
+          pii: true
+          encrypted: true
+
+        - name: drivers_license
+          type: string
+          pii: true
+
+        # Insurance
+        - name: insurance_provider
+          type: string
+
+        - name: insurance_member_id
+          type: string
+          pii: true
+
+        - name: insurance_group_number
+          type: string
+
+        # Emergency Contact
+        - name: emergency_contact_name
+          type: string
+
+        - name: emergency_contact_relationship
+          type: string
+
+        - name: emergency_contact_phone
+          type: phone
+
+        # Clinical Status
+        - name: patient_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Deceased"
+            - "Prospective"
+          default: "Active"
+
+        - name: deceased_date
+          type: date
+
+        - name: primary_language
+          type: string
+          default: "English"
+
+        - name: interpreter_needed
+          type: boolean
+          default: false
+
+        # Social Determinants of Health (SDOH)
+        - name: marital_status
+          type: enum
+          values: ["Single", "Married", "Divorced", "Widowed", "Domestic Partner"]
+
+        - name: employment_status
+          type: enum
+          values: ["Employed", "Unemployed", "Retired", "Student", "Disabled"]
+
+        - name: housing_status
+          type: enum
+          values: ["Stable Housing", "Temporary Housing", "Homeless", "Assisted Living"]
+
+        - name: transportation_access
+          type: enum
+          values: ["Reliable", "Limited", "None"]
+
+        # Clinical Summary
+        - name: blood_type
+          type: enum
+          values: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+
+        - name: allergies
+          type: array
+          item_type: string
+          description: "Known allergies (medications, foods, environmental)"
+
+        - name: chronic_conditions
+          type: array
+          item_type: string
+          description: "Active chronic conditions"
+
+        - name: current_medications
+          type: array
+          item_type: string
+
+        - name: advance_directive_on_file
+          type: boolean
+          default: false
+
+        - name: dnr_status
+          type: boolean
+          description: "Do Not Resuscitate"
+          default: false
+
+        # Preferences
+        - name: preferred_pharmacy
+          type: string
+
+        - name: notes
+          type: text
+          description: "Clinical notes, patient preferences"
+
+        - name: tags
+          type: array
+          item_type: string
+          description: "Custom tags like 'High Risk', 'VIP', 'No-Show Risk'"
+
+      indexes:
+        - fields: ["mrn"]
+          unique: true
+          name: "idx_patient_mrn"
+        - fields: ["email"]
+          name: "idx_patient_email"
+        - fields: ["date_of_birth"]
+          name: "idx_patient_dob"
+        - fields: ["patient_status"]
+          name: "idx_patient_status"
+
+      validation_rules:
+        - rule: "Date of birth must be in the past"
+        - rule: "If deceased, deceased_date must be set"
+        - rule: "Age must be calculated as years from date_of_birth to today"
+
+    # ------------------------------------------------------------------------
+    # Provider Entity
+    # ------------------------------------------------------------------------
+    - name: Provider
+      display_name: "Healthcare Provider"
+      description: "Physician, nurse practitioner, or other care provider"
+      icon: "👨‍⚕️"
+      color: "#3B82F6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: credentials
+          type: string
+          description: "MD, DO, NP, PA, RN, etc."
+
+        - name: display_name
+          type: string
+          computed: true
+          formula: "full_name + ', ' + credentials"
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: specialty
+          type: enum
+          required: true
+          values:
+            - "Family Medicine"
+            - "Internal Medicine"
+            - "Pediatrics"
+            - "Cardiology"
+            - "Dermatology"
+            - "Endocrinology"
+            - "Gastroenterology"
+            - "Neurology"
+            - "Obstetrics & Gynecology"
+            - "Oncology"
+            - "Orthopedics"
+            - "Psychiatry"
+            - "Radiology"
+            - "Surgery"
+            - "Urology"
+            - "Emergency Medicine"
+            - "Anesthesiology"
+            - "Pathology"
+
+        - name: subspecialty
+          type: string
+
+        - name: provider_type
+          type: enum
+          required: true
+          values:
+            - "Physician (MD/DO)"
+            - "Nurse Practitioner (NP)"
+            - "Physician Assistant (PA)"
+            - "Registered Nurse (RN)"
+            - "Clinical Psychologist"
+            - "Pharmacist"
+            - "Physical Therapist"
+            - "Occupational Therapist"
+
+        - name: npi
+          type: string
+          description: "National Provider Identifier"
+          unique: true
+          indexed: true
+          required: true
+
+        - name: dea_number
+          type: string
+          description: "DEA (Drug Enforcement Administration) number for prescribing controlled substances"
+
+        - name: state_license_number
+          type: string
+
+        - name: state_licensed_in
+          type: array
+          item_type: string
+          description: "States where provider is licensed"
+
+        - name: license_expiration_date
+          type: date
+
+        - name: board_certified
+          type: boolean
+          default: false
+
+        - name: board_certification_date
+          type: date
+
+        - name: accepting_new_patients
+          type: boolean
+          default: true
+
+        - name: languages_spoken
+          type: array
+          item_type: string
+
+        - name: telehealth_enabled
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["npi"]
+          unique: true
+          name: "idx_provider_npi"
+        - fields: ["specialty"]
+          name: "idx_provider_specialty"
+
+    # ------------------------------------------------------------------------
+    # Encounter Entity
+    # ------------------------------------------------------------------------
+    - name: Encounter
+      display_name: "Clinical Encounter"
+      description: "Patient visit or interaction with healthcare system"
+      icon: "🏥"
+      color: "#10B981"
+
+      attributes:
+        - name: encounter_type
+          type: enum
+          required: true
+          values:
+            - "Office Visit"
+            - "Telehealth"
+            - "Emergency Department"
+            - "Inpatient"
+            - "Observation"
+            - "Urgent Care"
+            - "Home Health"
+            - "Phone Consultation"
+
+        - name: encounter_status
+          type: enum
+          required: true
+          values:
+            - "Scheduled"
+            - "Arrived"
+            - "In Progress"
+            - "Completed"
+            - "Cancelled"
+            - "No Show"
+          default: "Scheduled"
+
+        - name: encounter_date
+          type: datetime
+          required: true
+
+        - name: check_in_time
+          type: datetime
+
+        - name: check_out_time
+          type: datetime
+
+        - name: duration_minutes
+          type: number
+          computed: true
+
+        - name: chief_complaint
+          type: text
+          description: "Primary reason for visit"
+
+        - name: visit_reason
+          type: array
+          item_type: string
+
+        - name: location
+          type: string
+          description: "Exam room, facility name"
+
+        - name: clinical_notes
+          type: text
+          description: "Provider's clinical documentation"
+
+        - name: assessment
+          type: text
+          description: "Clinical assessment"
+
+        - name: plan
+          type: text
+          description: "Treatment plan"
+
+        - name: follow_up_needed
+          type: boolean
+          default: false
+
+        - name: follow_up_in_days
+          type: number
+
+      indexes:
+        - fields: ["encounter_date"]
+          name: "idx_encounter_date"
+        - fields: ["encounter_status"]
+          name: "idx_encounter_status"
+
+    # ------------------------------------------------------------------------
+    # Diagnosis Entity
+    # ------------------------------------------------------------------------
+    - name: Diagnosis
+      display_name: "Diagnosis"
+      description: "Medical condition or disease"
+      icon: "🩺"
+      color: "#F59E0B"
+
+      attributes:
+        - name: diagnosis_code
+          type: string
+          description: "ICD-10-CM code"
+          required: true
+          indexed: true
+
+        - name: diagnosis_description
+          type: string
+          required: true
+
+        - name: diagnosis_type
+          type: enum
+          required: true
+          values:
+            - "Primary"
+            - "Secondary"
+            - "Differential"
+
+        - name: onset_date
+          type: date
+          description: "When condition started"
+
+        - name: diagnosis_date
+          type: date
+          description: "When diagnosed"
+          required: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Resolved"
+            - "In Remission"
+            - "Chronic"
+          default: "Active"
+
+        - name: severity
+          type: enum
+          values: ["Mild", "Moderate", "Severe", "Critical"]
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["diagnosis_code"]
+          name: "idx_diagnosis_code"
+        - fields: ["status"]
+          name: "idx_diagnosis_status"
+
+    # ------------------------------------------------------------------------
+    # Medication Entity
+    # ------------------------------------------------------------------------
+    - name: Medication
+      display_name: "Medication"
+      description: "Prescribed or administered medication"
+      icon: "💊"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: medication_name
+          type: string
+          required: true
+
+        - name: rxnorm_code
+          type: string
+          description: "RxNorm code"
+          indexed: true
+
+        - name: generic_name
+          type: string
+
+        - name: brand_name
+          type: string
+
+        - name: dosage
+          type: string
+          required: true
+          example: "10 mg"
+
+        - name: route
+          type: enum
+          required: true
+          values:
+            - "Oral"
+            - "Topical"
+            - "Intravenous (IV)"
+            - "Intramuscular (IM)"
+            - "Subcutaneous"
+            - "Inhalation"
+            - "Sublingual"
+            - "Rectal"
+
+        - name: frequency
+          type: string
+          required: true
+          example: "Twice daily, Once daily at bedtime"
+
+        - name: quantity
+          type: number
+
+        - name: refills
+          type: number
+          default: 0
+
+        - name: start_date
+          type: date
+          required: true
+
+        - name: end_date
+          type: date
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Discontinued"
+            - "On Hold"
+            - "Completed"
+          default: "Active"
+
+        - name: reason_for_medication
+          type: text
+
+        - name: prescriber_notes
+          type: text
+
+      indexes:
+        - fields: ["rxnorm_code"]
+          name: "idx_medication_rxnorm"
+        - fields: ["status"]
+          name: "idx_medication_status"
+
+    # ------------------------------------------------------------------------
+    # Lab Order/Result Entity
+    # ------------------------------------------------------------------------
+    - name: LabOrder
+      display_name: "Lab Order"
+      description: "Laboratory test order and results"
+      icon: "🔬"
+      color: "#14B8A6"
+
+      attributes:
+        - name: test_name
+          type: string
+          required: true
+
+        - name: loinc_code
+          type: string
+          description: "LOINC code for lab test"
+          indexed: true
+
+        - name: order_date
+          type: date
+          required: true
+
+        - name: collection_date
+          type: date
+
+        - name: result_date
+          type: date
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Ordered"
+            - "Collected"
+            - "In Lab"
+            - "Resulted"
+            - "Cancelled"
+          default: "Ordered"
+
+        - name: result_value
+          type: string
+
+        - name: result_unit
+          type: string
+
+        - name: reference_range
+          type: string
+          example: "4.5-11.0 x10^3/uL"
+
+        - name: abnormal_flag
+          type: enum
+          values: ["Normal", "High", "Low", "Critical High", "Critical Low"]
+
+        - name: interpretation
+          type: text
+
+      indexes:
+        - fields: ["order_date"]
+          name: "idx_lab_order_date"
+        - fields: ["status"]
+          name: "idx_lab_status"
+
+    # ------------------------------------------------------------------------
+    # Appointment Entity
+    # ------------------------------------------------------------------------
+    - name: Appointment
+      display_name: "Appointment"
+      description: "Scheduled patient appointment"
+      icon: "📅"
+      color: "#6366F1"
+
+      attributes:
+        - name: appointment_date
+          type: datetime
+          required: true
+
+        - name: duration_minutes
+          type: number
+          required: true
+          default: 30
+
+        - name: appointment_type
+          type: enum
+          required: true
+          values:
+            - "New Patient Visit"
+            - "Follow-Up Visit"
+            - "Annual Physical"
+            - "Telehealth"
+            - "Procedure"
+            - "Consultation"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Scheduled"
+            - "Confirmed"
+            - "Arrived"
+            - "In Progress"
+            - "Completed"
+            - "Cancelled"
+            - "No Show"
+            - "Rescheduled"
+          default: "Scheduled"
+
+        - name: reason_for_visit
+          type: text
+
+        - name: location
+          type: string
+
+        - name: reminder_sent
+          type: boolean
+          default: false
+
+        - name: reminder_sent_date
+          type: datetime
+
+        - name: patient_notes
+          type: text
+          description: "Notes from patient during scheduling"
+
+        - name: staff_notes
+          type: text
+
+      indexes:
+        - fields: ["appointment_date"]
+          name: "idx_appointment_date"
+        - fields: ["status"]
+          name: "idx_appointment_status"
+
+    # ------------------------------------------------------------------------
+    # Referral Entity
+    # ------------------------------------------------------------------------
+    - name: Referral
+      display_name: "Referral"
+      description: "Referral to specialist or other provider"
+      icon: "🔀"
+      color: "#F43F5E"
+
+      attributes:
+        - name: referral_date
+          type: date
+          required: true
+
+        - name: referral_reason
+          type: text
+          required: true
+
+        - name: specialty_needed
+          type: string
+          required: true
+
+        - name: urgency
+          type: enum
+          required: true
+          values:
+            - "Routine"
+            - "Urgent"
+            - "Stat"
+          default: "Routine"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Scheduled"
+            - "Seen"
+            - "Declined"
+            - "Expired"
+          default: "Pending"
+
+        - name: appointment_scheduled_date
+          type: date
+
+        - name: appointment_completed_date
+          type: date
+
+        - name: authorization_number
+          type: string
+          description: "Insurance authorization number"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_referral_status"
+        - fields: ["referral_date"]
+          name: "idx_referral_date"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Patient-Provider Relationships
+    - name: HAS_PRIMARY_CARE_PROVIDER
+      from: Patient
+      to: Provider
+      description: "Patient's primary care physician"
+      cardinality: many_to_one
+
+    - name: SPECIALIST_FOR
+      from: Provider
+      to: Patient
+      description: "Provider is specialist for patient"
+      cardinality: many_to_many
+      attributes:
+        - name: specialty_area
+          type: string
+        - name: start_date
+          type: date
+
+    # Encounter Relationships
+    - name: HAD_ENCOUNTER
+      from: Patient
+      to: Encounter
+      description: "Patient had encounter"
+      cardinality: one_to_many
+
+    - name: ATTENDED_BY
+      from: Encounter
+      to: Provider
+      description: "Encounter attended by provider"
+      cardinality: many_to_one
+
+    # Diagnosis Relationships
+    - name: HAS_DIAGNOSIS
+      from: Patient
+      to: Diagnosis
+      description: "Patient has diagnosis"
+      cardinality: one_to_many
+
+    - name: DIAGNOSED_DURING
+      from: Diagnosis
+      to: Encounter
+      description: "Diagnosis made during encounter"
+      cardinality: many_to_one
+
+    - name: DIAGNOSED_BY
+      from: Diagnosis
+      to: Provider
+      description: "Diagnosis made by provider"
+      cardinality: many_to_one
+
+    # Medication Relationships
+    - name: PRESCRIBED_MEDICATION
+      from: Patient
+      to: Medication
+      description: "Patient prescribed medication"
+      cardinality: one_to_many
+
+    - name: PRESCRIBED_BY
+      from: Medication
+      to: Provider
+      description: "Medication prescribed by provider"
+      cardinality: many_to_one
+
+    - name: PRESCRIBED_DURING
+      from: Medication
+      to: Encounter
+      description: "Medication prescribed during encounter"
+      cardinality: many_to_one
+
+    - name: FOR_DIAGNOSIS
+      from: Medication
+      to: Diagnosis
+      description: "Medication for specific diagnosis"
+      cardinality: many_to_one
+
+    # Lab Order Relationships
+    - name: HAS_LAB_ORDER
+      from: Patient
+      to: LabOrder
+      description: "Patient has lab order"
+      cardinality: one_to_many
+
+    - name: ORDERED_BY
+      from: LabOrder
+      to: Provider
+      description: "Lab ordered by provider"
+      cardinality: many_to_one
+
+    - name: ORDERED_DURING
+      from: LabOrder
+      to: Encounter
+      description: "Lab ordered during encounter"
+      cardinality: many_to_one
+
+    # Appointment Relationships
+    - name: HAS_APPOINTMENT
+      from: Patient
+      to: Appointment
+      description: "Patient has appointment"
+      cardinality: one_to_many
+
+    - name: SCHEDULED_WITH
+      from: Appointment
+      to: Provider
+      description: "Appointment scheduled with provider"
+      cardinality: many_to_one
+
+    # Referral Relationships
+    - name: REFERRED
+      from: Patient
+      to: Referral
+      description: "Patient referred"
+      cardinality: one_to_many
+
+    - name: REFERRED_BY
+      from: Referral
+      to: Provider
+      description: "Referral made by provider (referring provider)"
+      cardinality: many_to_one
+
+    - name: REFERRED_TO
+      from: Referral
+      to: Provider
+      description: "Referral to provider (receiving provider)"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # COMMON QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "patient_summary"
+      description: "Complete patient summary with active diagnoses, medications, allergies"
+      cypher: |
+        MATCH (p:Patient {id: $patient_id})
+        OPTIONAL MATCH (p)-[:HAS_DIAGNOSIS]->(d:Diagnosis {status: 'Active'})
+        OPTIONAL MATCH (p)-[:PRESCRIBED_MEDICATION]->(m:Medication {status: 'Active'})
+        OPTIONAL MATCH (p)-[:HAS_PRIMARY_CARE_PROVIDER]->(pcp:Provider)
+        RETURN p, collect(DISTINCT d) AS diagnoses, collect(DISTINCT m) AS medications, pcp
+
+    - name: "upcoming_appointments"
+      description: "Provider's upcoming appointments for the day"
+      cypher: |
+        MATCH (provider:Provider {id: $provider_id})<-[:SCHEDULED_WITH]-(apt:Appointment)
+        WHERE apt.appointment_date >= datetime($start_of_day)
+          AND apt.appointment_date < datetime($end_of_day)
+          AND apt.status IN ['Scheduled', 'Confirmed']
+        MATCH (apt)<-[:HAS_APPOINTMENT]-(patient:Patient)
+        RETURN apt, patient
+        ORDER BY apt.appointment_date ASC
+
+    - name: "pending_referrals"
+      description: "Pending referrals for care coordination"
+      cypher: |
+        MATCH (ref:Referral {status: 'Pending'})
+        MATCH (ref)<-[:REFERRED]-(patient:Patient)
+        MATCH (ref)-[:REFERRED_BY]->(referring_provider:Provider)
+        WHERE ref.referral_date >= date() - duration({days: 30})
+        RETURN ref, patient, referring_provider
+        ORDER BY ref.referral_date ASC
+
+    - name: "patient_care_team"
+      description: "All providers involved in patient's care"
+      cypher: |
+        MATCH (p:Patient {id: $patient_id})
+        OPTIONAL MATCH (p)-[:HAS_PRIMARY_CARE_PROVIDER]->(pcp:Provider)
+        OPTIONAL MATCH (p)<-[:SPECIALIST_FOR]-(specialist:Provider)
+        RETURN pcp, collect(DISTINCT specialist) AS specialists
+
+    - name: "overdue_labs"
+      description: "Lab orders that haven't been resulted within expected timeframe"
+      cypher: |
+        MATCH (lab:LabOrder)
+        WHERE lab.status IN ['Ordered', 'Collected', 'In Lab']
+          AND lab.order_date < date() - duration({days: 7})
+        MATCH (lab)<-[:HAS_LAB_ORDER]-(patient:Patient)
+        MATCH (lab)-[:ORDERED_BY]->(provider:Provider)
+        RETURN lab, patient, provider
+        ORDER BY lab.order_date ASC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  fhir_version: "R4"
+  clinical_terminologies:
+    - "ICD-10-CM"
+    - "SNOMED CT"
+    - "LOINC"
+    - "RxNorm"

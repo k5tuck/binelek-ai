@@ -1,0 +1,773 @@
+# Energy & Utilities UI Configuration
+# Frontend presentation layer for energy domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for energy and utilities management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#F59E0B"      # Amber
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/energy-logo.svg"
+    favicon_url: "/assets/favicons/energy.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "assets"
+        label: "Assets"
+        icon: "🔧"
+        route: "/assets"
+        badge_query: "count_critical_assets"
+
+      - id: "grid"
+        label: "Grid"
+        icon: "🔌"
+        route: "/grid"
+        submenu:
+          - id: "segments"
+            label: "Grid Segments"
+            route: "/grid/segments"
+          - id: "topology"
+            label: "Network Topology"
+            route: "/grid/topology"
+
+      - id: "outages"
+        label: "Outages"
+        icon: "⚠️"
+        route: "/outages"
+        badge_query: "count_active_outages"
+
+      - id: "customers"
+        label: "Customers"
+        icon: "👥"
+        route: "/customers"
+
+      - id: "meters"
+        label: "Meters"
+        icon: "📊"
+        route: "/meters"
+
+      - id: "generation"
+        label: "Generation"
+        icon: "🏭"
+        route: "/generation"
+
+      - id: "maintenance"
+        label: "Maintenance"
+        icon: "🔨"
+        route: "/maintenance"
+        badge_query: "count_pending_work_orders"
+
+      - id: "compliance"
+        label: "Compliance"
+        icon: "📋"
+        route: "/compliance"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Operations Dashboard"
+      description: "Real-time overview of grid operations and performance"
+      layout: "grid"
+
+      widgets:
+        - id: "active_outages"
+          type: "metric_card"
+          title: "Active Outages"
+          query: "count_active_outages"
+          icon: "⚠️"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "customers_out"
+          type: "metric_card"
+          title: "Customers Without Power"
+          query: "count_customers_out"
+          icon: "👥"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "system_load"
+          type: "metric_card"
+          title: "Current System Load"
+          query: "current_system_load_mw"
+          format: "number"
+          suffix: " MW"
+          icon: "⚡"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "saidi_ytd"
+          type: "metric_card"
+          title: "SAIDI YTD"
+          query: "saidi_ytd"
+          format: "decimal"
+          icon: "📊"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "outage_map"
+          type: "map"
+          title: "Active Outages"
+          query:
+            entity_type: "Outage"
+            filter:
+              status: ["Active", "Assigned", "En Route", "On Site"]
+          marker_color_by: "priority"
+          size: "large"
+
+        - id: "load_curve"
+          type: "chart"
+          chart_type: "area"
+          title: "System Load (24hr)"
+          query: "hourly_system_load"
+          x_axis: "hour"
+          y_axis: "load_mw"
+          size: "medium"
+
+        - id: "generation_mix"
+          type: "chart"
+          chart_type: "donut"
+          title: "Current Generation Mix"
+          query: "generation_by_source"
+          size: "medium"
+
+        - id: "recent_outages"
+          type: "entity_list"
+          title: "Recent Outages"
+          entity_type: "Outage"
+          query:
+            filter:
+              status: ["Active", "Assigned", "En Route"]
+            sort:
+              field: "start_time"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - outage_id
+            - cause
+            - customers_affected
+            - status
+            - start_time
+          size: "medium"
+
+        - id: "critical_assets"
+          type: "entity_list"
+          title: "High-Risk Assets"
+          entity_type: "Asset"
+          query:
+            filter:
+              status: "In Service"
+            sort:
+              field: "failure_probability"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - name
+            - asset_type
+            - failure_probability
+            - condition_score
+          size: "medium"
+
+        - id: "pending_maintenance"
+          type: "entity_list"
+          title: "Pending Maintenance"
+          entity_type: "Maintenance"
+          query:
+            filter:
+              status: ["Planned", "Scheduled"]
+            sort:
+              field: "scheduled_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - work_order_id
+            - work_type
+            - priority
+            - scheduled_date
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Reliability Dashboard
+    # ----------------------------------------------------------------------
+    - id: "reliability"
+      name: "Reliability Dashboard"
+      description: "System reliability metrics and trends"
+      layout: "grid"
+
+      widgets:
+        - id: "saidi_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "SAIDI Trend (12 Months)"
+          query: "monthly_saidi"
+          size: "large"
+
+        - id: "saifi_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "SAIFI Trend (12 Months)"
+          query: "monthly_saifi"
+          size: "large"
+
+        - id: "outages_by_cause"
+          type: "chart"
+          chart_type: "bar"
+          title: "Outages by Cause"
+          query: "outages_by_cause_ytd"
+          size: "medium"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Asset List
+    # ----------------------------------------------------------------------
+    - entity_type: "Asset"
+      id: "asset_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "asset_id"
+              label: "ID"
+              sortable: true
+              width: "120px"
+
+            - field: "name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "asset_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "In Service": "success"
+                "Out of Service": "danger"
+                "Under Construction": "warning"
+
+            - field: "criticality"
+              label: "Criticality"
+              sortable: true
+
+            - field: "condition_score"
+              label: "Condition"
+              sortable: true
+              render: "progress_bar"
+
+            - field: "failure_probability"
+              label: "Failure Risk"
+              sortable: true
+              format: "percentage"
+
+            - field: "next_inspection_date"
+              label: "Next Inspection"
+              sortable: true
+              format: "date"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "status"
+          popup_fields:
+            - name
+            - asset_type
+            - status
+            - condition_score
+
+      filters:
+        - field: "asset_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "criticality"
+          type: "select"
+          multiple: true
+
+        - field: "condition_score"
+          type: "range"
+          min: 0
+          max: 100
+
+        - field: "failure_probability"
+          type: "range"
+          min: 0
+          max: 100
+
+      actions:
+        - id: "add_asset"
+          label: "Add Asset"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+        - id: "create_work_order"
+          label: "Create Work Order"
+          icon: "🔨"
+          type: "bulk_action"
+
+    # ----------------------------------------------------------------------
+    # Outage List
+    # ----------------------------------------------------------------------
+    - entity_type: "Outage"
+      id: "outage_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "outage_id"
+              label: "ID"
+              sortable: true
+
+            - field: "outage_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Active": "danger"
+                "Assigned": "warning"
+                "En Route": "warning"
+                "On Site": "info"
+                "Restored": "success"
+
+            - field: "cause"
+              label: "Cause"
+              sortable: true
+
+            - field: "priority"
+              label: "Priority"
+              sortable: true
+
+            - field: "customers_affected"
+              label: "Customers"
+              sortable: true
+
+            - field: "start_time"
+              label: "Start"
+              sortable: true
+              format: "datetime"
+
+            - field: "estimated_restoration"
+              label: "ETR"
+              format: "datetime"
+
+            - field: "crew_assigned"
+              label: "Crew"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "priority"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Active"
+            - "Assigned"
+            - "En Route"
+            - "On Site"
+            - "Restored"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+        - field: "cause"
+          type: "select"
+          multiple: true
+
+        - field: "start_time"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Customer List
+    # ----------------------------------------------------------------------
+    - entity_type: "Customer"
+      id: "customer_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "account_number"
+              label: "Account"
+              sortable: true
+
+            - field: "customer_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "customer_type"
+              label: "Type"
+              sortable: true
+
+            - field: "rate_class"
+              label: "Rate Class"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "service_address"
+              label: "Address"
+
+            - field: "current_balance"
+              label: "Balance"
+              format: "currency"
+              sortable: true
+
+            - field: "average_monthly_usage"
+              label: "Avg Usage"
+              sortable: true
+
+      filters:
+        - field: "customer_type"
+          type: "select"
+          multiple: true
+
+        - field: "rate_class"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Maintenance List
+    # ----------------------------------------------------------------------
+    - entity_type: "Maintenance"
+      id: "maintenance_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "work_order_id"
+              label: "Work Order"
+              sortable: true
+              render: "link"
+
+            - field: "work_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "priority"
+              label: "Priority"
+              sortable: true
+
+            - field: "scheduled_date"
+              label: "Scheduled"
+              sortable: true
+              format: "date"
+
+            - field: "estimated_cost"
+              label: "Est. Cost"
+              format: "currency"
+
+        - type: "calendar"
+          date_field: "scheduled_date"
+          title_field: "work_order_id"
+          color_by: "priority"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "work_type"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Asset Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Asset"
+      id: "asset_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "name"
+        subtitle_field: "asset_type"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "basic_info"
+              title: "Basic Information"
+              layout: "two_column"
+              fields:
+                - asset_id
+                - asset_type
+                - asset_class
+                - status
+                - criticality
+                - manufacturer
+                - model
+                - serial_number
+
+            - id: "location"
+              title: "Location"
+              fields:
+                - address
+                - field: "location"
+                  render: "map"
+
+            - id: "specifications"
+              title: "Specifications"
+              layout: "two_column"
+              fields:
+                - voltage_rating
+                - capacity_kva
+                - current_load_percent
+
+        - id: "health"
+          label: "Health"
+          icon: "💚"
+
+          sections:
+            - id: "condition"
+              title: "Condition Assessment"
+              layout: "two_column"
+              fields:
+                - condition_score
+                - failure_probability
+                - installation_date
+                - expected_life_years
+                - remaining_life_years
+
+            - id: "inspections"
+              title: "Inspection Schedule"
+              fields:
+                - last_inspection_date
+                - next_inspection_date
+                - maintenance_frequency
+
+        - id: "financial"
+          label: "Financial"
+          icon: "💰"
+
+          sections:
+            - id: "value"
+              title: "Asset Value"
+              layout: "two_column"
+              fields:
+                - original_cost
+                - current_value
+                - replacement_cost
+
+        - id: "connectivity"
+          label: "Connectivity"
+          icon: "🔗"
+
+          sections:
+            - id: "upstream"
+              title: "Upstream Assets"
+              type: "relationship_list"
+              relationship: "CONNECTED_TO"
+              direction: "incoming"
+              filter:
+                connection_type: "Upstream"
+
+            - id: "downstream"
+              title: "Downstream Assets"
+              type: "relationship_list"
+              relationship: "CONNECTED_TO"
+              direction: "outgoing"
+              filter:
+                connection_type: "Downstream"
+
+            - id: "served_meters"
+              title: "Served Meters"
+              type: "relationship_list"
+              relationship: "SUPPLIES"
+              direction: "outgoing"
+
+        - id: "maintenance"
+          label: "Maintenance"
+          icon: "🔨"
+
+          sections:
+            - id: "work_orders"
+              title: "Work Order History"
+              type: "relationship_list"
+              relationship: "MAINTAINED_BY"
+              direction: "outgoing"
+              display_fields:
+                - work_order_id
+                - work_type
+                - status
+                - completion_date
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    - entity_type: "Outage"
+      id: "outage_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "basic_info"
+          title: "Outage Information"
+          fields:
+            - outage_type
+            - status
+            - cause
+            - priority
+            - description
+
+        - id: "timing"
+          title: "Timing"
+          fields:
+            - start_time
+            - estimated_restoration
+
+        - id: "impact"
+          title: "Impact"
+          fields:
+            - customers_affected
+            - field: "location"
+              widget: "map_picker"
+
+        - id: "crew"
+          title: "Crew Assignment"
+          fields:
+            - crew_assigned
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "reliability_report"
+      name: "Reliability Report"
+      description: "System reliability metrics"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - saidi
+            - saifi
+            - caidi
+            - total_outages
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Monthly Trends"
+
+        - type: "table"
+          title: "Outage Details"
+
+    - id: "asset_health_report"
+      name: "Asset Health Report"
+      description: "Asset condition and risk assessment"
+      parameters:
+        - field: "asset_type"
+          type: "select"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_assets
+            - average_condition
+            - high_risk_count
+
+        - type: "chart"
+          chart_type: "histogram"
+          title: "Condition Distribution"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

@@ -2,17 +2,65 @@
 
 AI and ML services for the Binelek platform (Python)
 
+---
+
+## 🔴 Important: Comprehensive Agent Architecture Required
+
+**Current State:** 4 hardcoded real estate agents (property analysis, market research, due diligence, portfolio optimization)
+
+**Target State:** Code-generated, multi-agent orchestration with closed-loop actions supporting all 20 domains
+
+📋 **See [COMPREHENSIVE_AGENT_ARCHITECTURE.md](./COMPREHENSIVE_AGENT_ARCHITECTURE.md)** for complete architecture design (16 weeks)
+
+**Key Features:**
+- **Code Generation Integration** - Agents generated from ontology.yaml + agents.yaml via binah-regen
+- **Multi-Agent Orchestration** - Supervisor agents coordinate worker agents with LangGraph workflows
+- **Closed-Loop Actions** - Write-back to ERP/CRM systems with autonomous operations
+- **Deep Platform Integration** - Agents use generated repositories, ML models, and event-driven triggers
+
+---
+
+## 📁 Repository Structure
+
+```
+binelek-ai/
+├── services/
+│   ├── binah-aip/           # AI Platform (Port 8100)
+│   └── binah-ml/            # ML Service (Port 8102)
+├── domains/                 # ✅ NEW: 20 domain definitions with YAML configs
+│   ├── real-estate/
+│   │   ├── domain.yaml      # Industry metadata, pricing
+│   │   ├── ontology.yaml    # Entities, relationships
+│   │   ├── ui-config.yaml   # Dashboard configurations
+│   │   └── agents.yaml      # 🔜 COMING: Agent definitions
+│   ├── healthcare/
+│   ├── finance/
+│   └── ... (17 more domains)
+├── COMPREHENSIVE_AGENT_ARCHITECTURE.md  # ⭐ Complete architecture design
+├── AGENT_REFACTORING_PLAN.md           # 📝 Original simplified plan (superseded)
+└── README.md
+```
+
+---
+
 ## Services Included
 
 ### 1. binah-aip (Port 8100)
 **Purpose:** AI Platform with intelligent agents and RAG capabilities
 
-**Features:**
-- 4 specialized AI agents (RAG Knowledge Base, Recommendation Engine, Predictive Analytics, Insight Generation)
+**Current Features:**
+- 4 hardcoded real estate AI agents:
+  - PropertyAnalysisAgent - Valuation, risk, ROI calculations
+  - MarketResearchAgent - Market trends and forecasts
+  - DueDiligenceAgent - Property inspection and legal review
+  - PortfolioOptimizationAgent - Portfolio analysis and rebalancing
 - LangChain-based orchestration
 - Vector search with Qdrant
 - Neo4j knowledge graph integration
 - Multi-tenant isolation
+- Autonomous ontology refactoring system
+
+**⚠️ Limitation:** Agents are Python classes specific to real estate. Cannot deploy to other 19 domains without refactoring.
 
 **Tech Stack:** Python 3.11+, FastAPI, LangChain, Qdrant, Neo4j
 
@@ -27,6 +75,26 @@ AI and ML services for the Binelek platform (Python)
 - Tenant-isolated model storage
 
 **Tech Stack:** Python 3.11+, FastAPI, MLflow, scikit-learn, pandas, numpy
+
+## 📚 20 Pre-Built Domains
+
+The `/domains` folder contains complete domain definitions for **20 industries**:
+
+**Core 6 Domains:**
+- Real Estate, Healthcare, Finance, Smart Cities, Logistics, Manufacturing
+
+**Additional 14 Domains:**
+- Agriculture, Construction, Education, Energy, Government, Hospitality, Insurance, Legal, Media & Entertainment, Nonprofit, Pharmaceuticals, Professional Services, Retail, Telecommunications
+
+Each domain includes:
+- `domain.yaml` - Industry metadata, pricing, market analysis
+- `ontology.yaml` - Entities, relationships, indexes
+- `ui-config.yaml` - Dashboard and UI configurations
+- `agents.yaml` - **COMING SOON** (see refactoring plan)
+
+**Current Status:** Ontologies and UI configs are complete. Agent definitions need to be created as part of the refactoring effort.
+
+---
 
 ## Quick Start
 
@@ -140,10 +208,27 @@ Data Sources (Neo4j, Qdrant, PostgreSQL)
 - Type hints required
 
 ### Adding New AI Agents (binah-aip)
-1. Create agent class in `ai-service/agents/`
-2. Register in `ai-service/orchestrator.py`
-3. Add Kafka consumer if needed
+
+**Current (Deprecated) Method:**
+1. Create agent class in `app/agents/`
+2. Register in orchestrator
+3. Add route in `app/routers/`
 4. Update tests
+
+**⚠️ WARNING:** This approach only works for real estate and requires Python code for each agent.
+
+**New (Recommended) Method - IN DESIGN:**
+1. Define agents in `domains/{domain}/agents.yaml` (capabilities, tools, prompts, actions)
+2. Run `binah-regen` to generate:
+   - Agent tool classes (entity queries, ML model wrappers, action executors)
+   - Agent scaffolds (DomainAgent subclasses)
+   - Python bindings for binah-aip
+3. Agent automatically discovered by AgentRegistry
+4. Execute via generic `/api/agents/{domain}/{agent_id}/execute` endpoint
+5. Supervisor agents coordinate multi-agent workflows
+6. Actions write back to ERP/CRM systems with closed-loop feedback
+
+See [COMPREHENSIVE_AGENT_ARCHITECTURE.md](./COMPREHENSIVE_AGENT_ARCHITECTURE.md) for complete design and 16-week implementation timeline.
 
 ### Adding New ML Models (binah-ml)
 1. Create model class in `app/models/`

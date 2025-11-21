@@ -1,0 +1,1105 @@
+# Energy & Utilities Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Energy domain ontology covering assets, meters, customers, grid operations, and regulatory compliance"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Asset Entity
+    # ------------------------------------------------------------------------
+    - name: Asset
+      display_name: "Asset"
+      description: "Physical infrastructure asset (transformer, pole, substation, etc.)"
+      icon: "🔧"
+      color: "#F59E0B"
+
+      attributes:
+        - name: asset_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Unique asset identifier"
+
+        - name: name
+          type: string
+          required: true
+
+        - name: asset_type
+          type: enum
+          required: true
+          values:
+            - "Transformer"
+            - "Pole"
+            - "Conductor"
+            - "Switch"
+            - "Capacitor Bank"
+            - "Recloser"
+            - "Fuse"
+            - "Substation"
+            - "Generator"
+            - "Battery Storage"
+            - "Solar Panel"
+            - "Wind Turbine"
+            - "Pipeline"
+            - "Valve"
+            - "Pump Station"
+            - "Water Tower"
+
+        - name: asset_class
+          type: enum
+          values:
+            - "Generation"
+            - "Transmission"
+            - "Distribution"
+            - "Customer"
+            - "Storage"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "In Service"
+            - "Out of Service"
+            - "Under Construction"
+            - "Retired"
+            - "Planned"
+          default: "In Service"
+
+        - name: criticality
+          type: enum
+          values: ["Critical", "High", "Medium", "Low"]
+          description: "Asset criticality for prioritization"
+
+        - name: location
+          type: geopoint
+          required: true
+          indexed: true
+
+        - name: address
+          type: address
+
+        - name: manufacturer
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+
+        - name: installation_date
+          type: date
+
+        - name: commission_date
+          type: date
+
+        - name: expected_life_years
+          type: number
+
+        - name: remaining_life_years
+          type: number
+          computed: true
+
+        - name: original_cost
+          type: money
+
+        - name: current_value
+          type: money
+
+        - name: replacement_cost
+          type: money
+
+        # Electrical Specifications
+        - name: voltage_rating
+          type: number
+          description: "Voltage rating in kV"
+          unit: "kV"
+
+        - name: capacity_kva
+          type: number
+          description: "Capacity in kVA"
+          unit: "kVA"
+
+        - name: current_load_percent
+          type: number
+          min: 0
+          max: 200
+          unit: "percentage"
+
+        # Maintenance
+        - name: last_inspection_date
+          type: date
+
+        - name: next_inspection_date
+          type: date
+
+        - name: maintenance_frequency
+          type: enum
+          values: ["Monthly", "Quarterly", "Semi-Annual", "Annual", "As-Needed"]
+
+        - name: condition_score
+          type: number
+          min: 0
+          max: 100
+          description: "Asset health condition score"
+
+        - name: failure_probability
+          type: number
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["asset_type"]
+          name: "idx_asset_type"
+        - fields: ["status"]
+          name: "idx_asset_status"
+        - fields: ["location"]
+          name: "idx_asset_location"
+          type: "spatial"
+        - fields: ["condition_score"]
+          name: "idx_asset_condition"
+
+      validation_rules:
+        - rule: "next_inspection_date must be after last_inspection_date"
+        - rule: "condition_score must be between 0 and 100"
+
+    # ------------------------------------------------------------------------
+    # Meter Entity
+    # ------------------------------------------------------------------------
+    - name: Meter
+      display_name: "Meter"
+      description: "Metering device for measuring consumption"
+      icon: "📊"
+      color: "#3B82F6"
+
+      attributes:
+        - name: meter_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: meter_type
+          type: enum
+          required: true
+          values:
+            - "Electric"
+            - "Gas"
+            - "Water"
+            - "Steam"
+            - "Multi-Fuel"
+
+        - name: meter_class
+          type: enum
+          values:
+            - "AMI"
+            - "AMR"
+            - "Manual Read"
+            - "Demand"
+            - "Interval"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Removed"
+            - "Pending Installation"
+          default: "Active"
+
+        - name: manufacturer
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+
+        - name: installation_date
+          type: date
+
+        - name: last_read_date
+          type: datetime
+
+        - name: last_read_value
+          type: number
+
+        - name: reading_unit
+          type: enum
+          values: ["kWh", "Therms", "CCF", "Gallons", "kW"]
+
+        - name: multiplier
+          type: number
+          default: 1
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: service_address
+          type: address
+          required: true
+
+        - name: communication_status
+          type: enum
+          values: ["Online", "Offline", "Intermittent"]
+          default: "Online"
+
+        - name: firmware_version
+          type: string
+
+        - name: last_ping_date
+          type: datetime
+
+      indexes:
+        - fields: ["meter_type"]
+          name: "idx_meter_type"
+        - fields: ["status"]
+          name: "idx_meter_status"
+
+    # ------------------------------------------------------------------------
+    # Customer Entity
+    # ------------------------------------------------------------------------
+    - name: Customer
+      display_name: "Customer"
+      description: "Utility customer account"
+      icon: "👤"
+      color: "#10B981"
+
+      attributes:
+        - name: account_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: customer_name
+          type: string
+          required: true
+
+        - name: customer_type
+          type: enum
+          required: true
+          values:
+            - "Residential"
+            - "Small Commercial"
+            - "Large Commercial"
+            - "Industrial"
+            - "Government"
+            - "Agricultural"
+
+        - name: rate_class
+          type: string
+          indexed: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Suspended"
+            - "Closed"
+          default: "Active"
+
+        - name: service_address
+          type: address
+          required: true
+
+        - name: billing_address
+          type: address
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: mobile_phone
+          type: phone
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Text", "Mail"]
+          default: "Email"
+
+        - name: paperless_billing
+          type: boolean
+          default: false
+
+        - name: autopay_enrolled
+          type: boolean
+          default: false
+
+        - name: budget_billing
+          type: boolean
+          default: false
+
+        - name: life_support
+          type: boolean
+          default: false
+          description: "Medical life support equipment on premises"
+
+        - name: current_balance
+          type: money
+
+        - name: average_monthly_usage
+          type: number
+
+        - name: average_monthly_bill
+          type: money
+
+        - name: credit_score
+          type: number
+          min: 0
+          max: 100
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["account_number"]
+          unique: true
+          name: "idx_customer_account"
+        - fields: ["customer_type"]
+          name: "idx_customer_type"
+        - fields: ["rate_class"]
+          name: "idx_customer_rate"
+
+    # ------------------------------------------------------------------------
+    # Usage Entity
+    # ------------------------------------------------------------------------
+    - name: Usage
+      display_name: "Usage Record"
+      description: "Consumption measurement record"
+      icon: "📈"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: usage_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: read_date
+          type: datetime
+          required: true
+
+        - name: usage_value
+          type: number
+          required: true
+
+        - name: unit
+          type: enum
+          required: true
+          values: ["kWh", "Therms", "CCF", "Gallons", "kW"]
+
+        - name: read_type
+          type: enum
+          values:
+            - "Actual"
+            - "Estimated"
+            - "Customer Read"
+            - "Adjusted"
+
+        - name: interval_length
+          type: number
+          description: "Interval in minutes"
+
+        - name: demand_kw
+          type: number
+          description: "Peak demand in kW"
+
+        - name: power_factor
+          type: number
+          min: 0
+          max: 1
+
+        - name: temperature
+          type: number
+          description: "Ambient temperature at read time"
+
+      indexes:
+        - fields: ["read_date"]
+          name: "idx_usage_date"
+
+    # ------------------------------------------------------------------------
+    # Outage Entity
+    # ------------------------------------------------------------------------
+    - name: Outage
+      display_name: "Outage"
+      description: "Service interruption event"
+      icon: "⚠️"
+      color: "#EF4444"
+
+      attributes:
+        - name: outage_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: outage_type
+          type: enum
+          required: true
+          values:
+            - "Planned"
+            - "Unplanned"
+            - "Momentary"
+            - "Sustained"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Assigned"
+            - "En Route"
+            - "On Site"
+            - "Restored"
+            - "Closed"
+          default: "Active"
+
+        - name: cause
+          type: enum
+          values:
+            - "Equipment Failure"
+            - "Weather"
+            - "Vehicle Accident"
+            - "Animal Contact"
+            - "Vegetation"
+            - "Dig-In"
+            - "Overload"
+            - "Unknown"
+            - "Scheduled Maintenance"
+
+        - name: priority
+          type: enum
+          values: ["Emergency", "High", "Medium", "Low"]
+          default: "Medium"
+
+        - name: start_time
+          type: datetime
+          required: true
+
+        - name: estimated_restoration
+          type: datetime
+
+        - name: actual_restoration
+          type: datetime
+
+        - name: duration_minutes
+          type: number
+          computed: true
+
+        - name: customers_affected
+          type: number
+          required: true
+
+        - name: customer_minutes_interrupted
+          type: number
+          computed: true
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: description
+          type: text
+
+        - name: crew_assigned
+          type: string
+
+        - name: trouble_code
+          type: string
+
+        - name: damage_assessment
+          type: text
+
+        - name: restoration_steps
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_outage_status"
+        - fields: ["start_time"]
+          name: "idx_outage_time"
+        - fields: ["cause"]
+          name: "idx_outage_cause"
+
+    # ------------------------------------------------------------------------
+    # Maintenance Entity
+    # ------------------------------------------------------------------------
+    - name: Maintenance
+      display_name: "Maintenance Work Order"
+      description: "Scheduled or reactive maintenance activity"
+      icon: "🔨"
+      color: "#6366F1"
+
+      attributes:
+        - name: work_order_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: work_type
+          type: enum
+          required: true
+          values:
+            - "Preventive"
+            - "Corrective"
+            - "Inspection"
+            - "Testing"
+            - "Replacement"
+            - "Emergency"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planned"
+            - "Scheduled"
+            - "In Progress"
+            - "Completed"
+            - "Cancelled"
+          default: "Planned"
+
+        - name: priority
+          type: enum
+          values: ["Critical", "High", "Medium", "Low"]
+          default: "Medium"
+
+        - name: description
+          type: text
+
+        - name: scheduled_date
+          type: date
+
+        - name: completion_date
+          type: date
+
+        - name: estimated_hours
+          type: number
+
+        - name: actual_hours
+          type: number
+
+        - name: estimated_cost
+          type: money
+
+        - name: actual_cost
+          type: money
+
+        - name: crew_size
+          type: number
+
+        - name: equipment_required
+          type: array
+          item_type: string
+
+        - name: safety_requirements
+          type: array
+          item_type: string
+
+        - name: completion_notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_maintenance_status"
+        - fields: ["scheduled_date"]
+          name: "idx_maintenance_date"
+
+    # ------------------------------------------------------------------------
+    # Regulation Entity
+    # ------------------------------------------------------------------------
+    - name: Regulation
+      display_name: "Regulation"
+      description: "Regulatory requirement or compliance item"
+      icon: "📋"
+      color: "#14B8A6"
+
+      attributes:
+        - name: regulation_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: authority
+          type: enum
+          required: true
+          values:
+            - "NERC"
+            - "FERC"
+            - "State PUC"
+            - "EPA"
+            - "OSHA"
+            - "DOT"
+            - "Local"
+
+        - name: standard_number
+          type: string
+          description: "e.g., CIP-002-5.1a"
+
+        - name: description
+          type: text
+
+        - name: compliance_deadline
+          type: date
+
+        - name: frequency
+          type: enum
+          values: ["One-Time", "Annual", "Quarterly", "Monthly", "Continuous"]
+
+        - name: status
+          type: enum
+          values: ["Compliant", "Non-Compliant", "Remediation", "Pending Review"]
+          default: "Pending Review"
+
+        - name: evidence_required
+          type: array
+          item_type: string
+
+        - name: last_audit_date
+          type: date
+
+        - name: next_audit_date
+          type: date
+
+        - name: penalty_amount
+          type: money
+          description: "Potential penalty for non-compliance"
+
+      indexes:
+        - fields: ["authority"]
+          name: "idx_regulation_authority"
+        - fields: ["status"]
+          name: "idx_regulation_status"
+
+    # ------------------------------------------------------------------------
+    # GridSegment Entity
+    # ------------------------------------------------------------------------
+    - name: GridSegment
+      display_name: "Grid Segment"
+      description: "Network section (feeder, circuit, zone)"
+      icon: "🔌"
+      color: "#EC4899"
+
+      attributes:
+        - name: segment_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: segment_type
+          type: enum
+          required: true
+          values:
+            - "Feeder"
+            - "Circuit"
+            - "Zone"
+            - "Substation"
+            - "Transmission Line"
+            - "Distribution Main"
+            - "Service Territory"
+
+        - name: voltage_level
+          type: number
+          unit: "kV"
+
+        - name: total_customers
+          type: number
+
+        - name: peak_load_kw
+          type: number
+
+        - name: average_load_kw
+          type: number
+
+        - name: capacity_kw
+          type: number
+
+        - name: utilization_percent
+          type: number
+          computed: true
+          min: 0
+          max: 100
+
+        - name: total_circuit_miles
+          type: number
+
+        - name: underground_percent
+          type: number
+          min: 0
+          max: 100
+
+        - name: saidi
+          type: number
+          description: "System Average Interruption Duration Index"
+
+        - name: saifi
+          type: number
+          description: "System Average Interruption Frequency Index"
+
+        - name: geometry
+          type: text
+          description: "GeoJSON representation of segment"
+
+      indexes:
+        - fields: ["segment_type"]
+          name: "idx_segment_type"
+
+    # ------------------------------------------------------------------------
+    # GenerationSource Entity
+    # ------------------------------------------------------------------------
+    - name: GenerationSource
+      display_name: "Generation Source"
+      description: "Power generation facility or distributed resource"
+      icon: "🏭"
+      color: "#84CC16"
+
+      attributes:
+        - name: source_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: source_type
+          type: enum
+          required: true
+          values:
+            - "Coal"
+            - "Natural Gas"
+            - "Nuclear"
+            - "Hydro"
+            - "Solar"
+            - "Wind"
+            - "Geothermal"
+            - "Biomass"
+            - "Battery Storage"
+            - "Distributed Solar"
+
+        - name: ownership_type
+          type: enum
+          values:
+            - "Utility-Owned"
+            - "IPP"
+            - "Customer-Owned"
+            - "PPA"
+
+        - name: status
+          type: enum
+          values:
+            - "Operating"
+            - "Offline"
+            - "Under Construction"
+            - "Retired"
+            - "Planned"
+
+        - name: capacity_mw
+          type: number
+          required: true
+
+        - name: current_output_mw
+          type: number
+
+        - name: capacity_factor
+          type: number
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        - name: heat_rate
+          type: number
+          description: "BTU/kWh for thermal plants"
+
+        - name: emissions_rate
+          type: number
+          description: "lbs CO2/MWh"
+
+        - name: interconnection_date
+          type: date
+
+        - name: ppa_expiration_date
+          type: date
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+      indexes:
+        - fields: ["source_type"]
+          name: "idx_generation_type"
+        - fields: ["status"]
+          name: "idx_generation_status"
+
+    # ------------------------------------------------------------------------
+    # Distribution Entity
+    # ------------------------------------------------------------------------
+    - name: Distribution
+      display_name: "Distribution Record"
+      description: "Energy distribution and delivery record"
+      icon: "📤"
+      color: "#F97316"
+
+      attributes:
+        - name: distribution_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: timestamp
+          type: datetime
+          required: true
+
+        - name: energy_delivered_mwh
+          type: number
+          required: true
+
+        - name: peak_demand_mw
+          type: number
+
+        - name: losses_mwh
+          type: number
+
+        - name: loss_percentage
+          type: number
+          computed: true
+
+        - name: power_factor
+          type: number
+          min: 0
+          max: 1
+
+        - name: voltage_level
+          type: number
+
+        - name: frequency
+          type: number
+          default: 60
+
+      indexes:
+        - fields: ["timestamp"]
+          name: "idx_distribution_time"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Customer-Meter Relationships
+    - name: SERVES
+      from: Meter
+      to: Customer
+      description: "Meter serves customer"
+      cardinality: many_to_one
+      attributes:
+        - name: start_date
+          type: date
+        - name: end_date
+          type: date
+        - name: service_type
+          type: enum
+          values: ["Primary", "Secondary", "Backup"]
+
+    # Meter-Usage Relationships
+    - name: MEASURES
+      from: Meter
+      to: Usage
+      description: "Meter records usage"
+      cardinality: one_to_many
+
+    # Asset Relationships
+    - name: CONNECTED_TO
+      from: Asset
+      to: Asset
+      description: "Asset connected to another asset"
+      cardinality: many_to_many
+      attributes:
+        - name: connection_type
+          type: enum
+          values: ["Upstream", "Downstream", "Lateral", "Parallel"]
+        - name: phase
+          type: enum
+          values: ["A", "B", "C", "ABC", "AB", "BC", "AC"]
+
+    - name: LOCATED_IN
+      from: Asset
+      to: GridSegment
+      description: "Asset located in grid segment"
+      cardinality: many_to_one
+
+    - name: SUPPLIES
+      from: Asset
+      to: Meter
+      description: "Asset supplies meter"
+      cardinality: one_to_many
+
+    # Outage Relationships
+    - name: AFFECTS
+      from: Outage
+      to: Customer
+      description: "Outage affects customer"
+      cardinality: many_to_many
+      attributes:
+        - name: notification_sent
+          type: boolean
+        - name: notification_time
+          type: datetime
+
+    - name: CAUSED_BY
+      from: Outage
+      to: Asset
+      description: "Outage caused by asset failure"
+      cardinality: many_to_one
+
+    - name: IMPACTS
+      from: Outage
+      to: GridSegment
+      description: "Outage impacts grid segment"
+      cardinality: many_to_many
+
+    # Maintenance Relationships
+    - name: MAINTAINED_BY
+      from: Asset
+      to: Maintenance
+      description: "Asset maintained by work order"
+      cardinality: one_to_many
+
+    # Regulation Relationships
+    - name: REGULATED_BY
+      from: Asset
+      to: Regulation
+      description: "Asset subject to regulation"
+      cardinality: many_to_many
+      attributes:
+        - name: compliance_status
+          type: enum
+          values: ["Compliant", "Non-Compliant", "Pending"]
+        - name: last_verified
+          type: date
+
+    # Generation Relationships
+    - name: GENERATES
+      from: GenerationSource
+      to: GridSegment
+      description: "Generation source feeds grid segment"
+      cardinality: many_to_many
+      attributes:
+        - name: max_injection_mw
+          type: number
+
+    - name: OWNED_BY
+      from: GenerationSource
+      to: Customer
+      description: "DER owned by customer"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "trace_outage_impact"
+      description: "Trace downstream customers affected by asset failure"
+      cypher: |
+        MATCH (a:Asset {id: $asset_id})
+        MATCH path = (a)-[:CONNECTED_TO*1..10]->(downstream:Asset)
+        WHERE all(rel IN relationships(path) WHERE rel.connection_type = 'Downstream')
+        MATCH (downstream)-[:SUPPLIES]->(m:Meter)-[:SERVES]->(c:Customer)
+        RETURN collect(DISTINCT c) AS affected_customers,
+               count(DISTINCT c) AS customer_count
+
+    - name: "asset_health_risk"
+      description: "Find assets with high failure probability"
+      cypher: |
+        MATCH (a:Asset)
+        WHERE a.status = 'In Service'
+          AND a.failure_probability > $threshold
+        OPTIONAL MATCH (a)-[:SUPPLIES]->(m:Meter)-[:SERVES]->(c:Customer)
+        RETURN a,
+               count(DISTINCT c) AS customers_at_risk,
+               a.replacement_cost,
+               a.failure_probability
+        ORDER BY a.failure_probability DESC, customers_at_risk DESC
+        LIMIT 20
+
+    - name: "grid_segment_performance"
+      description: "Get reliability metrics for grid segment"
+      cypher: |
+        MATCH (s:GridSegment {id: $segment_id})
+        OPTIONAL MATCH (o:Outage)-[:IMPACTS]->(s)
+        WHERE o.start_time >= date() - duration({months: 12})
+        RETURN s,
+               count(o) AS outages_12m,
+               sum(o.customer_minutes_interrupted) AS total_cmi,
+               avg(o.duration_minutes) AS avg_duration
+
+    - name: "customer_outage_history"
+      description: "Get customer outage history"
+      cypher: |
+        MATCH (c:Customer {account_number: $account_number})
+        MATCH (o:Outage)-[:AFFECTS]->(c)
+        RETURN o
+        ORDER BY o.start_time DESC
+        LIMIT 20
+
+    - name: "generation_mix"
+      description: "Current generation mix by source type"
+      cypher: |
+        MATCH (g:GenerationSource)
+        WHERE g.status = 'Operating'
+        RETURN g.source_type,
+               sum(g.current_output_mw) AS total_output,
+               sum(g.capacity_mw) AS total_capacity
+        ORDER BY total_output DESC
+
+    - name: "regulatory_compliance_status"
+      description: "Assets requiring compliance attention"
+      cypher: |
+        MATCH (a:Asset)-[r:REGULATED_BY]->(reg:Regulation)
+        WHERE r.compliance_status <> 'Compliant'
+          OR reg.next_audit_date <= date() + duration({days: 30})
+        RETURN a, reg, r.compliance_status, reg.next_audit_date
+        ORDER BY reg.next_audit_date ASC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

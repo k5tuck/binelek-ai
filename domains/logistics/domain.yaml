@@ -1,0 +1,258 @@
+# Logistics Domain Configuration
+# Supply chain, transportation, and warehouse management
+
+domain:
+  id: logistics
+  name: "Logistics & Supply Chain Management"
+  version: "1.0.0"
+  description: |
+    Comprehensive logistics and supply chain knowledge graph platform for shipment tracking,
+    warehouse management, fleet operations, and supply chain optimization. Designed for
+    3PLs, freight forwarders, e-commerce fulfillment, and logistics providers.
+
+  icon: "🚚"
+  color: "#6366F1"  # Indigo
+
+  industry:
+    sector: "Logistics & Transportation"
+    subsectors:
+      - "Third-Party Logistics (3PL)"
+      - "Freight Forwarding"
+      - "E-Commerce Fulfillment"
+      - "Warehouse Management"
+      - "Last-Mile Delivery"
+      - "Fleet Management"
+
+    primary_use_cases:
+      - "Real-time shipment tracking and visibility"
+      - "Warehouse inventory management (WMS)"
+      - "Route optimization and dispatch"
+      - "Fleet and vehicle management"
+      - "Carrier and vendor relationship tracking"
+      - "Supply chain network analysis"
+      - "Delivery performance analytics"
+
+  target_customers:
+    - type: "Regional 3PL Providers"
+      size: "5-50 employees"
+      pain_points:
+        - "Limited shipment visibility across carriers"
+        - "Manual dispatch and routing"
+        - "Siloed customer and carrier data"
+        - "Poor delivery performance insights"
+
+    - type: "E-Commerce Fulfillment Centers"
+      size: "50-500 employees"
+      pain_points:
+        - "Complex multi-channel order management"
+        - "Inventory accuracy issues"
+        - "Peak season capacity planning"
+        - "Returns management complexity"
+
+    - type: "Enterprise Supply Chain Operations"
+      size: "500+ employees, multi-facility"
+      pain_points:
+        - "Network-wide inventory visibility"
+        - "Multi-modal transportation coordination"
+        - "Supplier risk management"
+        - "Supply chain sustainability tracking"
+
+    - type: "Last-Mile Delivery Services"
+      size: "Varies"
+      pain_points:
+        - "Dynamic route optimization"
+        - "Driver performance tracking"
+        - "Real-time customer notifications"
+        - "Failed delivery management"
+
+  market_analysis:
+    market_size:
+      global_logistics_market: "$12.8T (2023)"
+      logistics_tech_market: "$75B (2023)"
+      projected_2030: "$200B"
+      cagr: "15.2%"
+
+    key_trends:
+      - "AI-powered demand forecasting"
+      - "Autonomous vehicles and drones"
+      - "Blockchain for supply chain transparency"
+      - "Green logistics and carbon tracking"
+      - "Last-mile delivery innovation"
+      - "IoT and real-time tracking"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Oracle NetSuite (ERP with logistics)"
+        - "SAP TMS (Transportation Management)"
+        - "Manhattan Associates (WMS)"
+        - "ShipStation (multi-carrier shipping)"
+        - "Flexport (freight forwarding platform)"
+
+      differentiation:
+        - "Graph-based network optimization (multi-hop routing)"
+        - "Entity resolution across carriers and systems"
+        - "Real-time relationship intelligence (supplier dependencies)"
+        - "Open API for custom integrations"
+        - "Multi-domain support (can extend to manufacturing, retail)"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small logistics companies evaluating platform"
+      included:
+        - "1 user"
+        - "100 shipments/month max"
+        - "10k API calls/month"
+        - "Demo data only"
+        - "Community support"
+      limitations:
+        - "Not production-ready"
+        - "Powered by Binelek branding"
+        - "No live carrier integrations"
+
+    - tier: "Starter"
+      price: "$799/month + $50/user"
+      target: "Small 3PLs, local delivery services (5-20 employees)"
+      included:
+        - "10 users included, then $50/user"
+        - "5,000 shipments/month"
+        - "Unlimited products/SKUs"
+        - "500k API calls/month"
+        - "Carrier integrations (FedEx, UPS, USPS)"
+        - "Basic route optimization"
+        - "Email/phone support"
+      overage_rates:
+        - "Shipments: $0.10 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$2,999/month + $75/user"
+      target: "Mid-size fulfillment centers, regional 3PLs (20-100 employees)"
+      included:
+        - "25 users included, then $75/user"
+        - "50,000 shipments/month"
+        - "Unlimited SKUs"
+        - "5M API calls/month"
+        - "Advanced route optimization"
+        - "Multi-warehouse support"
+        - "Inventory forecasting"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+        - "Custom branding"
+      overage_rates:
+        - "Shipments: $0.10 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $15,000+/month)"
+      target: "Large 3PLs, enterprise supply chains, multi-facility networks"
+      included:
+        - "Unlimited users"
+        - "Unlimited shipments"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom carrier integrations"
+        - "Advanced analytics and BI"
+        - "Multi-tenant white-label (for logistics platforms)"
+
+  compliance_requirements:
+    regulations:
+      - name: "FMCSA (Federal Motor Carrier Safety Administration)"
+        description: "Regulates commercial motor vehicles in the US"
+        impact: |
+          - Driver hours of service (HOS) tracking
+          - Vehicle inspection records
+          - Driver qualification files
+          - Safety ratings and compliance
+
+      - name: "DOT (Department of Transportation)"
+        description: "Transportation regulations and safety"
+        impact: |
+          - Hazardous materials (HAZMAT) documentation
+          - Weight and size restrictions
+          - Safety compliance reporting
+
+      - name: "Customs and Trade (CBP, TSA)"
+        description: "Import/export and security regulations"
+        impact: |
+          - Customs documentation (bill of lading, commercial invoice)
+          - Automated Commercial Environment (ACE) integration
+          - Known Shipper programs (TSA)
+
+      - name: "GDPR (for EU shipments)"
+        description: "Data privacy for EU citizens"
+        impact: "Consignee data protection, right to erasure"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Carriers"
+        providers: ["FedEx", "UPS", "USPS", "DHL", "XPO Logistics"]
+        use_case: "Rate shopping, label generation, tracking updates"
+        standard: "REST APIs, EDI"
+
+      - name: "E-Commerce Platforms"
+        providers: ["Shopify", "WooCommerce", "Magento", "Amazon Seller Central"]
+        use_case: "Order import, inventory sync, fulfillment status"
+
+      - name: "Warehouse Management Systems (WMS)"
+        providers: ["Manhattan Associates", "HighJump", "Oracle WMS"]
+        use_case: "Inventory sync, pick/pack/ship workflows"
+
+      - name: "Transportation Management Systems (TMS)"
+        providers: ["Oracle TMS", "SAP TM", "MercuryGate"]
+        use_case: "Load planning, freight audit, carrier performance"
+
+      - name: "Telematics & GPS"
+        providers: ["Geotab", "Samsara", "Verizon Connect"]
+        use_case: "Real-time vehicle tracking, driver behavior, fuel monitoring"
+
+      - name: "Route Optimization"
+        providers: ["Route4Me", "OptimoRoute", "Google Maps Platform"]
+        use_case: "Multi-stop route planning, ETAs"
+
+      - name: "EDI Providers"
+        providers: ["SPS Commerce", "TrueCommerce", "DiCentral"]
+        use_case: "EDI 210 (freight invoice), EDI 214 (shipment status)"
+
+      - name: "Accounting"
+        providers: ["QuickBooks", "Xero", "NetSuite"]
+        use_case: "Freight billing, invoicing, expense tracking"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Shipments managed per month"
+        benchmark: "Average customer manages 15,000 shipments/month"
+
+      - metric: "On-time delivery rate"
+        benchmark: "Graph-based routing improves OTD from 85% to 94%"
+
+      - metric: "Carrier rate optimization"
+        benchmark: "Save 12% on freight costs through smart carrier selection"
+
+      - metric: "Warehouse pick accuracy"
+        benchmark: "Reduce picking errors by 40% with optimized workflows"
+
+      - metric: "Route efficiency"
+        benchmark: "Reduce delivery miles by 18% with graph-based route optimization"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Logistics domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/logistics/SETUP.md"
+    carrier_integration: "docs/domains/logistics/CARRIER_INTEGRATION.md"
+    api_reference: "docs/domains/logistics/API.md"
+
+  contact:
+    domain_owner: "logistics-team@binelek.com"
+    support: "support@binelek.com"

@@ -1,0 +1,1008 @@
+# Hospitality & Travel Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Hospitality & travel domain ontology covering properties, guests, reservations, and services"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Property Entity
+    # ------------------------------------------------------------------------
+    - name: Property
+      display_name: "Property"
+      description: "Hospitality property (hotel, resort, vacation rental)"
+      icon: "🏨"
+      color: "#0EA5E9"
+
+      attributes:
+        # Core Identification
+        - name: property_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: property_code
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: property_type
+          type: enum
+          required: true
+          values:
+            - "Hotel"
+            - "Resort"
+            - "Motel"
+            - "Boutique Hotel"
+            - "Vacation Rental"
+            - "Hostel"
+            - "B&B"
+            - "Apartment Hotel"
+            - "Casino Hotel"
+
+        - name: star_rating
+          type: number
+          min: 1
+          max: 5
+
+        - name: brand
+          type: string
+
+        # Location
+        - name: address
+          type: address
+          required: true
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: city
+          type: string
+          indexed: true
+
+        - name: state
+          type: string
+          indexed: true
+
+        - name: country
+          type: string
+          indexed: true
+
+        - name: zip_code
+          type: string
+
+        # Capacity
+        - name: total_rooms
+          type: number
+          required: true
+          min: 1
+
+        - name: floors
+          type: number
+
+        - name: meeting_space_sqft
+          type: number
+
+        - name: restaurant_count
+          type: number
+
+        # Contact
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+        - name: website
+          type: url
+
+        # Operations
+        - name: check_in_time
+          type: string
+          default: "15:00"
+
+        - name: check_out_time
+          type: string
+          default: "11:00"
+
+        - name: time_zone
+          type: string
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        # Features
+        - name: amenities
+          type: array
+          item_type: string
+
+        - name: pet_policy
+          type: enum
+          values: ["Not Allowed", "Dogs Only", "Cats Only", "All Pets", "Service Animals Only"]
+
+        - name: parking
+          type: enum
+          values: ["None", "Self-Parking", "Valet", "Both"]
+
+        - name: wifi
+          type: enum
+          values: ["Free", "Paid", "Premium Tiers"]
+
+        # Status
+        - name: status
+          type: enum
+          values: ["Open", "Temporarily Closed", "Under Renovation", "Closed"]
+          default: "Open"
+
+      indexes:
+        - fields: ["property_type", "city"]
+          name: "idx_property_type_city"
+        - fields: ["location"]
+          name: "idx_property_location"
+          type: "spatial"
+
+    # ------------------------------------------------------------------------
+    # Guest Entity
+    # ------------------------------------------------------------------------
+    - name: Guest
+      display_name: "Guest"
+      description: "Hotel guest or customer"
+      icon: "👤"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: phone
+          type: phone
+
+        - name: date_of_birth
+          type: date
+
+        - name: nationality
+          type: string
+
+        - name: language
+          type: string
+
+        - name: guest_type
+          type: enum
+          values:
+            - "Individual"
+            - "Business"
+            - "VIP"
+            - "Loyalty Member"
+            - "Group"
+          default: "Individual"
+
+        - name: loyalty_tier
+          type: enum
+          values: ["None", "Silver", "Gold", "Platinum", "Diamond"]
+          default: "None"
+
+        - name: loyalty_points
+          type: number
+          default: 0
+
+        - name: lifetime_stays
+          type: number
+          default: 0
+
+        - name: lifetime_revenue
+          type: money
+          default: 0
+
+        # Preferences
+        - name: room_preferences
+          type: array
+          item_type: string
+          description: "e.g., 'High Floor', 'King Bed', 'Non-Smoking'"
+
+        - name: dietary_restrictions
+          type: array
+          item_type: string
+
+        - name: preferred_payment_method
+          type: string
+
+        - name: special_occasions
+          type: array
+          item_type: object
+          description: "Birthdays, anniversaries, etc."
+
+        # Communication
+        - name: marketing_opt_in
+          type: boolean
+          default: false
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "SMS", "Mail"]
+          default: "Email"
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["email"]
+          name: "idx_guest_email"
+          unique: true
+        - fields: ["full_name"]
+          name: "idx_guest_name"
+        - fields: ["loyalty_tier"]
+          name: "idx_guest_loyalty"
+
+    # ------------------------------------------------------------------------
+    # Reservation Entity
+    # ------------------------------------------------------------------------
+    - name: Reservation
+      display_name: "Reservation"
+      description: "Room or service reservation"
+      icon: "📅"
+      color: "#F59E0B"
+
+      attributes:
+        - name: confirmation_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: reservation_type
+          type: enum
+          required: true
+          values:
+            - "Room"
+            - "Restaurant"
+            - "Spa"
+            - "Event"
+            - "Activity"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Confirmed"
+            - "Checked In"
+            - "Checked Out"
+            - "Cancelled"
+            - "No Show"
+          default: "Pending"
+
+        - name: booking_date
+          type: datetime
+
+        - name: arrival_date
+          type: date
+          required: true
+
+        - name: departure_date
+          type: date
+          required: true
+
+        - name: nights
+          type: number
+          computed: true
+
+        - name: adults
+          type: number
+          default: 1
+
+        - name: children
+          type: number
+          default: 0
+
+        - name: room_type
+          type: string
+
+        - name: room_number
+          type: string
+
+        - name: rate_code
+          type: string
+
+        - name: daily_rate
+          type: money
+
+        - name: total_room_revenue
+          type: money
+
+        - name: total_revenue
+          type: money
+          description: "Including all charges"
+
+        # Booking Source
+        - name: booking_source
+          type: enum
+          values:
+            - "Direct"
+            - "Website"
+            - "Phone"
+            - "OTA"
+            - "GDS"
+            - "Corporate"
+            - "Group"
+            - "Walk-In"
+
+        - name: booking_channel
+          type: string
+          description: "Specific channel name"
+
+        # Preferences
+        - name: special_requests
+          type: text
+
+        - name: arrival_time
+          type: string
+
+        - name: departure_time
+          type: string
+
+        # Payment
+        - name: payment_status
+          type: enum
+          values: ["Unpaid", "Deposit", "Partial", "Paid", "Refunded"]
+          default: "Unpaid"
+
+        - name: deposit_amount
+          type: money
+
+        - name: balance_due
+          type: money
+
+        - name: guarantee_type
+          type: enum
+          values: ["Credit Card", "Deposit", "Corporate", "None"]
+
+      indexes:
+        - fields: ["arrival_date", "status"]
+          name: "idx_reservation_arrival_status"
+        - fields: ["confirmation_number"]
+          name: "idx_confirmation"
+
+      validation_rules:
+        - rule: "departure_date must be > arrival_date"
+        - rule: "adults must be >= 1"
+
+    # ------------------------------------------------------------------------
+    # Room Entity
+    # ------------------------------------------------------------------------
+    - name: Room
+      display_name: "Room"
+      description: "Hotel room or unit"
+      icon: "🛏️"
+      color: "#10B981"
+
+      attributes:
+        - name: room_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: room_type
+          type: string
+          required: true
+          indexed: true
+
+        - name: room_category
+          type: enum
+          values:
+            - "Standard"
+            - "Superior"
+            - "Deluxe"
+            - "Suite"
+            - "Executive"
+            - "Presidential"
+
+        - name: floor
+          type: number
+
+        - name: view
+          type: enum
+          values: ["City", "Ocean", "Garden", "Pool", "Mountain", "None"]
+
+        - name: bed_type
+          type: enum
+          values: ["King", "Queen", "Double", "Twin", "Murphy"]
+
+        - name: bed_count
+          type: number
+
+        - name: max_occupancy
+          type: number
+
+        - name: square_feet
+          type: number
+
+        - name: status
+          type: enum
+          values:
+            - "Available"
+            - "Occupied"
+            - "Dirty"
+            - "Clean"
+            - "Inspected"
+            - "Out of Order"
+            - "Out of Service"
+          default: "Available"
+
+        - name: housekeeping_status
+          type: enum
+          values: ["Dirty", "Clean", "Inspected", "Touch Up"]
+
+        - name: connecting_room
+          type: string
+
+        - name: accessible
+          type: boolean
+          default: false
+
+        - name: smoking
+          type: boolean
+          default: false
+
+        - name: amenities
+          type: array
+          item_type: string
+
+        - name: rack_rate
+          type: money
+
+      indexes:
+        - fields: ["room_type", "status"]
+          name: "idx_room_type_status"
+
+    # ------------------------------------------------------------------------
+    # Service Entity
+    # ------------------------------------------------------------------------
+    - name: Service
+      display_name: "Service"
+      description: "Hotel service or amenity"
+      icon: "🛎️"
+      color: "#EC4899"
+
+      attributes:
+        - name: service_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: service_type
+          type: enum
+          required: true
+          values:
+            - "Food & Beverage"
+            - "Room Service"
+            - "Spa"
+            - "Fitness"
+            - "Pool"
+            - "Business Center"
+            - "Concierge"
+            - "Transportation"
+            - "Laundry"
+            - "Other"
+
+        - name: description
+          type: text
+
+        - name: price
+          type: money
+
+        - name: duration_minutes
+          type: number
+
+        - name: location
+          type: string
+
+        - name: hours_of_operation
+          type: string
+
+        - name: reservation_required
+          type: boolean
+          default: false
+
+        - name: capacity
+          type: number
+
+        - name: active
+          type: boolean
+          default: true
+
+      indexes:
+        - fields: ["service_type"]
+          name: "idx_service_type"
+
+    # ------------------------------------------------------------------------
+    # Staff Entity
+    # ------------------------------------------------------------------------
+    - name: Staff
+      display_name: "Staff"
+      description: "Hotel employee"
+      icon: "👨‍💼"
+      color: "#6366F1"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: employee_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: department
+          type: enum
+          required: true
+          values:
+            - "Front Desk"
+            - "Housekeeping"
+            - "Food & Beverage"
+            - "Maintenance"
+            - "Security"
+            - "Spa"
+            - "Management"
+            - "Sales"
+            - "Accounting"
+
+        - name: position
+          type: string
+
+        - name: hire_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Active", "On Leave", "Terminated"]
+          default: "Active"
+
+        - name: certifications
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["department"]
+          name: "idx_staff_department"
+
+    # ------------------------------------------------------------------------
+    # Review Entity
+    # ------------------------------------------------------------------------
+    - name: Review
+      display_name: "Review"
+      description: "Guest review or feedback"
+      icon: "⭐"
+      color: "#F59E0B"
+
+      attributes:
+        - name: rating
+          type: number
+          required: true
+          min: 1
+          max: 5
+
+        - name: review_date
+          type: datetime
+          required: true
+
+        - name: source
+          type: enum
+          required: true
+          values:
+            - "Internal"
+            - "TripAdvisor"
+            - "Google"
+            - "Booking.com"
+            - "Expedia"
+            - "Yelp"
+            - "Other"
+
+        - name: title
+          type: string
+
+        - name: content
+          type: text
+
+        - name: category_ratings
+          type: object
+          description: "Ratings for cleanliness, service, location, etc."
+
+        - name: response
+          type: text
+
+        - name: response_date
+          type: datetime
+
+        - name: sentiment
+          type: enum
+          values: ["Positive", "Neutral", "Negative"]
+
+        - name: verified_stay
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["rating", "source"]
+          name: "idx_review_rating_source"
+
+    # ------------------------------------------------------------------------
+    # Loyalty Entity
+    # ------------------------------------------------------------------------
+    - name: Loyalty
+      display_name: "Loyalty"
+      description: "Loyalty program transaction"
+      icon: "🎁"
+      color: "#14B8A6"
+
+      attributes:
+        - name: transaction_type
+          type: enum
+          required: true
+          values:
+            - "Earn"
+            - "Redeem"
+            - "Bonus"
+            - "Transfer"
+            - "Expire"
+            - "Adjustment"
+
+        - name: points
+          type: number
+          required: true
+
+        - name: transaction_date
+          type: datetime
+          required: true
+
+        - name: description
+          type: string
+
+        - name: reference_number
+          type: string
+
+        - name: expiration_date
+          type: date
+
+      indexes:
+        - fields: ["transaction_date"]
+          name: "idx_loyalty_date"
+
+    # ------------------------------------------------------------------------
+    # Event Entity
+    # ------------------------------------------------------------------------
+    - name: Event
+      display_name: "Event"
+      description: "Meeting, conference, or event"
+      icon: "🎪"
+      color: "#3B82F6"
+
+      attributes:
+        - name: event_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: event_type
+          type: enum
+          required: true
+          values:
+            - "Meeting"
+            - "Conference"
+            - "Wedding"
+            - "Banquet"
+            - "Social"
+            - "Corporate"
+
+        - name: status
+          type: enum
+          values: ["Inquiry", "Tentative", "Definite", "In Progress", "Completed", "Cancelled"]
+          default: "Inquiry"
+
+        - name: start_date
+          type: datetime
+          required: true
+
+        - name: end_date
+          type: datetime
+          required: true
+
+        - name: setup_time
+          type: datetime
+
+        - name: teardown_time
+          type: datetime
+
+        - name: expected_attendees
+          type: number
+
+        - name: actual_attendees
+          type: number
+
+        - name: venue
+          type: string
+
+        - name: room_setup
+          type: enum
+          values: ["Theater", "Classroom", "Banquet", "U-Shape", "Boardroom", "Cocktail"]
+
+        - name: catering_required
+          type: boolean
+          default: false
+
+        - name: av_required
+          type: boolean
+          default: false
+
+        - name: total_revenue
+          type: money
+
+        - name: deposit_paid
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["event_type", "status"]
+          name: "idx_event_type_status"
+
+    # ------------------------------------------------------------------------
+    # Amenity Entity
+    # ------------------------------------------------------------------------
+    - name: Amenity
+      display_name: "Amenity"
+      description: "Room or property amenity"
+      icon: "✨"
+      color: "#22C55E"
+
+      attributes:
+        - name: amenity_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: amenity_type
+          type: enum
+          required: true
+          values:
+            - "Room"
+            - "Property"
+            - "Bathroom"
+            - "Technology"
+            - "Comfort"
+
+        - name: description
+          type: text
+
+        - name: icon
+          type: string
+
+        - name: chargeable
+          type: boolean
+          default: false
+
+        - name: price
+          type: money
+
+      indexes:
+        - fields: ["amenity_type"]
+          name: "idx_amenity_type"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Reservation Relationships
+    - name: BOOKS
+      from: Guest
+      to: Reservation
+      description: "Guest makes reservation"
+      cardinality: one_to_many
+
+    - name: RESERVATION_FOR
+      from: Reservation
+      to: Property
+      description: "Reservation at property"
+      cardinality: many_to_one
+
+    - name: ASSIGNED_ROOM
+      from: Reservation
+      to: Room
+      description: "Reservation assigned to room"
+      cardinality: many_to_one
+
+    # Service Relationships
+    - name: SERVES
+      from: Service
+      to: Guest
+      description: "Service provided to guest"
+      cardinality: many_to_many
+      attributes:
+        - name: service_date
+          type: datetime
+        - name: amount
+          type: money
+        - name: notes
+          type: string
+
+    - name: SERVICE_AT
+      from: Service
+      to: Property
+      description: "Service offered at property"
+      cardinality: many_to_one
+
+    # Staff Relationships
+    - name: WORKS_AT
+      from: Staff
+      to: Property
+      description: "Staff works at property"
+      cardinality: many_to_one
+      attributes:
+        - name: start_date
+          type: date
+        - name: shift
+          type: string
+
+    # Review Relationships
+    - name: REVIEWS
+      from: Guest
+      to: Property
+      description: "Guest reviews property"
+      cardinality: many_to_many
+      attributes:
+        - name: review_id
+          type: string
+
+    - name: REVIEW_FOR
+      from: Review
+      to: Property
+      description: "Review for property"
+      cardinality: many_to_one
+
+    - name: REVIEWED_BY
+      from: Review
+      to: Guest
+      description: "Review written by guest"
+      cardinality: many_to_one
+
+    # Loyalty Relationships
+    - name: EARNS_POINTS
+      from: Guest
+      to: Loyalty
+      description: "Guest earns/uses loyalty points"
+      cardinality: one_to_many
+
+    - name: POINTS_FROM
+      from: Loyalty
+      to: Reservation
+      description: "Points from reservation"
+      cardinality: many_to_one
+
+    # Event Relationships
+    - name: ATTENDS
+      from: Guest
+      to: Event
+      description: "Guest attends event"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+          description: "e.g., Organizer, Speaker, Attendee"
+
+    - name: EVENT_AT
+      from: Event
+      to: Property
+      description: "Event at property"
+      cardinality: many_to_one
+
+    # Room Relationships
+    - name: HAS_ROOM
+      from: Property
+      to: Room
+      description: "Property has room"
+      cardinality: one_to_many
+
+    - name: ROOM_AMENITY
+      from: Room
+      to: Amenity
+      description: "Room has amenity"
+      cardinality: many_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "guest_history"
+      description: "Get complete stay history for a guest"
+      cypher: |
+        MATCH (g:Guest {id: $guest_id})-[:BOOKS]->(r:Reservation)
+        RETURN r
+        ORDER BY r.arrival_date DESC
+
+    - name: "guest_preferences"
+      description: "Get guest preferences from past stays"
+      cypher: |
+        MATCH (g:Guest {id: $guest_id})-[:BOOKS]->(r:Reservation)-[:ASSIGNED_ROOM]->(room:Room)
+        WITH g, collect(DISTINCT room.room_type) AS room_types,
+             collect(DISTINCT room.view) AS views
+        RETURN g, room_types, views
+
+    - name: "available_rooms"
+      description: "Find available rooms for dates"
+      cypher: |
+        MATCH (p:Property {id: $property_id})-[:HAS_ROOM]->(room:Room)
+        WHERE NOT EXISTS {
+          MATCH (res:Reservation)-[:ASSIGNED_ROOM]->(room)
+          WHERE res.arrival_date <= $check_out
+            AND res.departure_date >= $check_in
+            AND res.status IN ['Confirmed', 'Checked In']
+        }
+        RETURN room
+        ORDER BY room.room_type
+
+    - name: "loyalty_balance"
+      description: "Calculate guest loyalty point balance"
+      cypher: |
+        MATCH (g:Guest {id: $guest_id})-[:EARNS_POINTS]->(l:Loyalty)
+        WHERE l.expiration_date IS NULL OR l.expiration_date >= date()
+        RETURN sum(l.points) AS balance
+
+    - name: "property_reviews"
+      description: "Get recent reviews for property"
+      cypher: |
+        MATCH (r:Review)-[:REVIEW_FOR]->(p:Property {id: $property_id})
+        RETURN r
+        ORDER BY r.review_date DESC
+        LIMIT 10
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  last_updated: "2024-01-15"

@@ -1,0 +1,776 @@
+# Media & Entertainment UI Configuration
+# Frontend presentation layer for media domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for media content management and distribution"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#8B5CF6"      # Purple
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/media-logo.svg"
+    favicon_url: "/assets/favicons/media.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "content"
+        label: "Content Library"
+        icon: "🎬"
+        route: "/content"
+        badge_query: "count_active_content"
+
+      - id: "rights"
+        label: "Rights"
+        icon: "📜"
+        route: "/rights"
+        badge_query: "count_expiring_rights"
+
+      - id: "talent"
+        label: "Talent"
+        icon: "⭐"
+        route: "/talent"
+
+      - id: "distribution"
+        label: "Distribution"
+        icon: "📡"
+        route: "/distribution"
+
+      - id: "revenue"
+        label: "Revenue"
+        icon: "💰"
+        route: "/revenue"
+        submenu:
+          - id: "overview"
+            label: "Overview"
+            route: "/revenue/overview"
+          - id: "royalties"
+            label: "Royalties"
+            route: "/revenue/royalties"
+          - id: "reports"
+            label: "Reports"
+            route: "/revenue/reports"
+
+      - id: "campaigns"
+        label: "Campaigns"
+        icon: "📣"
+        route: "/campaigns"
+
+      - id: "contracts"
+        label: "Contracts"
+        icon: "📝"
+        route: "/contracts"
+
+      - id: "productions"
+        label: "Productions"
+        icon: "🎥"
+        route: "/productions"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Media Dashboard"
+      description: "Overview of content, rights, and revenue performance"
+      layout: "grid"
+
+      widgets:
+        - id: "total_content"
+          type: "metric_card"
+          title: "Total Content"
+          query: "count_all_content"
+          icon: "🎬"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "rights_expiring"
+          type: "metric_card"
+          title: "Rights Expiring (90 days)"
+          query: "count_expiring_rights"
+          icon: "📜"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "total_revenue_ytd"
+          type: "metric_card"
+          title: "YTD Revenue"
+          query: "sum_ytd_revenue"
+          format: "currency"
+          icon: "💰"
+          color: "#10B981"
+          size: "small"
+
+        - id: "active_campaigns"
+          type: "metric_card"
+          title: "Active Campaigns"
+          query: "count_active_campaigns"
+          icon: "📣"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "recent_releases"
+          type: "entity_list"
+          title: "Recent Releases"
+          entity_type: "Content"
+          query:
+            filter:
+              status: "Released"
+            sort:
+              field: "release_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - title
+            - content_type
+            - release_date
+            - total_revenue
+          size: "medium"
+
+        - id: "upcoming_expirations"
+          type: "entity_list"
+          title: "Upcoming Rights Expirations"
+          entity_type: "Rights"
+          query:
+            filter:
+              status: ["Licensed", "Active"]
+            sort:
+              field: "end_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - content_title
+            - rights_type
+            - territory
+            - end_date
+          size: "medium"
+
+        - id: "revenue_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Revenue Trend (Last 12 Months)"
+          query: "monthly_revenue"
+          x_axis: "month"
+          y_axis: "total_revenue"
+          size: "large"
+
+        - id: "revenue_by_type"
+          type: "chart"
+          chart_type: "pie"
+          title: "Revenue by Type"
+          query: "revenue_by_type_distribution"
+          size: "medium"
+
+        - id: "top_content"
+          type: "leaderboard"
+          title: "Top Performing Content"
+          query: "top_content_by_revenue"
+          metric: "total_revenue"
+          limit: 10
+          size: "medium"
+
+        - id: "distribution_map"
+          type: "map"
+          title: "Distribution by Territory"
+          query:
+            entity_type: "Distribution"
+            filter:
+              status: "Active"
+          marker_color_by: "distribution_type"
+          size: "large"
+
+    # ----------------------------------------------------------------------
+    # Rights Dashboard
+    # ----------------------------------------------------------------------
+    - id: "rights"
+      name: "Rights Management Dashboard"
+      description: "Monitor rights availability and expirations"
+      layout: "grid"
+
+      widgets:
+        - id: "available_rights"
+          type: "metric_card"
+          title: "Available Rights"
+          query: "count_available_rights"
+
+        - id: "licensed_rights"
+          type: "metric_card"
+          title: "Licensed Rights"
+          query: "count_licensed_rights"
+
+        - id: "expiring_30_days"
+          type: "metric_card"
+          title: "Expiring (30 days)"
+          query: "count_expiring_30_days"
+
+        - id: "rights_calendar"
+          type: "calendar"
+          title: "Rights Calendar"
+          query: "rights_timeline"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Content List
+    # ----------------------------------------------------------------------
+    - entity_type: "Content"
+      id: "content_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "title"
+              label: "Title"
+              sortable: true
+              width: "250px"
+              render: "link"
+
+            - field: "content_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Released": "success"
+                "In Production": "warning"
+                "Post-Production": "info"
+                "In Development": "secondary"
+
+            - field: "release_year"
+              label: "Year"
+              sortable: true
+              width: "80px"
+
+            - field: "genre"
+              label: "Genre"
+              render: "tags"
+
+            - field: "runtime_minutes"
+              label: "Runtime"
+              sortable: true
+              width: "80px"
+
+            - field: "total_revenue"
+              label: "Revenue"
+              sortable: true
+              format: "currency"
+
+        - type: "grid"
+          card_template:
+            image_field: "poster_url"
+            title_field: "title"
+            subtitle_field: "content_type"
+            metadata_fields:
+              - release_year
+              - runtime_minutes
+            badge_field: "status"
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "content_type"
+          type: "select"
+          label: "Content Type"
+          multiple: true
+
+        - field: "release_year"
+          type: "range"
+          label: "Release Year"
+          min: 1900
+          max: 2030
+
+        - field: "genre"
+          type: "select"
+          label: "Genre"
+          multiple: true
+
+      actions:
+        - id: "add_content"
+          label: "Add Content"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # Rights List
+    # ----------------------------------------------------------------------
+    - entity_type: "Rights"
+      id: "rights_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "content_title"
+              label: "Content"
+              sortable: true
+
+            - field: "rights_type"
+              label: "Rights Type"
+              sortable: true
+              filterable: true
+
+            - field: "territory"
+              label: "Territory"
+              sortable: true
+              filterable: true
+
+            - field: "exclusivity"
+              label: "Exclusivity"
+
+            - field: "start_date"
+              label: "Start"
+              sortable: true
+              format: "date"
+
+            - field: "end_date"
+              label: "End"
+              sortable: true
+              format: "date"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Available": "success"
+                "Licensed": "info"
+                "Expired": "secondary"
+                "Pending": "warning"
+
+            - field: "license_fee"
+              label: "License Fee"
+              format: "currency"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "rights_type"
+          type: "select"
+          multiple: true
+
+        - field: "territory"
+          type: "select"
+          multiple: true
+
+        - field: "end_date"
+          type: "date_range"
+          label: "Expiration Date"
+
+    # ----------------------------------------------------------------------
+    # Talent List
+    # ----------------------------------------------------------------------
+    - entity_type: "Talent"
+      id: "talent_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+
+            - field: "talent_type"
+              label: "Type"
+              render: "tags"
+
+            - field: "email"
+              label: "Email"
+
+            - field: "representation"
+              label: "Representation"
+
+            - field: "availability_status"
+              label: "Availability"
+              render: "badge"
+
+        - type: "grid"
+          card_template:
+            image_field: "headshot_url"
+            title_field: "full_name"
+            subtitle_field: "talent_type"
+
+      filters:
+        - field: "talent_type"
+          type: "select"
+          multiple: true
+
+        - field: "availability_status"
+          type: "select"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Content Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Content"
+      id: "content_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "title"
+        subtitle_field: "content_type"
+        badge_field: "status"
+        image_field: "poster_url"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "key_details"
+              title: "Key Details"
+              layout: "two_column"
+              fields:
+                - field: "content_type"
+                  label: "Content Type"
+
+                - field: "status"
+                  label: "Status"
+                  render: "badge"
+
+                - field: "release_year"
+                  label: "Release Year"
+
+                - field: "runtime_minutes"
+                  label: "Runtime (min)"
+
+                - field: "genre"
+                  label: "Genre"
+                  render: "tags"
+
+                - field: "language"
+                  label: "Language"
+
+                - field: "mpaa_rating"
+                  label: "MPAA Rating"
+
+            - id: "synopsis"
+              title: "Synopsis"
+              layout: "full_width"
+              fields:
+                - field: "synopsis"
+                  render: "markdown"
+
+        - id: "financial"
+          label: "Financial"
+          icon: "💰"
+
+          sections:
+            - id: "budget"
+              title: "Budget"
+              layout: "two_column"
+              fields:
+                - field: "production_budget"
+                  format: "currency"
+
+                - field: "marketing_budget"
+                  format: "currency"
+
+            - id: "revenue"
+              title: "Revenue"
+              layout: "two_column"
+              fields:
+                - field: "total_revenue"
+                  format: "currency"
+
+                - field: "roi"
+                  format: "percentage"
+
+        - id: "rights"
+          label: "Rights"
+          icon: "📜"
+
+          sections:
+            - id: "rights_list"
+              title: "Rights"
+              type: "relationship_list"
+              relationship: "RIGHTS_FOR"
+              direction: "incoming"
+              display_fields:
+                - rights_type
+                - territory
+                - start_date
+                - end_date
+                - status
+
+        - id: "talent"
+          label: "Talent"
+          icon: "⭐"
+
+          sections:
+            - id: "cast_crew"
+              title: "Cast & Crew"
+              type: "relationship_list"
+              relationship: "STARS_IN"
+              direction: "incoming"
+              display_fields:
+                - full_name
+                - role
+                - character_name
+
+        - id: "distribution"
+          label: "Distribution"
+          icon: "📡"
+
+          sections:
+            - id: "distribution_deals"
+              title: "Distribution Deals"
+              type: "relationship_list"
+              relationship: "DISTRIBUTED_VIA"
+              direction: "outgoing"
+              display_fields:
+                - platform
+                - territory
+                - distribution_type
+                - release_date
+                - status
+
+        - id: "revenue_details"
+          label: "Revenue"
+          icon: "💰"
+
+          sections:
+            - id: "revenue_records"
+              title: "Revenue Records"
+              type: "relationship_list"
+              relationship: "EARNS_FROM"
+              direction: "outgoing"
+              display_fields:
+                - revenue_type
+                - amount
+                - territory
+                - period_start
+                - period_end
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Content Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Content"
+      id: "content_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "title"
+              required: true
+
+            - field: "original_title"
+
+            - field: "content_type"
+              required: true
+
+            - field: "status"
+              required: true
+
+            - field: "genre"
+              widget: "tag_input"
+
+        - id: "details"
+          title: "Content Details"
+          fields:
+            - field: "runtime_minutes"
+              width: "half"
+
+            - field: "release_year"
+              width: "half"
+
+            - field: "language"
+              width: "half"
+
+            - field: "mpaa_rating"
+              width: "half"
+
+        - id: "financial"
+          title: "Financial"
+          fields:
+            - field: "production_budget"
+
+            - field: "marketing_budget"
+
+        - id: "media"
+          title: "Media"
+          fields:
+            - field: "synopsis"
+              widget: "rich_text_editor"
+
+            - field: "poster_url"
+
+            - field: "trailer_url"
+
+    # ----------------------------------------------------------------------
+    # Rights Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Rights"
+      id: "rights_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "rights_info"
+          title: "Rights Information"
+          fields:
+            - rights_type
+            - territory
+            - exclusivity
+
+        - id: "dates"
+          title: "Dates"
+          fields:
+            - start_date
+            - end_date
+            - perpetual
+
+        - id: "financial"
+          title: "Financial Terms"
+          fields:
+            - license_fee
+            - minimum_guarantee
+            - royalty_rate
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search content, talent, contracts..."
+      entity_types:
+        - Content
+        - Talent
+        - Contract
+        - Rights
+
+    facets:
+      - field: "content_type"
+        label: "Content Type"
+      - field: "status"
+        label: "Status"
+      - field: "territory"
+        label: "Territory"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "revenue_report"
+      name: "Revenue Report"
+      description: "Comprehensive revenue analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+        - field: "territory"
+          type: "select"
+          multiple: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_revenue
+            - average_revenue_per_content
+            - top_performing_territory
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Revenue by Territory"
+
+        - type: "table"
+          title: "Revenue Details"
+          columns:
+            - content_title
+            - revenue_type
+            - amount
+            - territory
+            - period
+
+    - id: "rights_availability"
+      name: "Rights Availability Report"
+      description: "Current rights availability by territory"
+      parameters:
+        - field: "content_type"
+          type: "select"
+          multiple: true
+
+        - field: "territory"
+          type: "select"
+          multiple: true
+
+      sections:
+        - type: "matrix"
+          title: "Rights Availability Matrix"
+          rows: "content"
+          columns: "territory"
+          values: "rights_status"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

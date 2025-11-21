@@ -1,0 +1,270 @@
+ui:
+  theme:
+    primary_color: "#3B82F6"
+    secondary_color: "#2563EB"
+    icon: "briefcase"
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "projects"
+        label: "Projects"
+        icon: "folder"
+        route: "/projects"
+
+      - id: "clients"
+        label: "Clients"
+        icon: "users"
+        route: "/clients"
+
+      - id: "time"
+        label: "Time Tracking"
+        icon: "clock"
+        route: "/time"
+
+      - id: "invoices"
+        label: "Invoices"
+        icon: "file-text"
+        route: "/invoices"
+
+      - id: "team"
+        label: "Team"
+        icon: "user-check"
+        route: "/team"
+
+  dashboards:
+    - id: "firm-overview"
+      name: "Firm Overview"
+      layout: "grid"
+      widgets:
+        - type: "metric_card"
+          title: "Monthly Revenue"
+          entity_type: "Invoice"
+          aggregation: "sum"
+          field: "total"
+          filter: "status = 'paid'"
+          time_period: "30d"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Active Projects"
+          entity_type: "Project"
+          aggregation: "count"
+          filter: "status = 'active'"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Billable Hours"
+          entity_type: "TimeEntry"
+          aggregation: "sum"
+          field: "hours"
+          filter: "billable = true AND invoiced = false"
+          time_period: "30d"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Team Utilization"
+          entity_type: "TimeEntry"
+          aggregation: "custom"
+          calculation: "(sum(hours) / (count(distinct team_member_id) * capacity)) * 100"
+          time_period: "7d"
+          format: "percentage"
+          size: "medium"
+
+        - type: "line_chart"
+          title: "Revenue Trend"
+          entity_type: "Invoice"
+          x_axis: "paidDate"
+          y_axis: "total"
+          aggregation: "sum"
+          time_period: "180d"
+          size: "large"
+
+        - type: "bar_chart"
+          title: "Project Profitability"
+          entity_type: "Project"
+          group_by: "name"
+          metrics:
+            - field: "budget"
+              label: "Budget"
+            - field: "actual_cost"
+              label: "Actual"
+          limit: 10
+          size: "large"
+
+        - type: "table"
+          title: "Overdue Invoices"
+          entity_type: "Invoice"
+          filter: "status = 'sent' AND dueDate < today()"
+          columns: ["invoiceNumber", "clientName", "total", "dueDate"]
+          sort_by: "dueDate"
+          size: "medium"
+
+  entity_lists:
+    Project:
+      default_view: "cards"
+      columns:
+        - field: "name"
+          label: "Project Name"
+          sortable: true
+
+        - field: "clientName"
+          label: "Client"
+          sortable: true
+
+        - field: "status"
+          label: "Status"
+          sortable: true
+          format: "badge"
+
+        - field: "completionPercentage"
+          label: "Progress"
+          sortable: true
+          format: "progress_bar"
+
+        - field: "budget"
+          label: "Budget"
+          sortable: true
+          format: "currency"
+
+        - field: "actualHours"
+          label: "Hours"
+          sortable: true
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          options:
+            - value: "planning"
+              label: "Planning"
+            - value: "active"
+              label: "Active"
+            - value: "completed"
+              label: "Completed"
+
+    Client:
+      default_view: "table"
+      columns:
+        - field: "name"
+          label: "Client Name"
+          sortable: true
+
+        - field: "companyName"
+          label: "Company"
+          sortable: true
+
+        - field: "status"
+          label: "Status"
+          sortable: true
+          format: "badge"
+
+        - field: "activeProjects"
+          label: "Projects"
+          sortable: true
+
+        - field: "totalRevenue"
+          label: "Lifetime Value"
+          sortable: true
+          format: "currency"
+
+    TimeEntry:
+      default_view: "table"
+      columns:
+        - field: "date"
+          label: "Date"
+          sortable: true
+          format: "date"
+
+        - field: "teamMemberName"
+          label: "Team Member"
+          sortable: true
+
+        - field: "projectName"
+          label: "Project"
+          sortable: true
+
+        - field: "description"
+          label: "Description"
+
+        - field: "hours"
+          label: "Hours"
+          sortable: true
+
+        - field: "billable"
+          label: "Billable"
+          sortable: true
+          format: "boolean"
+
+        - field: "invoiced"
+          label: "Invoiced"
+          sortable: true
+          format: "boolean"
+
+  entity_forms:
+    Project:
+      sections:
+        - title: "Project Details"
+          fields:
+            - field: "name"
+              type: "text"
+              required: true
+
+            - field: "client"
+              type: "relationship"
+              relationship: "HAS_PROJECT"
+              required: true
+
+            - field: "description"
+              type: "textarea"
+              rows: 4
+
+            - field: "projectType"
+              type: "select"
+              required: true
+
+            - field: "status"
+              type: "select"
+              required: true
+
+        - title: "Timeline"
+          fields:
+            - field: "startDate"
+              type: "date"
+              required: true
+
+            - field: "endDate"
+              type: "date"
+
+            - field: "completionPercentage"
+              type: "slider"
+              min: 0
+              max: 100
+
+        - title: "Budget & Rates"
+          fields:
+            - field: "budget"
+              type: "currency"
+
+            - field: "hourlyRate"
+              type: "currency"
+
+            - field: "estimatedHours"
+              type: "number"
+
+        - title: "Team"
+          fields:
+            - field: "teamMembers"
+              type: "multi_select"
+              relationship: "ASSIGNED_TO"
+
+  search:
+    entities:
+      - Project
+      - Client
+      - TimeEntry
+      - Invoice

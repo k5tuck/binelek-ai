@@ -1,0 +1,231 @@
+# Hospitality & Travel Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: hospitality
+  name: "Hospitality & Travel"
+  version: "1.0.0"
+  description: |
+    Comprehensive hospitality and travel knowledge graph platform for property management,
+    guest relations, reservation tracking, and service optimization. Supports hotels, resorts,
+    vacation rentals, restaurants, and event venues.
+
+  icon: "🏨"
+  color: "#0EA5E9"  # Sky Blue
+
+  industry:
+    sector: "Hospitality & Travel"
+    subsectors:
+      - "Hotels & Resorts"
+      - "Vacation Rentals"
+      - "Restaurants & Food Service"
+      - "Event Venues"
+      - "Travel & Tourism"
+      - "Casinos & Gaming"
+
+    primary_use_cases:
+      - "Property and room management"
+      - "Guest profile and preference tracking"
+      - "Reservation and booking management"
+      - "Staff scheduling and operations"
+      - "Loyalty program management"
+      - "Revenue management and optimization"
+
+  target_customers:
+    - type: "Boutique Hotels"
+      size: "20-200 rooms"
+      pain_points:
+        - "Fragmented guest data across systems"
+        - "Difficulty tracking guest preferences and history"
+        - "Manual rate management"
+        - "Limited visibility into property performance"
+
+    - type: "Hotel Chains"
+      size: "Enterprise"
+      pain_points:
+        - "Cross-property guest recognition"
+        - "Centralized loyalty program management"
+        - "Brand standard compliance"
+        - "Multi-property analytics"
+
+    - type: "Vacation Rental Managers"
+      size: "50-500 properties"
+      pain_points:
+        - "Multi-channel distribution management"
+        - "Owner communication and reporting"
+        - "Maintenance coordination"
+        - "Dynamic pricing optimization"
+
+    - type: "Restaurant Groups"
+      size: "5-50 locations"
+      pain_points:
+        - "Customer relationship tracking"
+        - "Table and reservation management"
+        - "Staff performance monitoring"
+        - "Menu and inventory optimization"
+
+  market_analysis:
+    market_size:
+      global_hospitality_tech: "$28.9B (2023)"
+      projected_2030: "$95.3B"
+      cagr: "18.5%"
+
+    key_trends:
+      - "Contactless and mobile-first guest experience"
+      - "AI-powered personalization"
+      - "Sustainability and eco-tourism"
+      - "Bleisure travel (business + leisure)"
+      - "Experience-based hospitality"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Opera PMS (property management)"
+        - "Amadeus (distribution)"
+        - "Sabre (GDS)"
+        - "RoomKey (direct booking)"
+
+      differentiation:
+        - "Graph-based relationship intelligence for guests"
+        - "Unified view across properties and services"
+        - "AI-driven personalization from connected data"
+        - "Cross-channel analytics and attribution"
+        - "Real-time revenue optimization"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small B&Bs, startups evaluating platform"
+      included:
+        - "1 user"
+        - "20 rooms max"
+        - "10k API calls/month"
+        - "Basic reservation tracking"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$599/month + $40/user"
+      target: "Boutique hotels, small properties (20-100 rooms)"
+      included:
+        - "5 users included, then $40/user"
+        - "100 rooms"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Guest profile management"
+        - "Email support"
+      overage_rates:
+        - "Rooms: $5 per additional room"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,799/month + $65/user"
+      target: "Mid-size hotels, vacation rental managers (100-500 rooms)"
+      included:
+        - "15 users included, then $65/user"
+        - "500 rooms"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "Loyalty program management"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Rooms: $4 per additional room"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $5,999+/month)"
+      target: "Hotel chains, large resort groups, casino properties"
+      included:
+        - "Unlimited users"
+        - "Unlimited rooms"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (Opera, Amadeus, etc.)"
+        - "Advanced security (PCI-DSS, SOC 2 compliance)"
+        - "Multi-property support"
+
+  compliance_requirements:
+    regulations:
+      - name: "PCI-DSS"
+        description: "Payment Card Industry Data Security Standard"
+        impact: "Secure payment processing, tokenization, audit requirements"
+
+      - name: "ADA (Americans with Disabilities Act)"
+        description: "Accessibility requirements for accommodations"
+        impact: "Room accessibility tracking, service accommodation documentation"
+
+      - name: "Health & Safety Regulations"
+        description: "Food safety, fire codes, occupancy limits"
+        impact: "Inspection tracking, training records, compliance documentation"
+
+      - name: "GDPR (for EU guests)"
+        description: "Data privacy and protection for EU citizens"
+        impact: "Guest data consent, data deletion capabilities"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Property Management Systems"
+        providers: ["Opera PMS", "Mews", "Cloudbeds", "RMS Cloud"]
+        use_case: "Sync reservations, room status, and guest data"
+
+      - name: "Distribution & OTAs"
+        providers: ["Amadeus", "Sabre", "Booking.com", "Expedia"]
+        use_case: "Channel management, rate distribution"
+
+      - name: "Point of Sale"
+        providers: ["Micros", "Toast", "Square", "Lightspeed"]
+        use_case: "Restaurant and retail transactions"
+
+      - name: "Payment Processing"
+        providers: ["Stripe", "Adyen", "Worldpay"]
+        use_case: "Payment processing, tokenization"
+
+      - name: "CRM & Marketing"
+        providers: ["Salesforce", "HubSpot", "Revinate", "Cendyn"]
+        use_case: "Guest marketing, campaign management"
+
+      - name: "Revenue Management"
+        providers: ["IDeaS", "Duetto", "Atomize"]
+        use_case: "Dynamic pricing, demand forecasting"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Rooms under management"
+        benchmark: "Average customer manages 250 rooms"
+
+      - metric: "Guest recognition rate"
+        benchmark: "Graph-based profiles increase recognition by 80%"
+
+      - metric: "RevPAR improvement"
+        benchmark: "AI pricing optimization improves RevPAR by 12%"
+
+      - metric: "Guest satisfaction"
+        benchmark: "Personalization improves NPS by 25 points"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  status: "Future"
+  target_release: "2027"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Hospitality & Travel domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/hospitality/SETUP.md"
+    api_reference: "docs/domains/hospitality/API.md"
+    migration_guide: "docs/domains/hospitality/MIGRATION.md"
+
+  contact:
+    domain_owner: "hospitality-team@binelek.com"
+    support: "support@binelek.com"

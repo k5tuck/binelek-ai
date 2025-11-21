@@ -1,0 +1,83 @@
+ui:
+  theme:
+    primary_color: "#8B5CF6"
+    icon: "store"
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+      - id: "pos"
+        label: "Point of Sale"
+        icon: "shopping-cart"
+        route: "/pos"
+      - id: "products"
+        label: "Products"
+        icon: "package"
+        route: "/products"
+      - id: "inventory"
+        label: "Inventory"
+        icon: "warehouse"
+        route: "/inventory"
+      - id: "customers"
+        label: "Customers"
+        icon: "users"
+        route: "/customers"
+
+  dashboards:
+    - id: "retail-overview"
+      name: "Store Overview"
+      widgets:
+        - type: "metric_card"
+          title: "Today's Sales"
+          entity_type: "Sale"
+          aggregation: "sum"
+          field: "total"
+          time_period: "1d"
+
+        - type: "metric_card"
+          title: "Transactions"
+          entity_type: "Sale"
+          aggregation: "count"
+          time_period: "1d"
+
+        - type: "line_chart"
+          title: "Sales Trend"
+          entity_type: "Sale"
+          x_axis: "saleDate"
+          y_axis: "total"
+          time_period: "30d"
+
+  entity_lists:
+    Product:
+      default_view: "table"
+      columns:
+        - field: "name"
+          label: "Product"
+        - field: "sku"
+          label: "SKU"
+        - field: "price"
+          label: "Price"
+          format: "currency"
+        - field: "stockQuantity"
+          label: "Stock"
+
+    Sale:
+      default_view: "table"
+      columns:
+        - field: "saleNumber"
+          label: "Sale #"
+        - field: "total"
+          label: "Total"
+          format: "currency"
+        - field: "saleDate"
+          label: "Date"
+          format: "datetime"
+
+  search:
+    entities:
+      - Product
+      - Customer
+      - Sale

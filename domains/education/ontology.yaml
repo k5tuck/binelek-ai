@@ -1,0 +1,1303 @@
+# Education & Research Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Education domain ontology covering students, faculty, courses, research, and institutional operations"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Student Entity
+    # ------------------------------------------------------------------------
+    - name: Student
+      display_name: "Student"
+      description: "Individual enrolled in educational programs"
+      icon: "🎓"
+      color: "#6366F1"
+
+      attributes:
+        # Core Identification
+        - name: student_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Institution-assigned student ID"
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+
+        - name: secondary_email
+          type: email
+          description: "Personal email for alumni tracking"
+
+        - name: phone
+          type: phone
+
+        - name: date_of_birth
+          type: date
+
+        # Academic Information
+        - name: student_type
+          type: enum
+          required: true
+          values:
+            - "Undergraduate"
+            - "Graduate"
+            - "Doctoral"
+            - "Post-Doctoral"
+            - "Certificate"
+            - "Non-Degree"
+            - "Audit"
+          default: "Undergraduate"
+
+        - name: enrollment_status
+          type: enum
+          required: true
+          values:
+            - "Prospective"
+            - "Applied"
+            - "Admitted"
+            - "Enrolled"
+            - "On Leave"
+            - "Withdrawn"
+            - "Graduated"
+            - "Suspended"
+          default: "Prospective"
+
+        - name: major
+          type: string
+          indexed: true
+
+        - name: minor
+          type: string
+
+        - name: concentration
+          type: string
+
+        - name: gpa
+          type: number
+          min: 0
+          max: 4.0
+          description: "Cumulative GPA"
+
+        - name: credits_earned
+          type: number
+          min: 0
+
+        - name: credits_attempted
+          type: number
+          min: 0
+
+        - name: expected_graduation
+          type: date
+
+        - name: actual_graduation
+          type: date
+
+        - name: academic_standing
+          type: enum
+          values: ["Good Standing", "Probation", "Suspension", "Dismissed"]
+          default: "Good Standing"
+
+        # Demographic
+        - name: address
+          type: address
+
+        - name: citizenship
+          type: string
+
+        - name: residency_status
+          type: enum
+          values: ["In-State", "Out-of-State", "International"]
+
+        - name: visa_type
+          type: string
+          description: "For international students"
+
+        # Financial
+        - name: financial_aid_status
+          type: enum
+          values: ["None", "Pending", "Approved", "Disbursed"]
+
+        - name: tuition_balance
+          type: money
+
+        - name: scholarship_amount
+          type: money
+
+        # Metadata
+        - name: admission_date
+          type: date
+
+        - name: first_enrollment_date
+          type: date
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+          description: "Custom tags like 'First Generation', 'Athlete', 'Honors'"
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_student_email"
+        - fields: ["student_id"]
+          unique: true
+          name: "idx_student_id"
+        - fields: ["enrollment_status", "student_type"]
+          name: "idx_enrollment_type"
+        - fields: ["major"]
+          name: "idx_major"
+
+      validation_rules:
+        - rule: "gpa must be between 0 and 4.0"
+        - rule: "expected_graduation must be after admission_date"
+        - rule: "credits_earned must be <= credits_attempted"
+
+    # ------------------------------------------------------------------------
+    # Faculty Entity
+    # ------------------------------------------------------------------------
+    - name: Faculty
+      display_name: "Faculty"
+      description: "Teaching and research staff at the institution"
+      icon: "👨‍🏫"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: employee_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: office_location
+          type: string
+
+        - name: office_hours
+          type: text
+
+        - name: faculty_type
+          type: enum
+          required: true
+          values:
+            - "Professor"
+            - "Associate Professor"
+            - "Assistant Professor"
+            - "Lecturer"
+            - "Adjunct"
+            - "Visiting"
+            - "Emeritus"
+            - "Research Faculty"
+          default: "Assistant Professor"
+
+        - name: tenure_status
+          type: enum
+          values: ["Tenured", "Tenure-Track", "Non-Tenure", "Emeritus"]
+
+        - name: department
+          type: string
+          required: true
+          indexed: true
+
+        - name: specializations
+          type: array
+          item_type: string
+          description: "Research areas and expertise"
+
+        - name: hire_date
+          type: date
+
+        - name: orcid_id
+          type: string
+          description: "ORCID researcher identifier"
+
+        - name: h_index
+          type: number
+          description: "h-index citation metric"
+
+        - name: total_citations
+          type: number
+
+        - name: total_publications
+          type: number
+
+        - name: biography
+          type: text
+
+        - name: website_url
+          type: url
+
+        - name: cv_url
+          type: url
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_faculty_email"
+        - fields: ["department"]
+          name: "idx_faculty_department"
+
+    # ------------------------------------------------------------------------
+    # Course Entity
+    # ------------------------------------------------------------------------
+    - name: Course
+      display_name: "Course"
+      description: "Academic course offered by the institution"
+      icon: "📚"
+      color: "#10B981"
+
+      attributes:
+        - name: course_code
+          type: string
+          required: true
+          indexed: true
+          description: "e.g., CS101, MATH200"
+
+        - name: course_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: department
+          type: string
+          required: true
+          indexed: true
+
+        - name: credits
+          type: number
+          required: true
+          min: 0
+          max: 12
+
+        - name: level
+          type: enum
+          values:
+            - "Introductory"
+            - "Intermediate"
+            - "Advanced"
+            - "Graduate"
+            - "Doctoral"
+
+        - name: delivery_mode
+          type: enum
+          values:
+            - "In-Person"
+            - "Online"
+            - "Hybrid"
+            - "Asynchronous"
+
+        - name: prerequisites
+          type: array
+          item_type: string
+          description: "List of prerequisite course codes"
+
+        - name: corequisites
+          type: array
+          item_type: string
+
+        - name: learning_outcomes
+          type: array
+          item_type: string
+
+        - name: max_enrollment
+          type: number
+          min: 1
+
+        - name: current_enrollment
+          type: number
+          min: 0
+
+        - name: waitlist_count
+          type: number
+          min: 0
+
+        - name: term
+          type: string
+          description: "e.g., Fall 2025, Spring 2026"
+
+        - name: schedule
+          type: text
+          description: "Days and times"
+
+        - name: location
+          type: string
+
+        - name: syllabus_url
+          type: url
+
+        - name: status
+          type: enum
+          values: ["Active", "Cancelled", "Completed", "Archived"]
+          default: "Active"
+
+      indexes:
+        - fields: ["course_code", "term"]
+          name: "idx_course_term"
+        - fields: ["department"]
+          name: "idx_course_department"
+
+    # ------------------------------------------------------------------------
+    # Research Entity
+    # ------------------------------------------------------------------------
+    - name: Research
+      display_name: "Research Project"
+      description: "Research project or study"
+      icon: "🔬"
+      color: "#F59E0B"
+
+      attributes:
+        - name: project_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: title
+          type: string
+          required: true
+
+        - name: abstract
+          type: text
+
+        - name: research_type
+          type: enum
+          required: true
+          values:
+            - "Basic Research"
+            - "Applied Research"
+            - "Clinical Trial"
+            - "Survey Study"
+            - "Experimental"
+            - "Observational"
+            - "Computational"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Proposed"
+            - "In Review"
+            - "Active"
+            - "On Hold"
+            - "Completed"
+            - "Terminated"
+          default: "Proposed"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: keywords
+          type: array
+          item_type: string
+
+        - name: discipline
+          type: string
+          indexed: true
+
+        - name: irb_protocol_number
+          type: string
+          description: "IRB approval number"
+
+        - name: irb_approval_date
+          type: date
+
+        - name: irb_expiration_date
+          type: date
+
+        - name: human_subjects
+          type: boolean
+          default: false
+
+        - name: total_budget
+          type: money
+
+        - name: spent_to_date
+          type: money
+
+        - name: remaining_budget
+          type: money
+          computed: true
+          formula: "total_budget - spent_to_date"
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_research_status"
+        - fields: ["discipline"]
+          name: "idx_research_discipline"
+
+    # ------------------------------------------------------------------------
+    # Grant Entity
+    # ------------------------------------------------------------------------
+    - name: Grant
+      display_name: "Grant"
+      description: "Funding award for research or programs"
+      icon: "💵"
+      color: "#EF4444"
+
+      attributes:
+        - name: grant_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: title
+          type: string
+          required: true
+
+        - name: funding_agency
+          type: string
+          required: true
+          indexed: true
+
+        - name: grant_type
+          type: enum
+          required: true
+          values:
+            - "Federal"
+            - "State"
+            - "Foundation"
+            - "Corporate"
+            - "Internal"
+            - "International"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pre-Proposal"
+            - "Submitted"
+            - "Under Review"
+            - "Awarded"
+            - "Active"
+            - "No-Cost Extension"
+            - "Closed"
+            - "Declined"
+          default: "Pre-Proposal"
+
+        - name: award_amount
+          type: money
+
+        - name: indirect_costs
+          type: money
+
+        - name: direct_costs
+          type: money
+
+        - name: cost_share_amount
+          type: money
+
+        - name: submission_deadline
+          type: date
+
+        - name: award_date
+          type: date
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: reporting_frequency
+          type: enum
+          values: ["Monthly", "Quarterly", "Semi-Annual", "Annual", "Final Only"]
+
+        - name: next_report_due
+          type: date
+
+        - name: cfda_number
+          type: string
+          description: "Catalog of Federal Domestic Assistance number"
+
+        - name: fain
+          type: string
+          description: "Federal Award Identification Number"
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_grant_status"
+        - fields: ["funding_agency"]
+          name: "idx_grant_agency"
+
+    # ------------------------------------------------------------------------
+    # Publication Entity
+    # ------------------------------------------------------------------------
+    - name: Publication
+      display_name: "Publication"
+      description: "Published research output"
+      icon: "📄"
+      color: "#3B82F6"
+
+      attributes:
+        - name: doi
+          type: string
+          indexed: true
+          description: "Digital Object Identifier"
+
+        - name: title
+          type: string
+          required: true
+
+        - name: abstract
+          type: text
+
+        - name: publication_type
+          type: enum
+          required: true
+          values:
+            - "Journal Article"
+            - "Conference Paper"
+            - "Book"
+            - "Book Chapter"
+            - "Thesis"
+            - "Dissertation"
+            - "Technical Report"
+            - "Patent"
+            - "Preprint"
+
+        - name: journal_name
+          type: string
+
+        - name: conference_name
+          type: string
+
+        - name: publisher
+          type: string
+
+        - name: publication_date
+          type: date
+
+        - name: volume
+          type: string
+
+        - name: issue
+          type: string
+
+        - name: pages
+          type: string
+
+        - name: citation_count
+          type: number
+          min: 0
+
+        - name: impact_factor
+          type: number
+
+        - name: keywords
+          type: array
+          item_type: string
+
+        - name: open_access
+          type: boolean
+          default: false
+
+        - name: peer_reviewed
+          type: boolean
+          default: true
+
+        - name: url
+          type: url
+
+        - name: pdf_url
+          type: url
+
+      indexes:
+        - fields: ["doi"]
+          unique: true
+          name: "idx_publication_doi"
+        - fields: ["publication_type"]
+          name: "idx_publication_type"
+
+    # ------------------------------------------------------------------------
+    # Alumni Entity
+    # ------------------------------------------------------------------------
+    - name: Alumni
+      display_name: "Alumni"
+      description: "Graduated former student"
+      icon: "🎓"
+      color: "#EC4899"
+
+      attributes:
+        - name: alumni_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: graduation_year
+          type: number
+          required: true
+
+        - name: degree_type
+          type: enum
+          values:
+            - "Associate"
+            - "Bachelor"
+            - "Master"
+            - "Doctorate"
+            - "Professional"
+            - "Certificate"
+
+        - name: degree_major
+          type: string
+
+        - name: current_employer
+          type: string
+
+        - name: job_title
+          type: string
+
+        - name: industry
+          type: string
+
+        - name: location
+          type: string
+
+        - name: linkedin_url
+          type: url
+
+        - name: engagement_score
+          type: number
+          min: 0
+          max: 100
+          description: "Alumni engagement metric"
+
+        - name: total_donations
+          type: money
+
+        - name: last_donation_date
+          type: date
+
+        - name: volunteer_hours
+          type: number
+
+        - name: mentorship_available
+          type: boolean
+          default: false
+
+        - name: newsletter_subscribed
+          type: boolean
+          default: true
+
+      indexes:
+        - fields: ["graduation_year"]
+          name: "idx_alumni_year"
+        - fields: ["email"]
+          name: "idx_alumni_email"
+
+    # ------------------------------------------------------------------------
+    # Facility Entity
+    # ------------------------------------------------------------------------
+    - name: Facility
+      display_name: "Facility"
+      description: "Campus buildings, labs, and spaces"
+      icon: "🏛️"
+      color: "#14B8A6"
+
+      attributes:
+        - name: facility_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: facility_type
+          type: enum
+          required: true
+          values:
+            - "Classroom Building"
+            - "Research Lab"
+            - "Library"
+            - "Administrative"
+            - "Dormitory"
+            - "Athletic"
+            - "Student Center"
+            - "Dining"
+            - "Parking"
+
+        - name: address
+          type: address
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: total_square_feet
+          type: number
+          min: 0
+
+        - name: capacity
+          type: number
+          min: 0
+
+        - name: year_built
+          type: number
+
+        - name: last_renovated
+          type: number
+
+        - name: accessibility_features
+          type: array
+          item_type: string
+
+        - name: equipment
+          type: array
+          item_type: string
+
+        - name: operating_hours
+          type: text
+
+        - name: status
+          type: enum
+          values: ["Open", "Closed", "Under Renovation", "Decommissioned"]
+          default: "Open"
+
+      indexes:
+        - fields: ["facility_type"]
+          name: "idx_facility_type"
+
+    # ------------------------------------------------------------------------
+    # Program Entity
+    # ------------------------------------------------------------------------
+    - name: Program
+      display_name: "Academic Program"
+      description: "Degree or certificate program"
+      icon: "📋"
+      color: "#F97316"
+
+      attributes:
+        - name: program_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: degree_type
+          type: enum
+          required: true
+          values:
+            - "Associate"
+            - "Bachelor"
+            - "Master"
+            - "Doctorate"
+            - "Certificate"
+            - "Professional"
+
+        - name: department
+          type: string
+          required: true
+
+        - name: college_school
+          type: string
+
+        - name: description
+          type: text
+
+        - name: total_credits_required
+          type: number
+          required: true
+
+        - name: duration_semesters
+          type: number
+
+        - name: accreditation_body
+          type: string
+
+        - name: accreditation_status
+          type: enum
+          values: ["Accredited", "Pending", "Probation", "Not Accredited"]
+
+        - name: cip_code
+          type: string
+          description: "Classification of Instructional Programs code"
+
+        - name: status
+          type: enum
+          values: ["Active", "Suspended", "Discontinued"]
+          default: "Active"
+
+        - name: application_deadline
+          type: date
+
+        - name: tuition_per_credit
+          type: money
+
+      indexes:
+        - fields: ["degree_type"]
+          name: "idx_program_degree"
+        - fields: ["department"]
+          name: "idx_program_department"
+
+    # ------------------------------------------------------------------------
+    # Enrollment Entity
+    # ------------------------------------------------------------------------
+    - name: Enrollment
+      display_name: "Enrollment"
+      description: "Student course enrollment record"
+      icon: "📝"
+      color: "#84CC16"
+
+      attributes:
+        - name: enrollment_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: term
+          type: string
+          required: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Registered"
+            - "Waitlisted"
+            - "Dropped"
+            - "Withdrawn"
+            - "Completed"
+          default: "Registered"
+
+        - name: grade
+          type: string
+          description: "Letter grade (A, B+, etc.)"
+
+        - name: grade_points
+          type: number
+          min: 0
+          max: 4.0
+
+        - name: credits
+          type: number
+
+        - name: midterm_grade
+          type: string
+
+        - name: attendance_rate
+          type: number
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        - name: registration_date
+          type: date
+
+        - name: drop_date
+          type: date
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["term", "status"]
+          name: "idx_enrollment_term"
+
+    # ------------------------------------------------------------------------
+    # Credential Entity
+    # ------------------------------------------------------------------------
+    - name: Credential
+      display_name: "Credential"
+      description: "Degree, certificate, or badge earned"
+      icon: "🏆"
+      color: "#A855F7"
+
+      attributes:
+        - name: credential_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: credential_type
+          type: enum
+          required: true
+          values:
+            - "Degree"
+            - "Certificate"
+            - "Digital Badge"
+            - "License"
+            - "Certification"
+            - "Micro-credential"
+
+        - name: name
+          type: string
+          required: true
+
+        - name: issuing_institution
+          type: string
+          required: true
+
+        - name: date_issued
+          type: date
+          required: true
+
+        - name: expiration_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Active", "Expired", "Revoked", "Pending"]
+          default: "Active"
+
+        - name: verification_url
+          type: url
+
+        - name: blockchain_hash
+          type: string
+          description: "Blockchain verification hash"
+
+        - name: skills
+          type: array
+          item_type: string
+          description: "Skills validated by credential"
+
+        - name: credit_hours
+          type: number
+
+      indexes:
+        - fields: ["credential_type"]
+          name: "idx_credential_type"
+        - fields: ["status"]
+          name: "idx_credential_status"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Student Relationships
+    - name: ENROLLED_IN
+      from: Student
+      to: Course
+      description: "Student is enrolled in course"
+      cardinality: many_to_many
+      through: Enrollment
+      attributes:
+        - name: term
+          type: string
+        - name: grade
+          type: string
+        - name: status
+          type: enum
+          values: ["Registered", "Completed", "Withdrawn"]
+
+    - name: MAJORS_IN
+      from: Student
+      to: Program
+      description: "Student is majoring in program"
+      cardinality: many_to_many
+      attributes:
+        - name: declaration_date
+          type: date
+        - name: is_primary
+          type: boolean
+          default: true
+
+    - name: ADVISED_BY
+      from: Student
+      to: Faculty
+      description: "Student is advised by faculty member"
+      cardinality: many_to_one
+
+    - name: EARNED
+      from: Student
+      to: Credential
+      description: "Student earned credential"
+      cardinality: one_to_many
+
+    # Faculty Relationships
+    - name: TEACHES
+      from: Faculty
+      to: Course
+      description: "Faculty teaches course"
+      cardinality: many_to_many
+      attributes:
+        - name: term
+          type: string
+        - name: role
+          type: enum
+          values: ["Instructor", "Co-Instructor", "TA Supervisor"]
+
+    - name: LEADS
+      from: Faculty
+      to: Research
+      description: "Faculty leads research project"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: enum
+          values: ["Principal Investigator", "Co-PI", "Collaborator"]
+          required: true
+
+    - name: AUTHORED
+      from: Faculty
+      to: Publication
+      description: "Faculty authored publication"
+      cardinality: many_to_many
+      attributes:
+        - name: author_position
+          type: number
+          description: "Position in author list"
+        - name: corresponding_author
+          type: boolean
+          default: false
+
+    - name: MEMBER_OF
+      from: Faculty
+      to: Facility
+      description: "Faculty is member of lab/center"
+      cardinality: many_to_many
+
+    # Research Relationships
+    - name: FUNDED_BY
+      from: Research
+      to: Grant
+      description: "Research project is funded by grant"
+      cardinality: many_to_many
+      attributes:
+        - name: allocation_amount
+          type: money
+        - name: start_date
+          type: date
+        - name: end_date
+          type: date
+
+    - name: PRODUCES
+      from: Research
+      to: Publication
+      description: "Research produces publication"
+      cardinality: one_to_many
+
+    - name: USES
+      from: Research
+      to: Facility
+      description: "Research uses facility/lab"
+      cardinality: many_to_many
+
+    # Alumni Relationships
+    - name: ALUMNI_OF
+      from: Alumni
+      to: Program
+      description: "Alumni graduated from program"
+      cardinality: many_to_many
+      attributes:
+        - name: graduation_date
+          type: date
+
+    - name: MENTORS
+      from: Alumni
+      to: Student
+      description: "Alumni mentors current student"
+      cardinality: many_to_many
+
+    - name: DONATED_TO
+      from: Alumni
+      to: Program
+      description: "Alumni donated to program/fund"
+      cardinality: many_to_many
+      attributes:
+        - name: amount
+          type: money
+        - name: date
+          type: date
+        - name: fund_name
+          type: string
+
+    # Program Relationships
+    - name: REQUIRES
+      from: Program
+      to: Course
+      description: "Program requires course"
+      cardinality: many_to_many
+      attributes:
+        - name: requirement_type
+          type: enum
+          values: ["Core", "Elective", "Capstone", "Prerequisite"]
+
+    - name: OFFERED_BY
+      from: Program
+      to: Facility
+      description: "Program offered by department/school"
+      cardinality: many_to_one
+
+    # Collaboration Relationships
+    - name: COLLABORATES_WITH
+      from: Faculty
+      to: Faculty
+      description: "Faculty collaborates with other faculty"
+      cardinality: many_to_many
+      attributes:
+        - name: collaboration_type
+          type: enum
+          values: ["Research", "Teaching", "Committee"]
+        - name: start_date
+          type: date
+
+    - name: CO_AUTHORED
+      from: Publication
+      to: Publication
+      description: "Publications by same authors (co-authorship network)"
+      cardinality: many_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "student_academic_path"
+      description: "Get complete academic history for a student"
+      cypher: |
+        MATCH (s:Student {id: $student_id})
+        OPTIONAL MATCH (s)-[e:ENROLLED_IN]->(c:Course)
+        OPTIONAL MATCH (s)-[:MAJORS_IN]->(p:Program)
+        OPTIONAL MATCH (s)-[:ADVISED_BY]->(f:Faculty)
+        OPTIONAL MATCH (s)-[:EARNED]->(cr:Credential)
+        RETURN s, collect(DISTINCT {course: c, enrollment: e}) AS courses,
+               collect(DISTINCT p) AS programs,
+               f AS advisor,
+               collect(DISTINCT cr) AS credentials
+
+    - name: "faculty_research_network"
+      description: "Find collaborators and research connections for faculty"
+      cypher: |
+        MATCH (f:Faculty {id: $faculty_id})
+        OPTIONAL MATCH (f)-[:COLLABORATES_WITH]-(collaborator:Faculty)
+        OPTIONAL MATCH (f)-[:LEADS]->(r:Research)-[:FUNDED_BY]->(g:Grant)
+        OPTIONAL MATCH (f)-[:AUTHORED]->(p:Publication)
+        RETURN f,
+               collect(DISTINCT collaborator) AS collaborators,
+               collect(DISTINCT {research: r, grants: collect(g)}) AS projects,
+               collect(DISTINCT p) AS publications
+
+    - name: "grant_compliance_status"
+      description: "Get grants with upcoming reporting deadlines"
+      cypher: |
+        MATCH (g:Grant)
+        WHERE g.status = 'Active'
+          AND g.next_report_due >= date()
+          AND g.next_report_due <= date() + duration({days: $days_ahead})
+        OPTIONAL MATCH (r:Research)-[:FUNDED_BY]->(g)
+        OPTIONAL MATCH (f:Faculty)-[:LEADS]->(r)
+        RETURN g, collect(DISTINCT r) AS research_projects,
+               collect(DISTINCT f) AS investigators
+        ORDER BY g.next_report_due ASC
+
+    - name: "course_enrollment_analytics"
+      description: "Analyze course enrollment patterns"
+      cypher: |
+        MATCH (c:Course {department: $department})
+        OPTIONAL MATCH (s:Student)-[e:ENROLLED_IN]->(c)
+        WHERE c.term = $term
+        RETURN c.course_code, c.course_name,
+               count(s) AS enrolled_count,
+               c.max_enrollment AS capacity,
+               toFloat(count(s)) / c.max_enrollment AS fill_rate
+        ORDER BY fill_rate DESC
+
+    - name: "alumni_engagement_opportunities"
+      description: "Find alumni for mentorship matching"
+      cypher: |
+        MATCH (a:Alumni)
+        WHERE a.mentorship_available = true
+          AND a.industry = $industry
+        OPTIONAL MATCH (a)-[:ALUMNI_OF]->(p:Program)
+        RETURN a, collect(p) AS programs
+        ORDER BY a.engagement_score DESC
+        LIMIT 20
+
+    - name: "research_collaboration_finder"
+      description: "Find potential research collaborators by keywords"
+      cypher: |
+        MATCH (f1:Faculty {id: $faculty_id})
+        MATCH (f2:Faculty)
+        WHERE f2 <> f1
+          AND any(kw IN f1.specializations WHERE kw IN f2.specializations)
+        OPTIONAL MATCH (f2)-[:AUTHORED]->(p:Publication)
+        RETURN f2,
+               f2.specializations AS shared_interests,
+               count(p) AS publication_count,
+               f2.h_index
+        ORDER BY f2.h_index DESC
+        LIMIT 10
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

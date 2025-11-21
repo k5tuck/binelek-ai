@@ -1,0 +1,954 @@
+# Insurance Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Insurance domain ontology covering policies, claims, underwriting, and risk management"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Policy Entity
+    # ------------------------------------------------------------------------
+    - name: Policy
+      display_name: "Policy"
+      description: "Insurance policy contract"
+      icon: "shield"
+      color: "#0EA5E9"
+
+      attributes:
+        # Core Identification
+        - name: policy_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Unique policy identifier"
+
+        - name: policy_type
+          type: enum
+          required: true
+          values:
+            - "Personal Auto"
+            - "Homeowners"
+            - "Renters"
+            - "Umbrella"
+            - "Commercial Property"
+            - "Commercial Auto"
+            - "General Liability"
+            - "Professional Liability"
+            - "Workers Compensation"
+            - "Life - Term"
+            - "Life - Whole"
+            - "Health - Individual"
+            - "Health - Group"
+            - "Disability"
+          default: "Personal Auto"
+
+        - name: line_of_business
+          type: string
+          indexed: true
+          description: "Line of business category"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Quote"
+            - "Application"
+            - "Bound"
+            - "Issued"
+            - "Active"
+            - "Cancelled"
+            - "Non-Renewed"
+            - "Expired"
+            - "Reinstated"
+          default: "Quote"
+
+        # Dates
+        - name: effective_date
+          type: date
+          required: true
+          indexed: true
+
+        - name: expiration_date
+          type: date
+          required: true
+
+        - name: issue_date
+          type: date
+
+        - name: cancellation_date
+          type: date
+
+        # Premium
+        - name: written_premium
+          type: money
+          required: true
+          description: "Total premium for policy term"
+
+        - name: annual_premium
+          type: money
+
+        - name: payment_plan
+          type: enum
+          values: ["Annual", "Semi-Annual", "Quarterly", "Monthly", "Pay-in-Full"]
+          default: "Annual"
+
+        - name: payment_status
+          type: enum
+          values: ["Current", "Past Due", "Collections", "Paid in Full"]
+          default: "Current"
+
+        # Coverage
+        - name: coverage_limits
+          type: object
+          description: "JSON object with coverage limits"
+
+        - name: deductibles
+          type: object
+          description: "JSON object with deductible amounts"
+
+        # Underwriting
+        - name: underwriting_tier
+          type: enum
+          values: ["Preferred", "Standard", "Non-Standard", "High Risk"]
+          default: "Standard"
+
+        - name: risk_score
+          type: number
+          min: 0
+          max: 1000
+          description: "Calculated risk score"
+
+        # Location/Territory
+        - name: state
+          type: string
+          required: true
+          indexed: true
+
+        - name: territory
+          type: string
+
+        # Additional
+        - name: policy_form
+          type: string
+          description: "Policy form number (e.g., HO-3, ISO CGL)"
+
+        - name: endorsements
+          type: array
+          item_type: string
+          description: "List of endorsement codes"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status", "policy_type"]
+          name: "idx_status_type"
+        - fields: ["effective_date", "expiration_date"]
+          name: "idx_policy_dates"
+        - fields: ["state"]
+          name: "idx_state"
+
+      validation_rules:
+        - rule: "expiration_date must be > effective_date"
+        - rule: "written_premium must be > 0"
+
+    # ------------------------------------------------------------------------
+    # Claim Entity
+    # ------------------------------------------------------------------------
+    - name: Claim
+      display_name: "Claim"
+      description: "Insurance claim"
+      icon: "file-warning"
+      color: "#F59E0B"
+
+      attributes:
+        - name: claim_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: claim_type
+          type: enum
+          required: true
+          values:
+            - "Auto - Collision"
+            - "Auto - Comprehensive"
+            - "Auto - Liability"
+            - "Property - Fire"
+            - "Property - Water"
+            - "Property - Theft"
+            - "Property - Wind/Hail"
+            - "Liability - BI"
+            - "Liability - PD"
+            - "Workers Comp"
+            - "Medical"
+            - "Disability"
+            - "Death"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "FNOL"
+            - "Under Investigation"
+            - "Pending Documentation"
+            - "Under Review"
+            - "Approved"
+            - "Partially Approved"
+            - "Denied"
+            - "Closed - Paid"
+            - "Closed - No Payment"
+            - "Reopened"
+            - "Subrogation"
+            - "Litigation"
+          default: "FNOL"
+
+        # Dates
+        - name: loss_date
+          type: datetime
+          required: true
+          indexed: true
+
+        - name: reported_date
+          type: datetime
+          required: true
+
+        - name: closed_date
+          type: datetime
+
+        # Financial
+        - name: reserve_amount
+          type: money
+          description: "Total reserves set for claim"
+
+        - name: paid_amount
+          type: money
+          description: "Total amount paid"
+
+        - name: incurred_amount
+          type: money
+          computed: true
+          formula: "reserve_amount + paid_amount"
+
+        - name: deductible_amount
+          type: money
+
+        - name: recovery_amount
+          type: money
+          description: "Amount recovered through subrogation"
+
+        # Location
+        - name: loss_location
+          type: address
+
+        - name: loss_state
+          type: string
+          indexed: true
+
+        # Details
+        - name: loss_description
+          type: text
+          required: true
+
+        - name: cause_of_loss
+          type: string
+
+        - name: fault_percentage
+          type: number
+          min: 0
+          max: 100
+
+        # Investigation
+        - name: siu_referral
+          type: boolean
+          default: false
+          description: "Referred to Special Investigation Unit"
+
+        - name: fraud_score
+          type: number
+          min: 0
+          max: 100
+          description: "Fraud likelihood score"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_claim_status"
+        - fields: ["loss_date"]
+          name: "idx_loss_date"
+        - fields: ["siu_referral"]
+          name: "idx_siu"
+
+    # ------------------------------------------------------------------------
+    # Claimant Entity
+    # ------------------------------------------------------------------------
+    - name: Claimant
+      display_name: "Claimant"
+      description: "Person or entity making a claim"
+      icon: "user"
+      color: "#10B981"
+
+      attributes:
+        - name: claimant_type
+          type: enum
+          required: true
+          values:
+            - "Insured"
+            - "Third Party"
+            - "Additional Insured"
+            - "Mortgagee"
+            - "Medical Provider"
+          default: "Insured"
+
+        # Individual Fields
+        - name: first_name
+          type: string
+
+        - name: last_name
+          type: string
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        # Organization
+        - name: organization_name
+          type: string
+
+        - name: display_name
+          type: string
+          computed: true
+
+        # Contact
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        # Injury/Damage
+        - name: injury_type
+          type: string
+          description: "Type of injury if applicable"
+
+        - name: injury_severity
+          type: enum
+          values: ["Minor", "Moderate", "Severe", "Fatal"]
+
+        - name: property_damage_description
+          type: text
+
+        # Legal
+        - name: represented_by_attorney
+          type: boolean
+          default: false
+
+        - name: attorney_name
+          type: string
+
+        - name: attorney_firm
+          type: string
+
+      indexes:
+        - fields: ["claimant_type"]
+          name: "idx_claimant_type"
+
+    # ------------------------------------------------------------------------
+    # Agent Entity
+    # ------------------------------------------------------------------------
+    - name: Agent
+      display_name: "Agent"
+      description: "Insurance agent or broker"
+      icon: "user-check"
+      color: "#3B82F6"
+
+      attributes:
+        - name: agent_code
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: email
+          type: email
+          required: true
+
+        - name: phone
+          type: phone
+
+        - name: agent_type
+          type: enum
+          required: true
+          values:
+            - "Captive Agent"
+            - "Independent Agent"
+            - "Broker"
+            - "MGA"
+            - "Wholesaler"
+          default: "Independent Agent"
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "Terminated", "Suspended"]
+          default: "Active"
+
+        - name: license_number
+          type: string
+
+        - name: license_state
+          type: string
+
+        - name: license_expiration
+          type: date
+
+        - name: appointment_date
+          type: date
+
+        - name: commission_rate
+          type: number
+          min: 0
+          max: 100
+          description: "Default commission percentage"
+
+        - name: agency_name
+          type: string
+
+        - name: agency_address
+          type: address
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["agent_code"]
+          unique: true
+          name: "idx_agent_code"
+        - fields: ["status"]
+          name: "idx_agent_status"
+
+    # ------------------------------------------------------------------------
+    # Underwriter Entity
+    # ------------------------------------------------------------------------
+    - name: Underwriter
+      display_name: "Underwriter"
+      description: "Insurance underwriter"
+      icon: "clipboard-check"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: employee_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: email
+          type: email
+          required: true
+
+        - name: specialties
+          type: array
+          item_type: string
+          description: "Lines of business or specializations"
+
+        - name: authority_limit
+          type: money
+          description: "Maximum binding authority"
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive"]
+          default: "Active"
+
+      indexes:
+        - fields: ["employee_id"]
+          unique: true
+          name: "idx_underwriter_id"
+
+    # ------------------------------------------------------------------------
+    # RiskAssessment Entity
+    # ------------------------------------------------------------------------
+    - name: RiskAssessment
+      display_name: "Risk Assessment"
+      description: "Underwriting risk assessment"
+      icon: "chart-bar"
+      color: "#EF4444"
+
+      attributes:
+        - name: assessment_type
+          type: enum
+          required: true
+          values:
+            - "New Business"
+            - "Renewal"
+            - "Endorsement"
+            - "Reinstatement"
+
+        - name: assessment_date
+          type: datetime
+          required: true
+
+        - name: overall_risk_score
+          type: number
+          min: 0
+          max: 1000
+          required: true
+
+        - name: risk_tier
+          type: enum
+          values: ["Preferred", "Standard", "Non-Standard", "Decline"]
+
+        - name: risk_factors
+          type: array
+          item_type: object
+          description: "List of risk factors with scores"
+
+        - name: recommendation
+          type: enum
+          values: ["Accept", "Accept with Conditions", "Refer", "Decline"]
+
+        - name: conditions
+          type: array
+          item_type: string
+          description: "Required conditions for acceptance"
+
+        - name: notes
+          type: text
+
+        - name: completed_by
+          type: string
+
+      indexes:
+        - fields: ["assessment_date"]
+          name: "idx_assessment_date"
+        - fields: ["risk_tier"]
+          name: "idx_risk_tier"
+
+    # ------------------------------------------------------------------------
+    # Payout Entity
+    # ------------------------------------------------------------------------
+    - name: Payout
+      display_name: "Payout"
+      description: "Claim payment or disbursement"
+      icon: "banknote"
+      color: "#059669"
+
+      attributes:
+        - name: payment_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: payment_type
+          type: enum
+          required: true
+          values:
+            - "Indemnity"
+            - "Medical"
+            - "Property Damage"
+            - "Loss of Use"
+            - "Legal"
+            - "Subrogation Recovery"
+
+        - name: payment_date
+          type: date
+          required: true
+
+        - name: amount
+          type: money
+          required: true
+
+        - name: payee_name
+          type: string
+          required: true
+
+        - name: payee_type
+          type: enum
+          values:
+            - "Insured"
+            - "Claimant"
+            - "Vendor"
+            - "Attorney"
+            - "Medical Provider"
+
+        - name: payment_method
+          type: enum
+          values: ["Check", "ACH", "Wire", "Virtual Card"]
+          default: "Check"
+
+        - name: status
+          type: enum
+          values: ["Pending", "Issued", "Cleared", "Voided", "Stop Payment"]
+          default: "Pending"
+
+        - name: check_number
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["payment_date"]
+          name: "idx_payment_date"
+        - fields: ["status"]
+          name: "idx_payment_status"
+
+    # ------------------------------------------------------------------------
+    # FraudIndicator Entity
+    # ------------------------------------------------------------------------
+    - name: FraudIndicator
+      display_name: "Fraud Indicator"
+      description: "Suspicious activity or fraud indicator"
+      icon: "alert-triangle"
+      color: "#DC2626"
+
+      attributes:
+        - name: indicator_type
+          type: enum
+          required: true
+          values:
+            - "Timing"
+            - "Documentation"
+            - "Network"
+            - "Financial"
+            - "Behavioral"
+            - "Prior History"
+
+        - name: indicator_code
+          type: string
+          required: true
+          description: "Standard fraud indicator code"
+
+        - name: description
+          type: text
+          required: true
+
+        - name: severity
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+          default: "Medium"
+
+        - name: score_contribution
+          type: number
+          min: 0
+          max: 100
+          description: "Contribution to overall fraud score"
+
+        - name: detected_date
+          type: datetime
+          required: true
+
+        - name: source
+          type: enum
+          values: ["Automated", "Manual", "Tip", "SIU Investigation"]
+          default: "Automated"
+
+        - name: verified
+          type: boolean
+          default: false
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["indicator_type", "severity"]
+          name: "idx_fraud_type_severity"
+        - fields: ["detected_date"]
+          name: "idx_detected_date"
+
+    # ------------------------------------------------------------------------
+    # Premium Entity
+    # ------------------------------------------------------------------------
+    - name: Premium
+      display_name: "Premium Transaction"
+      description: "Premium billing or payment transaction"
+      icon: "credit-card"
+      color: "#7C3AED"
+
+      attributes:
+        - name: transaction_type
+          type: enum
+          required: true
+          values:
+            - "Written Premium"
+            - "Earned Premium"
+            - "Installment Bill"
+            - "Payment"
+            - "Refund"
+            - "Cancellation Return"
+            - "Reinstatement"
+
+        - name: transaction_date
+          type: date
+          required: true
+
+        - name: amount
+          type: money
+          required: true
+
+        - name: due_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Pending", "Paid", "Past Due", "Waived", "Cancelled"]
+          default: "Pending"
+
+        - name: installment_number
+          type: number
+          description: "Installment sequence number"
+
+        - name: payment_method
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["transaction_date"]
+          name: "idx_premium_date"
+        - fields: ["status"]
+          name: "idx_premium_status"
+
+    # ------------------------------------------------------------------------
+    # Coverage Entity
+    # ------------------------------------------------------------------------
+    - name: Coverage
+      display_name: "Coverage"
+      description: "Insurance coverage detail"
+      icon: "shield-check"
+      color: "#06B6D4"
+
+      attributes:
+        - name: coverage_code
+          type: string
+          required: true
+
+        - name: coverage_name
+          type: string
+          required: true
+
+        - name: coverage_type
+          type: enum
+          values:
+            - "Liability"
+            - "Property"
+            - "Medical"
+            - "Collision"
+            - "Comprehensive"
+            - "Uninsured/Underinsured"
+
+        - name: limit
+          type: money
+
+        - name: deductible
+          type: money
+
+        - name: premium
+          type: money
+
+        - name: effective_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Active", "Deleted", "Suspended"]
+          default: "Active"
+
+      indexes:
+        - fields: ["coverage_code"]
+          name: "idx_coverage_code"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Policy Relationships
+    - name: COVERS
+      from: Policy
+      to: Claimant
+      description: "Policy covers insured/claimant"
+      cardinality: many_to_many
+      attributes:
+        - name: insured_type
+          type: enum
+          values: ["Named Insured", "Additional Insured", "Driver", "Dependent"]
+          required: true
+        - name: effective_date
+          type: date
+
+    - name: HAS_COVERAGE
+      from: Policy
+      to: Coverage
+      description: "Policy includes coverage"
+      cardinality: one_to_many
+
+    - name: WRITTEN_BY
+      from: Policy
+      to: Agent
+      description: "Policy written by agent"
+      cardinality: many_to_one
+      attributes:
+        - name: commission_rate
+          type: number
+        - name: commission_amount
+          type: money
+
+    - name: UNDERWRITTEN_BY
+      from: Policy
+      to: Underwriter
+      description: "Policy underwritten by"
+      cardinality: many_to_one
+
+    - name: HAS_ASSESSMENT
+      from: Policy
+      to: RiskAssessment
+      description: "Policy has risk assessment"
+      cardinality: one_to_many
+
+    - name: HAS_PREMIUM
+      from: Policy
+      to: Premium
+      description: "Policy has premium transaction"
+      cardinality: one_to_many
+
+    # Claim Relationships
+    - name: FILED_BY
+      from: Claim
+      to: Claimant
+      description: "Claim filed by claimant"
+      cardinality: many_to_one
+
+    - name: FILED_AGAINST
+      from: Claim
+      to: Policy
+      description: "Claim filed against policy"
+      cardinality: many_to_one
+
+    - name: ASSESSED_BY
+      from: RiskAssessment
+      to: Underwriter
+      description: "Assessment performed by underwriter"
+      cardinality: many_to_one
+
+    - name: PAYS_OUT
+      from: Claim
+      to: Payout
+      description: "Claim results in payout"
+      cardinality: one_to_many
+
+    - name: INDICATES_FRAUD
+      from: FraudIndicator
+      to: Claim
+      description: "Fraud indicator on claim"
+      cardinality: many_to_one
+
+    # Agent Relationships
+    - name: MANAGES_AGENT
+      from: Agent
+      to: Agent
+      description: "Agent manages sub-agents"
+      cardinality: one_to_many
+      attributes:
+        - name: relationship_type
+          type: enum
+          values: ["Supervises", "Mentors", "Overrides"]
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "find_fraud_network"
+      description: "Find connected claims with fraud indicators"
+      cypher: |
+        MATCH (c1:Claim)<-[:INDICATES_FRAUD]-(fi:FraudIndicator)
+        WHERE c1.id = $claim_id
+        WITH c1
+        MATCH (c1)-[:FILED_BY]->(claimant:Claimant)
+        MATCH (claimant)<-[:FILED_BY]-(c2:Claim)
+        WHERE c2.id <> c1.id
+        RETURN c2, claimant
+        ORDER BY c2.loss_date DESC
+
+    - name: "agent_book_of_business"
+      description: "Get agent's complete book of business"
+      cypher: |
+        MATCH (agent:Agent {id: $agent_id})<-[:WRITTEN_BY]-(p:Policy)
+        WHERE p.status IN ['Active', 'Issued']
+        RETURN p, sum(p.written_premium) AS total_premium
+        ORDER BY p.effective_date DESC
+
+    - name: "policy_claims_history"
+      description: "Get complete claims history for a policy"
+      cypher: |
+        MATCH (policy:Policy {id: $policy_id})<-[:FILED_AGAINST]-(claim:Claim)
+        OPTIONAL MATCH (claim)-[:PAYS_OUT]->(payout:Payout)
+        RETURN claim, collect(payout) AS payouts,
+               sum(payout.amount) AS total_paid
+        ORDER BY claim.loss_date DESC
+
+    - name: "underwriting_referrals"
+      description: "Get policies needing underwriting review"
+      cypher: |
+        MATCH (p:Policy)-[:HAS_ASSESSMENT]->(ra:RiskAssessment)
+        WHERE ra.recommendation = 'Refer'
+          AND p.status = 'Application'
+        RETURN p, ra
+        ORDER BY ra.assessment_date ASC
+
+    - name: "claims_by_loss_cause"
+      description: "Analyze claims by cause of loss for risk patterns"
+      cypher: |
+        MATCH (c:Claim)
+        WHERE c.loss_date >= date() - duration({months: 12})
+        RETURN c.cause_of_loss AS cause,
+               count(c) AS claim_count,
+               sum(c.incurred_amount) AS total_incurred
+        ORDER BY total_incurred DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

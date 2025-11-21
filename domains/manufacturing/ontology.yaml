@@ -1,0 +1,1112 @@
+# Manufacturing & Industrial Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Manufacturing domain ontology covering products, production, quality, and supply chain"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Product Entity
+    # ------------------------------------------------------------------------
+    - name: Product
+      display_name: "Product"
+      description: "Finished good or manufactured product"
+      icon: "package"
+      color: "#F97316"
+
+      attributes:
+        # Core Identification
+        - name: part_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Part number or SKU"
+
+        - name: product_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: revision
+          type: string
+          description: "Current revision level"
+
+        # Classification
+        - name: product_type
+          type: enum
+          required: true
+          values:
+            - "Finished Good"
+            - "Assembly"
+            - "Subassembly"
+            - "Component"
+            - "Raw Material"
+            - "Consumable"
+            - "Packaging"
+          default: "Finished Good"
+
+        - name: product_family
+          type: string
+          indexed: true
+
+        - name: product_line
+          type: string
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Prototype"
+            - "Obsolete"
+            - "Discontinued"
+            - "On Hold"
+          default: "Active"
+
+        # Physical Characteristics
+        - name: unit_of_measure
+          type: string
+          required: true
+          default: "EA"
+
+        - name: weight
+          type: number
+          unit: "kg"
+
+        - name: dimensions
+          type: object
+          description: "Length, width, height"
+
+        # Cost & Pricing
+        - name: standard_cost
+          type: money
+
+        - name: material_cost
+          type: money
+
+        - name: labor_cost
+          type: money
+
+        - name: overhead_cost
+          type: money
+
+        # Inventory
+        - name: safety_stock
+          type: number
+          min: 0
+
+        - name: reorder_point
+          type: number
+
+        - name: lead_time_days
+          type: number
+          min: 0
+
+        # Quality
+        - name: inspection_required
+          type: boolean
+          default: false
+
+        - name: critical_characteristics
+          type: array
+          item_type: string
+          description: "Key characteristics requiring special control"
+
+        - name: shelf_life_days
+          type: number
+          description: "Shelf life in days (if applicable)"
+
+        # Regulatory
+        - name: rohs_compliant
+          type: boolean
+          default: false
+
+        - name: reach_compliant
+          type: boolean
+          default: false
+
+        - name: country_of_origin
+          type: string
+
+        - name: hs_code
+          type: string
+          description: "Harmonized System tariff code"
+
+        # Documentation
+        - name: drawing_url
+          type: url
+
+        - name: specification_url
+          type: url
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["part_number"]
+          unique: true
+          name: "idx_part_number"
+        - fields: ["product_type", "status"]
+          name: "idx_type_status"
+        - fields: ["product_family"]
+          name: "idx_family"
+
+      validation_rules:
+        - rule: "standard_cost >= 0"
+        - rule: "lead_time_days >= 0"
+
+    # ------------------------------------------------------------------------
+    # Part Entity
+    # ------------------------------------------------------------------------
+    - name: Part
+      display_name: "Part"
+      description: "Component or raw material"
+      icon: "puzzle"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: part_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: part_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: revision
+          type: string
+
+        - name: part_type
+          type: enum
+          required: true
+          values:
+            - "Purchased"
+            - "Manufactured"
+            - "Phantom"
+            - "Reference"
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "Obsolete"]
+          default: "Active"
+
+        - name: unit_of_measure
+          type: string
+          required: true
+
+        - name: standard_cost
+          type: money
+
+        - name: make_buy
+          type: enum
+          values: ["Make", "Buy", "Make or Buy"]
+          default: "Buy"
+
+        - name: critical_item
+          type: boolean
+          default: false
+
+        - name: serialized
+          type: boolean
+          default: false
+
+        - name: lot_controlled
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["part_number"]
+          unique: true
+          name: "idx_part_number"
+        - fields: ["part_type"]
+          name: "idx_part_type"
+
+    # ------------------------------------------------------------------------
+    # Supplier Entity
+    # ------------------------------------------------------------------------
+    - name: Supplier
+      display_name: "Supplier"
+      description: "Material or service supplier"
+      icon: "truck"
+      color: "#3B82F6"
+
+      attributes:
+        - name: supplier_code
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: supplier_name
+          type: string
+          required: true
+
+        - name: legal_name
+          type: string
+
+        - name: supplier_type
+          type: enum
+          required: true
+          values:
+            - "Manufacturer"
+            - "Distributor"
+            - "Service Provider"
+            - "Contractor"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Approved"
+            - "Conditional"
+            - "On Probation"
+            - "Disqualified"
+            - "Inactive"
+          default: "Active"
+
+        # Contact
+        - name: primary_contact
+          type: string
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        - name: country
+          type: string
+          indexed: true
+
+        # Business
+        - name: tax_id
+          type: string
+
+        - name: payment_terms
+          type: string
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        # Quality
+        - name: quality_rating
+          type: number
+          min: 0
+          max: 100
+
+        - name: delivery_rating
+          type: number
+          min: 0
+          max: 100
+
+        - name: certifications
+          type: array
+          item_type: string
+          description: "ISO 9001, AS9100, etc."
+
+        - name: last_audit_date
+          type: date
+
+        - name: next_audit_date
+          type: date
+
+        # Risk
+        - name: risk_level
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+          default: "Medium"
+
+        - name: single_source
+          type: boolean
+          default: false
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["supplier_code"]
+          unique: true
+          name: "idx_supplier_code"
+        - fields: ["status"]
+          name: "idx_supplier_status"
+        - fields: ["risk_level"]
+          name: "idx_risk_level"
+
+    # ------------------------------------------------------------------------
+    # Equipment Entity
+    # ------------------------------------------------------------------------
+    - name: Equipment
+      display_name: "Equipment"
+      description: "Production equipment or machine"
+      icon: "cog"
+      color: "#10B981"
+
+      attributes:
+        - name: equipment_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: equipment_name
+          type: string
+          required: true
+
+        - name: equipment_type
+          type: enum
+          required: true
+          values:
+            - "CNC Machine"
+            - "Assembly Station"
+            - "Inspection Equipment"
+            - "Material Handling"
+            - "Packaging"
+            - "Test Equipment"
+            - "Tooling"
+            - "Fixture"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Available"
+            - "In Use"
+            - "Maintenance"
+            - "Down"
+            - "Retired"
+          default: "Available"
+
+        # Details
+        - name: manufacturer
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+
+        - name: location
+          type: string
+          indexed: true
+
+        - name: work_center
+          type: string
+          indexed: true
+
+        # Dates
+        - name: installation_date
+          type: date
+
+        - name: warranty_expiration
+          type: date
+
+        - name: last_maintenance_date
+          type: date
+
+        - name: next_maintenance_date
+          type: date
+          indexed: true
+
+        # Calibration
+        - name: requires_calibration
+          type: boolean
+          default: false
+
+        - name: calibration_interval_days
+          type: number
+
+        - name: last_calibration_date
+          type: date
+
+        - name: calibration_due_date
+          type: date
+
+        # Performance
+        - name: cycle_time_seconds
+          type: number
+
+        - name: oee_target
+          type: number
+          min: 0
+          max: 100
+          description: "Overall Equipment Effectiveness target"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["equipment_id"]
+          unique: true
+          name: "idx_equipment_id"
+        - fields: ["status"]
+          name: "idx_equipment_status"
+        - fields: ["work_center"]
+          name: "idx_work_center"
+
+    # ------------------------------------------------------------------------
+    # QualityRecord Entity
+    # ------------------------------------------------------------------------
+    - name: QualityRecord
+      display_name: "Quality Record"
+      description: "Quality inspection or test record"
+      icon: "clipboard-check"
+      color: "#EF4444"
+
+      attributes:
+        - name: record_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: record_type
+          type: enum
+          required: true
+          values:
+            - "Incoming Inspection"
+            - "In-Process Inspection"
+            - "Final Inspection"
+            - "First Article"
+            - "Calibration"
+            - "Audit"
+            - "Test Report"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "In Progress"
+            - "Pass"
+            - "Fail"
+            - "Conditional Accept"
+          default: "Pending"
+
+        - name: inspection_date
+          type: datetime
+          required: true
+
+        - name: inspector
+          type: string
+
+        # Results
+        - name: sample_size
+          type: number
+
+        - name: defects_found
+          type: number
+          default: 0
+
+        - name: measurements
+          type: array
+          item_type: object
+          description: "Measured values and specifications"
+
+        # Lot/Serial
+        - name: lot_number
+          type: string
+          indexed: true
+
+        - name: serial_numbers
+          type: array
+          item_type: string
+
+        - name: quantity_inspected
+          type: number
+
+        - name: quantity_accepted
+          type: number
+
+        - name: quantity_rejected
+          type: number
+
+        # Documentation
+        - name: notes
+          type: text
+
+        - name: attachments
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["record_number"]
+          name: "idx_record_number"
+        - fields: ["status"]
+          name: "idx_quality_status"
+        - fields: ["lot_number"]
+          name: "idx_lot_number"
+
+    # ------------------------------------------------------------------------
+    # WorkOrder Entity
+    # ------------------------------------------------------------------------
+    - name: WorkOrder
+      display_name: "Work Order"
+      description: "Manufacturing work order or production order"
+      icon: "file-text"
+      color: "#F59E0B"
+
+      attributes:
+        - name: work_order_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: order_type
+          type: enum
+          required: true
+          values:
+            - "Production"
+            - "Rework"
+            - "Prototype"
+            - "Maintenance"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planned"
+            - "Released"
+            - "In Progress"
+            - "On Hold"
+            - "Complete"
+            - "Closed"
+            - "Cancelled"
+          default: "Planned"
+
+        - name: priority
+          type: enum
+          values: ["Low", "Normal", "High", "Urgent"]
+          default: "Normal"
+
+        # Quantities
+        - name: quantity_ordered
+          type: number
+          required: true
+          min: 0
+
+        - name: quantity_complete
+          type: number
+          default: 0
+
+        - name: quantity_scrapped
+          type: number
+          default: 0
+
+        # Dates
+        - name: planned_start_date
+          type: datetime
+
+        - name: planned_end_date
+          type: datetime
+
+        - name: actual_start_date
+          type: datetime
+
+        - name: actual_end_date
+          type: datetime
+
+        - name: due_date
+          type: date
+          required: true
+
+        # Costing
+        - name: planned_labor_hours
+          type: number
+
+        - name: actual_labor_hours
+          type: number
+
+        - name: planned_cost
+          type: money
+
+        - name: actual_cost
+          type: money
+
+        # Routing
+        - name: routing_id
+          type: string
+
+        - name: current_operation
+          type: number
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["work_order_number"]
+          unique: true
+          name: "idx_wo_number"
+        - fields: ["status"]
+          name: "idx_wo_status"
+        - fields: ["due_date"]
+          name: "idx_due_date"
+
+    # ------------------------------------------------------------------------
+    # Maintenance Entity
+    # ------------------------------------------------------------------------
+    - name: Maintenance
+      display_name: "Maintenance Record"
+      description: "Equipment maintenance or repair record"
+      icon: "wrench"
+      color: "#6366F1"
+
+      attributes:
+        - name: maintenance_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: maintenance_type
+          type: enum
+          required: true
+          values:
+            - "Preventive"
+            - "Corrective"
+            - "Predictive"
+            - "Emergency"
+            - "Calibration"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Scheduled"
+            - "In Progress"
+            - "Complete"
+            - "Cancelled"
+          default: "Scheduled"
+
+        - name: priority
+          type: enum
+          values: ["Low", "Normal", "High", "Emergency"]
+          default: "Normal"
+
+        # Dates
+        - name: scheduled_date
+          type: datetime
+
+        - name: start_date
+          type: datetime
+
+        - name: completion_date
+          type: datetime
+
+        # Work performed
+        - name: description
+          type: text
+          required: true
+
+        - name: work_performed
+          type: text
+
+        - name: parts_used
+          type: array
+          item_type: object
+
+        # Cost & Time
+        - name: labor_hours
+          type: number
+
+        - name: parts_cost
+          type: money
+
+        - name: total_cost
+          type: money
+
+        - name: downtime_hours
+          type: number
+
+        # Personnel
+        - name: assigned_to
+          type: string
+
+        - name: completed_by
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["maintenance_number"]
+          name: "idx_maintenance_number"
+        - fields: ["status"]
+          name: "idx_maintenance_status"
+        - fields: ["scheduled_date"]
+          name: "idx_scheduled_date"
+
+    # ------------------------------------------------------------------------
+    # Defect Entity
+    # ------------------------------------------------------------------------
+    - name: Defect
+      display_name: "Defect"
+      description: "Quality defect or nonconformance"
+      icon: "alert-circle"
+      color: "#DC2626"
+
+      attributes:
+        - name: defect_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: defect_type
+          type: enum
+          required: true
+          values:
+            - "Dimensional"
+            - "Visual/Cosmetic"
+            - "Functional"
+            - "Material"
+            - "Documentation"
+            - "Packaging"
+
+        - name: severity
+          type: enum
+          required: true
+          values: ["Minor", "Major", "Critical"]
+          default: "Minor"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Open"
+            - "Under Investigation"
+            - "Containment"
+            - "Corrective Action"
+            - "Closed"
+          default: "Open"
+
+        - name: defect_code
+          type: string
+          indexed: true
+
+        - name: description
+          type: text
+          required: true
+
+        - name: quantity_affected
+          type: number
+
+        - name: lot_number
+          type: string
+
+        - name: detected_at
+          type: enum
+          values: ["Incoming", "In-Process", "Final", "Customer"]
+
+        - name: detected_date
+          type: datetime
+          required: true
+
+        - name: detected_by
+          type: string
+
+        # Root Cause
+        - name: root_cause
+          type: text
+
+        - name: root_cause_category
+          type: enum
+          values: ["Man", "Machine", "Material", "Method", "Measurement", "Environment"]
+
+        # Disposition
+        - name: disposition
+          type: enum
+          values: ["Use As-Is", "Rework", "Scrap", "Return to Supplier", "Repair"]
+
+        - name: disposition_notes
+          type: text
+
+        # Cost
+        - name: cost_of_quality
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["defect_number"]
+          name: "idx_defect_number"
+        - fields: ["severity", "status"]
+          name: "idx_severity_status"
+        - fields: ["defect_code"]
+          name: "idx_defect_code"
+
+    # ------------------------------------------------------------------------
+    # Material Entity
+    # ------------------------------------------------------------------------
+    - name: Material
+      display_name: "Material"
+      description: "Raw material or inventory item"
+      icon: "database"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: material_code
+          type: string
+          required: true
+          indexed: true
+
+        - name: material_name
+          type: string
+          required: true
+
+        - name: material_type
+          type: enum
+          values:
+            - "Raw Material"
+            - "Purchased Part"
+            - "WIP"
+            - "Finished Good"
+            - "MRO"
+
+        - name: lot_number
+          type: string
+          indexed: true
+
+        - name: serial_number
+          type: string
+
+        - name: quantity_on_hand
+          type: number
+
+        - name: quantity_available
+          type: number
+
+        - name: quantity_allocated
+          type: number
+
+        - name: unit_of_measure
+          type: string
+
+        - name: location
+          type: string
+
+        - name: expiration_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Available", "Quarantine", "Reserved", "Expired"]
+          default: "Available"
+
+      indexes:
+        - fields: ["material_code"]
+          name: "idx_material_code"
+        - fields: ["lot_number"]
+          name: "idx_material_lot"
+
+    # ------------------------------------------------------------------------
+    # BillOfMaterials Entity
+    # ------------------------------------------------------------------------
+    - name: BillOfMaterials
+      display_name: "Bill of Materials"
+      description: "BOM structure"
+      icon: "list-tree"
+      color: "#7C3AED"
+
+      attributes:
+        - name: bom_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: bom_type
+          type: enum
+          values: ["Engineering", "Manufacturing", "Planning"]
+          default: "Manufacturing"
+
+        - name: revision
+          type: string
+          required: true
+
+        - name: status
+          type: enum
+          values: ["Draft", "Active", "Obsolete"]
+          default: "Active"
+
+        - name: effective_date
+          type: date
+
+        - name: obsolete_date
+          type: date
+
+        - name: yield_percentage
+          type: number
+          min: 0
+          max: 100
+          default: 100
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["bom_id", "revision"]
+          name: "idx_bom_id_rev"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # BOM Relationships
+    - name: COMPOSED_OF
+      from: Product
+      to: Part
+      description: "Product is composed of parts"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity
+          type: number
+          required: true
+        - name: unit_of_measure
+          type: string
+        - name: find_number
+          type: string
+        - name: reference_designator
+          type: string
+
+    - name: HAS_BOM
+      from: Product
+      to: BillOfMaterials
+      description: "Product has bill of materials"
+      cardinality: one_to_many
+
+    # Supplier Relationships
+    - name: SUPPLIED_BY
+      from: Part
+      to: Supplier
+      description: "Part is supplied by supplier"
+      cardinality: many_to_many
+      attributes:
+        - name: supplier_part_number
+          type: string
+        - name: lead_time_days
+          type: number
+        - name: minimum_order_qty
+          type: number
+        - name: unit_price
+          type: money
+        - name: preferred
+          type: boolean
+
+    # Equipment Relationships
+    - name: REQUIRES_MAINTENANCE
+      from: Equipment
+      to: Maintenance
+      description: "Equipment requires maintenance"
+      cardinality: one_to_many
+
+    - name: USES_EQUIPMENT
+      from: WorkOrder
+      to: Equipment
+      description: "Work order uses equipment"
+      cardinality: many_to_many
+
+    # Quality Relationships
+    - name: HAS_DEFECT
+      from: Product
+      to: Defect
+      description: "Product has defect"
+      cardinality: one_to_many
+
+    - name: HAS_QUALITY_RECORD
+      from: Product
+      to: QualityRecord
+      description: "Product has quality record"
+      cardinality: one_to_many
+
+    - name: CAUSED_BY_DEFECT
+      from: Defect
+      to: Part
+      description: "Defect caused by part issue"
+      cardinality: many_to_one
+
+    # Work Order Relationships
+    - name: MANUFACTURED_BY
+      from: Product
+      to: WorkOrder
+      description: "Product manufactured by work order"
+      cardinality: one_to_many
+
+    - name: USES_MATERIAL
+      from: WorkOrder
+      to: Material
+      description: "Work order uses material"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity_required
+          type: number
+        - name: quantity_issued
+          type: number
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "where_used"
+      description: "Find all products using a specific part"
+      cypher: |
+        MATCH (p:Product)-[r:COMPOSED_OF]->(part:Part {id: $part_id})
+        RETURN p, r.quantity AS quantity_per
+        ORDER BY p.part_number
+
+    - name: "supplier_risk_analysis"
+      description: "Analyze supplier risk across product lines"
+      cypher: |
+        MATCH (product:Product)-[:COMPOSED_OF]->(part:Part)-[:SUPPLIED_BY]->(supplier:Supplier)
+        WHERE supplier.single_source = true OR supplier.risk_level IN ['High', 'Critical']
+        RETURN product, part, supplier
+        ORDER BY supplier.risk_level DESC
+
+    - name: "defect_root_cause"
+      description: "Trace defects to common root causes"
+      cypher: |
+        MATCH (d:Defect)-[:HAS_DEFECT]-(p:Product)
+        WHERE d.detected_date >= date() - duration({days: 30})
+        RETURN d.root_cause_category AS cause,
+               count(d) AS defect_count,
+               sum(d.cost_of_quality) AS total_cost
+        ORDER BY defect_count DESC
+
+    - name: "equipment_maintenance_due"
+      description: "Get equipment with upcoming maintenance"
+      cypher: |
+        MATCH (e:Equipment)
+        WHERE e.next_maintenance_date <= date() + duration({days: $days_ahead})
+          AND e.status <> 'Retired'
+        RETURN e
+        ORDER BY e.next_maintenance_date ASC
+
+    - name: "product_genealogy"
+      description: "Full genealogy of a product including all components"
+      cypher: |
+        MATCH path = (product:Product {id: $product_id})-[:COMPOSED_OF*1..10]->(component)
+        RETURN path
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

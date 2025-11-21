@@ -1,0 +1,231 @@
+# Construction & Engineering Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: construction
+  name: "Construction & Engineering"
+  version: "1.0.0"
+  description: |
+    Comprehensive construction and engineering knowledge graph platform for project management,
+    contractor coordination, material tracking, and compliance monitoring. Supports commercial,
+    residential, infrastructure, and industrial construction operations.
+
+  icon: "🏗️"
+  color: "#F59E0B"  # Amber
+
+  industry:
+    sector: "Construction & Engineering"
+    subsectors:
+      - "Commercial Construction"
+      - "Residential Construction"
+      - "Infrastructure"
+      - "Industrial Construction"
+      - "Heavy Civil"
+      - "Specialty Trade Contractors"
+
+    primary_use_cases:
+      - "Project management and scheduling"
+      - "Contractor and subcontractor coordination"
+      - "Material procurement and tracking"
+      - "Permit and inspection management"
+      - "RFI and change order tracking"
+      - "Safety and compliance monitoring"
+
+  target_customers:
+    - type: "General Contractors"
+      size: "25-500 employees"
+      pain_points:
+        - "Fragmented project data across multiple systems"
+        - "Difficulty tracking subcontractor relationships and performance"
+        - "Manual RFI and change order processes"
+        - "Limited visibility into project risk factors"
+
+    - type: "Construction Management Firms"
+      size: "Enterprise"
+      pain_points:
+        - "Cross-project resource allocation"
+        - "Multi-stakeholder communication"
+        - "Real-time schedule and budget tracking"
+        - "Quality assurance documentation"
+
+    - type: "Specialty Trade Contractors"
+      size: "10-100 employees"
+      pain_points:
+        - "Managing multiple project commitments"
+        - "Equipment and material scheduling"
+        - "Workforce allocation"
+        - "Payment tracking and lien waivers"
+
+    - type: "Engineering Firms"
+      size: "50-500 employees"
+      pain_points:
+        - "Drawing version control"
+        - "RFI response tracking"
+        - "Design coordination across disciplines"
+        - "Submittal management"
+
+  market_analysis:
+    market_size:
+      global_construction_tech: "$23.8B (2023)"
+      projected_2030: "$85.4B"
+      cagr: "19.8%"
+
+    key_trends:
+      - "Building Information Modeling (BIM) adoption"
+      - "Prefabrication and modular construction"
+      - "IoT and sensor-based monitoring"
+      - "Drone surveys and reality capture"
+      - "AI-driven project risk prediction"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Procore (project management)"
+        - "Autodesk Construction Cloud (BIM and collaboration)"
+        - "PlanGrid (field management)"
+        - "Bluebeam (document management)"
+
+      differentiation:
+        - "Graph-based relationship intelligence across projects"
+        - "Unified view of contractors, materials, and equipment"
+        - "AI-driven risk assessment from connected data"
+        - "Cross-project analytics and benchmarking"
+        - "Real-time compliance tracking"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small contractors, startups evaluating platform"
+      included:
+        - "1 user"
+        - "3 projects max"
+        - "10k API calls/month"
+        - "Basic project tracking"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$699/month + $45/user"
+      target: "Small to mid-size contractors (5-25 employees)"
+      included:
+        - "5 users included, then $45/user"
+        - "25 active projects"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "RFI and change order tracking"
+        - "Email support"
+      overage_rates:
+        - "Projects: $25 per additional project"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,999/month + $75/user"
+      target: "Mid-size GCs, specialty contractors (25-150 employees)"
+      included:
+        - "15 users included, then $75/user"
+        - "100 active projects"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "Permit and inspection tracking"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Projects: $20 per additional project"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $5,999+/month)"
+      target: "Large GCs, construction management firms, ENR Top 100"
+      included:
+        - "Unlimited users"
+        - "Unlimited projects"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (Procore, Autodesk, etc.)"
+        - "Advanced security (SOC 2, GDPR compliance)"
+        - "Multi-region support"
+
+  compliance_requirements:
+    regulations:
+      - name: "OSHA (Occupational Safety and Health Administration)"
+        description: "Workplace safety requirements for construction sites"
+        impact: "Safety incident tracking, training records, equipment certifications"
+
+      - name: "Building Codes (IBC, Local Codes)"
+        description: "Construction standards and requirements"
+        impact: "Inspection tracking, permit compliance documentation"
+
+      - name: "Prevailing Wage Laws (Davis-Bacon Act)"
+        description: "Wage requirements for federally-funded projects"
+        impact: "Certified payroll tracking, wage rate compliance"
+
+      - name: "Environmental Regulations (EPA, NEPA)"
+        description: "Environmental impact and protection requirements"
+        impact: "Environmental permit tracking, compliance documentation"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Project Management"
+        providers: ["Procore", "Buildertrend", "CoConstruct"]
+        use_case: "Sync project data, schedules, and documents"
+
+      - name: "BIM & Design"
+        providers: ["Autodesk Construction Cloud", "Revit", "Navisworks"]
+        use_case: "Import models, track design changes, clash detection"
+
+      - name: "Field Management"
+        providers: ["PlanGrid", "Fieldwire", "Plangrid"]
+        use_case: "Field reports, punch lists, daily logs"
+
+      - name: "Document Management"
+        providers: ["Bluebeam", "Procore Documents", "Box"]
+        use_case: "Drawing management, submittals, specifications"
+
+      - name: "Accounting & ERP"
+        providers: ["Sage 300 CRE", "Viewpoint Vista", "Foundation"]
+        use_case: "Job costing, payroll, accounts payable/receivable"
+
+      - name: "Scheduling"
+        providers: ["Primavera P6", "Microsoft Project", "Asta Powerproject"]
+        use_case: "Schedule import/export, progress tracking"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Active projects under management"
+        benchmark: "Average customer manages 45 active projects"
+
+      - metric: "RFI response time"
+        benchmark: "Reduce from 5 days to 1 day with workflow automation"
+
+      - metric: "Change order processing"
+        benchmark: "Graph-based tracking reduces disputes by 50%"
+
+      - metric: "Safety compliance"
+        benchmark: "Real-time monitoring reduces incidents by 35%"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  status: "Planned"
+  target_release: "Q4 2026"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Construction & Engineering domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/construction/SETUP.md"
+    api_reference: "docs/domains/construction/API.md"
+    migration_guide: "docs/domains/construction/MIGRATION.md"
+
+  contact:
+    domain_owner: "construction-team@binelek.com"
+    support: "support@binelek.com"

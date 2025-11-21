@@ -1,0 +1,80 @@
+domain:
+  id: professional-services-template
+  name: "Professional Services"
+  version: "1.0.0"
+  description: "Complete solution for consultants, agencies, law firms, and service businesses"
+  icon: "briefcase"
+  color: "#3B82F6"
+  category: "template"
+
+  target_users:
+    - "Consulting firms"
+    - "Marketing agencies"
+    - "Law firms"
+    - "Accounting firms"
+    - "Design agencies"
+    - "IT services"
+
+  use_cases:
+    - name: "Project Management"
+      description: "Track projects, milestones, deliverables, and timelines"
+    - name: "Client Management"
+      description: "Manage client relationships, contracts, and communication"
+    - name: "Time Tracking"
+      description: "Track billable hours and generate accurate invoices"
+    - name: "Resource Planning"
+      description: "Allocate team members to projects and manage capacity"
+
+  features:
+    - "Client and project management"
+    - "Time tracking and timesheets"
+    - "Invoice generation and billing"
+    - "Document management"
+    - "Team collaboration"
+    - "Resource allocation"
+    - "Project profitability tracking"
+    - "Client portal"
+
+  pricing_tiers:
+    - tier: "Solo"
+      price: "$29/month"
+      features:
+        - "1 user"
+        - "Up to 10 active projects"
+        - "Basic time tracking"
+        - "Invoice generation"
+
+    - tier: "Team"
+      price: "$99/month"
+      features:
+        - "Up to 10 users"
+        - "Unlimited projects"
+        - "Advanced time tracking"
+        - "Resource planning"
+        - "Client portal"
+
+    - tier: "Agency"
+      price: "$299/month"
+      features:
+        - "Unlimited users"
+        - "Custom workflows"
+        - "API access"
+        - "White-label branding"
+        - "Priority support"
+
+  integrations:
+    - name: "QuickBooks"
+      type: "accounting"
+      description: "Sync invoices and expenses"
+    - name: "Slack"
+      type: "communication"
+      description: "Team notifications"
+    - name: "Google Drive"
+      type: "storage"
+      description: "Document storage"
+
+  compliance:
+    - standard: "SOC 2 Type II"
+      description: "Data security"
+    - standard: "GDPR"
+      description: "Client data protection"

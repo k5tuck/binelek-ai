@@ -1,0 +1,79 @@
+domain:
+  id: restaurant-template
+  name: "Restaurant & Food Service"
+  version: "1.0.0"
+  description: "Complete restaurant management system with POS, reservations, inventory, and staff management"
+  icon: "utensils"
+  color: "#F59E0B"
+  category: "template"
+
+  target_users:
+    - "Restaurants"
+    - "Cafes"
+    - "Food trucks"
+    - "Catering services"
+    - "Cloud kitchens"
+
+  use_cases:
+    - name: "Table Management"
+      description: "Manage tables, reservations, and seating"
+    - name: "Menu & Orders"
+      description: "Digital menu, order taking, kitchen display"
+    - name: "Inventory Tracking"
+      description: "Track ingredients, suppliers, and costs"
+    - name: "Staff Management"
+      description: "Shifts, tips, performance tracking"
+
+  features:
+    - "Table reservations and waitlist"
+    - "Digital menu with modifiers"
+    - "Order management and kitchen display"
+    - "Inventory and recipe costing"
+    - "Staff scheduling and tips"
+    - "Supplier management"
+    - "Sales analytics"
+    - "Online ordering integration"
+
+  pricing_tiers:
+    - tier: "Cafe"
+      price: "$79/month"
+      features:
+        - "Up to 20 tables"
+        - "Basic POS"
+        - "Inventory tracking"
+        - "Email support"
+
+    - tier: "Restaurant"
+      price: "$199/month"
+      features:
+        - "Up to 50 tables"
+        - "Advanced POS"
+        - "Reservations system"
+        - "Kitchen display"
+        - "Staff management"
+
+    - tier: "Multi-Location"
+      price: "$499/month"
+      features:
+        - "Unlimited tables"
+        - "Multiple locations"
+        - "Central kitchen management"
+        - "Advanced analytics"
+        - "API access"
+
+  integrations:
+    - name: "OpenTable"
+      type: "reservations"
+      description: "Online reservations"
+    - name: "UberEats"
+      type: "delivery"
+      description: "Delivery integration"
+    - name: "Square"
+      type: "payments"
+      description: "Payment processing"
+
+  compliance:
+    - standard: "PCI DSS"
+      description: "Payment security"
+    - standard: "Food Safety"
+      description: "HACCP compliance"

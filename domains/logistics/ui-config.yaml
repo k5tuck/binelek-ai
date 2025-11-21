@@ -1,0 +1,780 @@
+# Logistics UI Configuration
+# Frontend presentation layer for logistics and supply chain management
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for logistics and supply chain operations"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#6366F1"      # Indigo
+    secondary_color: "#10B981"    # Green
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/logistics-logo.svg"
+    favicon_url: "/assets/favicons/logistics.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "shipments"
+        label: "Shipments"
+        icon: "📦"
+        route: "/shipments"
+        badge_query: "count_in_transit_shipments"
+
+      - id: "routes"
+        label: "Routes"
+        icon: "🗺️"
+        route: "/routes"
+        badge_query: "count_todays_routes"
+
+      - id: "warehouses"
+        label: "Warehouses"
+        icon: "🏭"
+        route: "/warehouses"
+
+      - id: "inventory"
+        label: "Inventory"
+        icon: "📊"
+        route: "/inventory"
+        badge_query: "count_low_stock_items"
+
+      - id: "fleet"
+        label: "Fleet"
+        icon: "🚚"
+        route: "/fleet"
+        submenu:
+          - id: "vehicles"
+            label: "Vehicles"
+            route: "/fleet/vehicles"
+          - id: "drivers"
+            label: "Drivers"
+            route: "/fleet/drivers"
+
+      - id: "customers"
+        label: "Customers"
+        icon: "🏢"
+        route: "/customers"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Operations Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Operations Dashboard"
+      description: "Real-time logistics operations overview"
+      layout: "grid"
+
+      widgets:
+        - id: "shipments_in_transit"
+          type: "metric_card"
+          title: "In Transit"
+          query: "count_in_transit_shipments"
+          icon: "🚚"
+          color: "#6366F1"
+          size: "small"
+
+        - id: "todays_deliveries"
+          type: "metric_card"
+          title: "Today's Deliveries"
+          query: "count_todays_deliveries"
+          icon: "📦"
+          color: "#10B981"
+          size: "small"
+
+        - id: "on_time_delivery_rate"
+          type: "metric_card"
+          title: "On-Time Delivery Rate"
+          query: "calculate_otd_rate"
+          format: "percentage"
+          icon: "✅"
+          color: "#10B981"
+          size: "small"
+          trend: "last_7_days"
+
+        - id: "exceptions"
+          type: "metric_card"
+          title: "Exceptions"
+          query: "count_shipment_exceptions"
+          icon: "⚠️"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "shipment_map"
+          type: "map"
+          title: "Live Shipment Tracking"
+          query:
+            entity_type: "Shipment"
+            filter:
+              shipment_status: ["In Transit", "Out for Delivery"]
+          marker_field: "last_scan_location"
+          marker_color_by: "shipment_status"
+          popup_fields:
+            - tracking_number
+            - carrier
+            - destination_address
+            - estimated_delivery_date
+          size: "large"
+
+        - id: "recent_shipments"
+          type: "entity_list"
+          title: "Recent Shipments"
+          entity_type: "Shipment"
+          query:
+            sort:
+              field: "created_date"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - tracking_number
+            - customer_name
+            - destination_address
+            - shipment_status
+            - carrier
+            - estimated_delivery_date
+          size: "medium"
+
+        - id: "active_routes"
+          type: "entity_list"
+          title: "Active Routes"
+          entity_type: "Route"
+          query:
+            filter:
+              route_status: "In Progress"
+              route_date: "today"
+          columns:
+            - route_number
+            - driver_name
+            - vehicle_number
+            - total_stops
+            - completed_stops
+            - progress_percentage
+          size: "medium"
+
+        - id: "shipment_volume_chart"
+          type: "chart"
+          chart_type: "bar"
+          title: "Daily Shipment Volume (Last 30 Days)"
+          query: "daily_shipment_count"
+          x_axis: "date"
+          y_axis: "shipment_count"
+          size: "large"
+
+        - id: "carrier_performance"
+          type: "chart"
+          chart_type: "bar"
+          title: "Carrier On-Time Performance"
+          query: "carrier_otd_comparison"
+          x_axis: "carrier"
+          y_axis: "otd_percentage"
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Warehouse Dashboard
+    # ----------------------------------------------------------------------
+    - id: "warehouse"
+      name: "Warehouse Operations"
+      description: "Inventory and warehouse management dashboard"
+      layout: "grid"
+
+      filters:
+        - field: "warehouse_id"
+          type: "select"
+          required: false
+          default: "all"
+
+      widgets:
+        - id: "total_sku_count"
+          type: "metric_card"
+          title: "Total SKUs"
+          query: "count_active_products"
+
+        - id: "low_stock_count"
+          type: "metric_card"
+          title: "Low Stock Items"
+          query: "count_low_stock_items"
+          color: "#EF4444"
+
+        - id: "capacity_utilization"
+          type: "metric_card"
+          title: "Capacity Utilization"
+          query: "warehouse_capacity_utilization"
+          format: "percentage"
+
+        - id: "inventory_value"
+          type: "metric_card"
+          title: "Total Inventory Value"
+          query: "total_inventory_value"
+          format: "currency"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Shipment List
+    # ----------------------------------------------------------------------
+    - entity_type: "Shipment"
+      id: "shipment_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "tracking_number"
+              label: "Tracking #"
+              sortable: true
+              render: "link"
+              width: "150px"
+
+            - field: "shipment_status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Created": "secondary"
+                "Picked Up": "info"
+                "In Transit": "primary"
+                "Out for Delivery": "warning"
+                "Delivered": "success"
+                "Exception": "danger"
+              width: "120px"
+
+            - field: "customer_name"
+              label: "Customer"
+              sortable: true
+
+            - field: "destination_address"
+              label: "Destination"
+              truncate: 40
+
+            - field: "carrier"
+              label: "Carrier"
+              filterable: true
+
+            - field: "service_level"
+              label: "Service"
+              filterable: true
+
+            - field: "estimated_delivery_date"
+              label: "Est. Delivery"
+              sortable: true
+              format: "datetime"
+
+            - field: "weight"
+              label: "Weight"
+              format: "number"
+              width: "80px"
+
+        - type: "map"
+          location_field: "destination_location"
+          marker_color_by: "shipment_status"
+          popup_fields:
+            - tracking_number
+            - destination_address
+            - shipment_status
+            - estimated_delivery_date
+
+      filters:
+        - field: "shipment_status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "carrier"
+          type: "select"
+          label: "Carrier"
+          multiple: true
+
+        - field: "service_level"
+          type: "select"
+          label: "Service Level"
+          multiple: true
+
+        - field: "created_date"
+          type: "date_range"
+          label: "Created Date"
+
+        - field: "estimated_delivery_date"
+          type: "date_range"
+          label: "Delivery Date"
+
+      actions:
+        - id: "create_shipment"
+          label: "Create Shipment"
+          icon: "➕"
+          type: "create"
+
+        - id: "bulk_print_labels"
+          label: "Print Labels"
+          icon: "🖨️"
+          type: "bulk_action"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Route List
+    # ----------------------------------------------------------------------
+    - entity_type: "Route"
+      id: "route_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "route_number"
+              label: "Route #"
+              sortable: true
+              render: "link"
+
+            - field: "route_date"
+              label: "Date"
+              sortable: true
+              format: "date"
+
+            - field: "route_status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Planned": "secondary"
+                "In Progress": "primary"
+                "Completed": "success"
+                "Cancelled": "danger"
+
+            - field: "driver_name"
+              label: "Driver"
+
+            - field: "vehicle_number"
+              label: "Vehicle"
+
+            - field: "total_stops"
+              label: "Stops"
+
+            - field: "completed_stops"
+              label: "Completed"
+
+            - field: "progress_percentage"
+              label: "Progress"
+              format: "percentage"
+              render: "progress_bar"
+
+            - field: "planned_distance_miles"
+              label: "Distance"
+              format: "number"
+
+      filters:
+        - field: "route_date"
+          type: "date_range"
+          label: "Route Date"
+
+        - field: "route_status"
+          type: "select"
+          multiple: true
+
+        - field: "driver_id"
+          type: "select"
+          label: "Driver"
+
+    # ----------------------------------------------------------------------
+    # Inventory List
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "inventory_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "sku"
+              label: "SKU"
+              sortable: true
+              render: "link"
+
+            - field: "product_name"
+              label: "Product Name"
+              sortable: true
+
+            - field: "category"
+              label: "Category"
+              filterable: true
+
+            - field: "total_quantity_on_hand"
+              label: "On Hand"
+              sortable: true
+              format: "number"
+
+            - field: "total_quantity_available"
+              label: "Available"
+              sortable: true
+              format: "number"
+
+            - field: "product_status"
+              label: "Status"
+              render: "badge"
+
+            - field: "cost"
+              label: "Cost"
+              format: "currency"
+
+            - field: "price"
+              label: "Price"
+              format: "currency"
+
+      filters:
+        - field: "category"
+          type: "select"
+          multiple: true
+
+        - field: "product_status"
+          type: "select"
+          multiple: true
+
+        - field: "low_stock_only"
+          type: "checkbox"
+          label: "Show Low Stock Only"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Shipment Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Shipment"
+      id: "shipment_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "tracking_number"
+        subtitle_field: "carrier"
+        badge_field: "shipment_status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "shipment_info"
+              title: "Shipment Information"
+              layout: "two_column"
+              fields:
+                - tracking_number
+                - shipment_type
+                - shipment_status
+                - carrier
+                - carrier_service
+                - service_level
+
+            - id: "origin_destination"
+              title: "Origin & Destination"
+              layout: "two_column"
+              fields:
+                - origin_address
+                - destination_address
+
+            - id: "dates"
+              title: "Important Dates"
+              layout: "two_column"
+              fields:
+                - created_date
+                - pickup_date
+                - estimated_delivery_date
+                - actual_delivery_date
+
+            - id: "package_details"
+              title: "Package Details"
+              layout: "two_column"
+              fields:
+                - weight
+                - length
+                - width
+                - height
+                - package_count
+
+        - id: "tracking"
+          label: "Tracking"
+          icon: "🗺️"
+
+          sections:
+            - id: "tracking_map"
+              title: "Current Location"
+              type: "map"
+              location_field: "last_scan_location"
+
+            - id: "tracking_events"
+              title: "Tracking History"
+              type: "timeline"
+              query: "shipment_tracking_events"
+
+        - id: "contents"
+          label: "Contents"
+          icon: "📦"
+
+          sections:
+            - id: "products"
+              title: "Products in Shipment"
+              type: "relationship_list"
+              relationship: "CONTAINS_PRODUCT"
+              display_fields:
+                - sku
+                - product_name
+                - quantity
+
+        - id: "financial"
+          label: "Financial"
+          icon: "💰"
+
+          sections:
+            - id: "costs"
+              title: "Shipping Costs"
+              layout: "two_column"
+              fields:
+                - freight_cost
+                - fuel_surcharge
+                - total_cost
+                - billed_to_customer
+
+    # ----------------------------------------------------------------------
+    # Route Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Route"
+      id: "route_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "route_number"
+        subtitle: "route_date"
+        badge_field: "route_status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - id: "route_info"
+              title: "Route Information"
+              layout: "two_column"
+              fields:
+                - route_number
+                - route_date
+                - route_status
+                - driver_name
+                - vehicle_number
+                - total_stops
+                - completed_stops
+
+            - id: "timing"
+              title: "Timing"
+              layout: "two_column"
+              fields:
+                - planned_start_time
+                - actual_start_time
+                - planned_end_time
+                - actual_end_time
+
+        - id: "stops"
+          label: "Stops"
+          sections:
+            - id: "stop_list"
+              title: "Delivery Stops"
+              type: "relationship_list"
+              relationship: "ON_ROUTE"
+              sort:
+                field: "stop_sequence"
+                direction: "ASC"
+              display_fields:
+                - stop_sequence
+                - tracking_number
+                - destination_address
+                - shipment_status
+
+        - id: "map"
+          label: "Map"
+          sections:
+            - id: "route_map"
+              title: "Route Map"
+              type: "map"
+              query: "route_stops_map"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Shipment Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Shipment"
+      id: "shipment_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "shipment_type"
+          title: "Shipment Type"
+          fields:
+            - field: "shipment_type"
+              required: true
+
+            - field: "service_level"
+              required: true
+
+        - id: "addresses"
+          title: "Origin & Destination"
+          fields:
+            - field: "origin_address"
+              required: true
+              widget: "address_autocomplete"
+
+            - field: "destination_address"
+              required: true
+              widget: "address_autocomplete"
+
+        - id: "package_details"
+          title: "Package Details"
+          fields:
+            - field: "weight"
+              required: true
+              width: "half"
+
+            - field: "package_count"
+              width: "half"
+
+            - field: "length"
+              width: "third"
+
+            - field: "width"
+              width: "third"
+
+            - field: "height"
+              width: "third"
+
+        - id: "carrier"
+          title: "Carrier Selection"
+          fields:
+            - field: "carrier"
+              required: true
+              widget: "carrier_rate_shop"
+
+        - id: "special_handling"
+          title: "Special Handling"
+          optional: true
+          fields:
+            - field: "is_hazmat"
+              widget: "toggle"
+
+            - field: "requires_signature"
+              widget: "toggle"
+
+            - field: "is_fragile"
+              widget: "toggle"
+
+            - field: "temperature_controlled"
+              widget: "toggle"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "delivery_performance"
+      name: "Delivery Performance Report"
+      description: "On-time delivery and carrier performance"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_deliveries
+            - on_time_deliveries
+            - late_deliveries
+            - otd_rate
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "OTD Rate by Carrier"
+
+        - type: "table"
+          title: "Carrier Performance"
+          columns:
+            - carrier
+            - total_shipments
+            - on_time_count
+            - late_count
+            - otd_percentage
+
+    - id: "inventory_report"
+      name: "Inventory Report"
+      description: "Current inventory levels and valuation"
+      parameters:
+        - field: "warehouse_id"
+          type: "select"
+          required: false
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_sku_count
+            - total_quantity_on_hand
+            - total_inventory_value
+
+        - type: "table"
+          title: "Inventory by SKU"
+          columns:
+            - sku
+            - product_name
+            - warehouse
+            - quantity_on_hand
+            - quantity_available
+            - value
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

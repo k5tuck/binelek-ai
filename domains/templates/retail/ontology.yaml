@@ -1,0 +1,225 @@
+ontology:
+  entities:
+    - name: Product
+      description: "Retail product"
+      label: "Product"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: sku
+          type: string
+          required: true
+        - name: barcode
+          type: string
+          required: false
+        - name: price
+          type: decimal
+          required: true
+        - name: cost
+          type: decimal
+          required: false
+        - name: category
+          type: string
+          required: false
+        - name: brand
+          type: string
+          required: false
+        - name: active
+          type: boolean
+          default: true
+
+    - name: Inventory
+      description: "Stock level at location"
+      label: "Inventory"
+      attributes:
+        - name: quantity
+          type: integer
+          required: true
+        - name: reorderPoint
+          type: integer
+          required: true
+        - name: reorderQuantity
+          type: integer
+          required: true
+        - name: lastRestocked
+          type: datetime
+          required: false
+
+    - name: Location
+      description: "Store location"
+      label: "Location"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: address
+          type: string
+          required: true
+        - name: phone
+          type: string
+          required: false
+        - name: active
+          type: boolean
+          default: true
+
+    - name: Sale
+      description: "Sales transaction"
+      label: "Sale"
+      attributes:
+        - name: saleNumber
+          type: string
+          required: true
+        - name: saleDate
+          type: datetime
+          required: true
+        - name: subtotal
+          type: decimal
+          required: true
+        - name: tax
+          type: decimal
+          required: false
+        - name: discount
+          type: decimal
+          required: false
+        - name: total
+          type: decimal
+          required: true
+        - name: paymentMethod
+          type: enum
+          values: ["cash", "card", "mobile", "check"]
+          required: true
+
+    - name: SaleItem
+      description: "Item in sale"
+      label: "Sale Item"
+      attributes:
+        - name: quantity
+          type: integer
+          required: true
+        - name: unitPrice
+          type: decimal
+          required: true
+        - name: total
+          type: decimal
+          required: true
+
+    - name: Customer
+      description: "Retail customer"
+      label: "Customer"
+      attributes:
+        - name: firstName
+          type: string
+          required: true
+        - name: lastName
+          type: string
+          required: true
+        - name: email
+          type: string
+          required: false
+        - name: phone
+          type: string
+          required: false
+        - name: loyaltyPoints
+          type: integer
+          required: false
+          default: 0
+        - name: totalPurchases
+          type: decimal
+          required: false
+          default: 0
+
+    - name: Supplier
+      description: "Product supplier"
+      label: "Supplier"
+      attributes:
+        - name: name
+          type: string
+          required: true
+        - name: contactName
+          type: string
+          required: false
+        - name: email
+          type: string
+          required: false
+        - name: phone
+          type: string
+          required: false
+        - name: active
+          type: boolean
+          default: true
+
+    - name: PurchaseOrder
+      description: "Order from supplier"
+      label: "Purchase Order"
+      attributes:
+        - name: orderNumber
+          type: string
+          required: true
+        - name: orderDate
+          type: date
+          required: true
+        - name: expectedDelivery
+          type: date
+          required: false
+        - name: status
+          type: enum
+          values: ["draft", "sent", "received", "cancelled"]
+          default: "draft"
+        - name: total
+          type: decimal
+          required: true
+
+  relationships:
+    - name: INVENTORY_AT
+      from: Inventory
+      to: Location
+      type: many-to-one
+
+    - name: INVENTORY_PRODUCT
+      from: Inventory
+      to: Product
+      type: many-to-one
+
+    - name: SALE_AT
+      from: Sale
+      to: Location
+      type: many-to-one
+
+    - name: SALE_BY
+      from: Sale
+      to: Customer
+      type: many-to-one
+
+    - name: SALE_CONTAINS
+      from: Sale
+      to: SaleItem
+      type: one-to-many
+
+    - name: ITEM_PRODUCT
+      from: SaleItem
+      to: Product
+      type: many-to-one
+
+    - name: SUPPLIES
+      from: Supplier
+      to: Product
+      type: many-to-many
+
+    - name: PO_SUPPLIER
+      from: PurchaseOrder
+      to: Supplier
+      type: many-to-one
+
+  indexes:
+    - entity: Product
+      type: btree
+      fields: [sku]
+      unique: true
+    - entity: Product
+      type: btree
+      fields: [barcode]
+    - entity: Sale
+      type: btree
+      fields: [saleNumber]
+      unique: true

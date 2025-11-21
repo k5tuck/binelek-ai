@@ -1,0 +1,873 @@
+# Real Estate Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Real estate domain ontology covering properties, transactions, and stakeholders"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Property Entity
+    # ------------------------------------------------------------------------
+    - name: Property
+      display_name: "Property"
+      description: "Real estate asset (residential, commercial, industrial)"
+      icon: "🏢"
+      color: "#10B981"
+
+      attributes:
+        # Core Identification
+        - name: address
+          type: address
+          required: true
+          description: "Full street address"
+          example: "123 Main Street, San Francisco, CA 94102"
+
+        - name: parcel_id
+          type: string
+          description: "Assessor's Parcel Number (APN)"
+          indexed: true
+
+        - name: mls_number
+          type: string
+          description: "Multiple Listing Service ID"
+          indexed: true
+          unique_per_tenant: true
+
+        # Property Type & Classification
+        - name: property_type
+          type: enum
+          required: true
+          values:
+            - "Single Family Residence"
+            - "Condominium"
+            - "Townhouse"
+            - "Multi-Family (2-4 units)"
+            - "Apartment Building (5+ units)"
+            - "Commercial Office"
+            - "Retail"
+            - "Industrial"
+            - "Warehouse"
+            - "Mixed Use"
+            - "Land"
+            - "Farm/Ranch"
+          default: "Single Family Residence"
+
+        - name: property_subtype
+          type: string
+          description: "More specific classification (e.g., 'Class A Office')"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Pending"
+            - "Sold"
+            - "Off Market"
+            - "Coming Soon"
+            - "Withdrawn"
+            - "Expired"
+          default: "Active"
+
+        # Physical Characteristics
+        - name: bedrooms
+          type: number
+          min: 0
+          max: 50
+          description: "Number of bedrooms"
+
+        - name: bathrooms
+          type: number
+          min: 0
+          max: 50
+          description: "Total bathrooms (full + half)"
+
+        - name: square_feet
+          type: number
+          min: 0
+          description: "Interior square footage"
+          unit: "sqft"
+
+        - name: lot_size
+          type: number
+          min: 0
+          description: "Lot size"
+          unit: "sqft"
+
+        - name: year_built
+          type: number
+          min: 1700
+          max: 2100
+
+        - name: stories
+          type: number
+          min: 1
+          max: 200
+
+        - name: units
+          type: number
+          min: 1
+          description: "Number of rental units (for multi-family)"
+
+        # Location
+        - name: location
+          type: geopoint
+          required: true
+          description: "GPS coordinates"
+          indexed: true
+
+        - name: county
+          type: string
+          indexed: true
+
+        - name: zip_code
+          type: string
+          indexed: true
+
+        - name: neighborhood
+          type: string
+          indexed: true
+
+        - name: school_district
+          type: string
+
+        # Financial
+        - name: list_price
+          type: money
+          description: "Current listing price"
+
+        - name: original_list_price
+          type: money
+          description: "Initial listing price"
+
+        - name: sold_price
+          type: money
+          description: "Final sale price"
+
+        - name: price_per_sqft
+          type: money
+          description: "Price per square foot"
+          computed: true
+          formula: "list_price / square_feet"
+
+        - name: property_tax
+          type: money
+          description: "Annual property tax"
+
+        - name: hoa_fee
+          type: money
+          description: "Monthly HOA/Condo fee"
+
+        - name: rental_income
+          type: money
+          description: "Monthly rental income"
+
+        # Dates
+        - name: listed_date
+          type: date
+          description: "Date property was listed"
+
+        - name: sold_date
+          type: date
+          description: "Date property sold"
+
+        - name: days_on_market
+          type: number
+          computed: true
+          description: "Days between listing and sale/today"
+
+        # Features & Amenities
+        - name: parking_spaces
+          type: number
+          min: 0
+
+        - name: garage_type
+          type: enum
+          values: ["None", "Carport", "Attached", "Detached", "Underground"]
+
+        - name: pool
+          type: boolean
+          default: false
+
+        - name: fireplace
+          type: boolean
+          default: false
+
+        - name: amenities
+          type: array
+          item_type: string
+          description: "Features like 'Hardwood Floors', 'Granite Counters', etc."
+
+        # Commercial-Specific
+        - name: building_class
+          type: enum
+          values: ["Class A", "Class B", "Class C"]
+          description: "Commercial building classification"
+
+        - name: cap_rate
+          type: number
+          description: "Capitalization rate for investment properties"
+          unit: "percentage"
+
+        - name: occupancy_rate
+          type: number
+          description: "Percentage of occupied units/space"
+          unit: "percentage"
+          min: 0
+          max: 100
+
+        - name: lease_type
+          type: enum
+          values: ["Gross", "Net", "Double Net", "Triple Net", "Modified Gross"]
+
+        # Marketing
+        - name: description
+          type: text
+          description: "Property description for listings"
+
+        - name: virtual_tour_url
+          type: url
+
+        - name: photos
+          type: array
+          item_type: url
+          description: "Photo URLs"
+
+        - name: video_url
+          type: url
+
+        # Compliance & Legal
+        - name: zoning
+          type: string
+          description: "Zoning classification"
+
+        - name: disclosure_documents
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["status", "property_type"]
+          name: "idx_status_type"
+        - fields: ["location"]
+          name: "idx_location"
+          type: "spatial"
+        - fields: ["list_price"]
+          name: "idx_price"
+        - fields: ["zip_code", "property_type"]
+          name: "idx_zip_type"
+
+      validation_rules:
+        - rule: "list_price must be > 0 if status is Active"
+        - rule: "sold_price must be set if status is Sold"
+        - rule: "bedrooms and bathrooms required for residential properties"
+
+    # ------------------------------------------------------------------------
+    # Person Entity
+    # ------------------------------------------------------------------------
+    - name: Person
+      display_name: "Person"
+      description: "Individual (buyer, seller, agent, tenant, etc.)"
+      icon: "👤"
+      color: "#3B82F6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          indexed: true
+          unique_per_tenant: true
+
+        - name: phone
+          type: phone
+
+        - name: mobile_phone
+          type: phone
+
+        - name: date_of_birth
+          type: date
+
+        - name: person_type
+          type: enum
+          required: true
+          multiple: true
+          values:
+            - "Buyer"
+            - "Seller"
+            - "Agent"
+            - "Broker"
+            - "Property Manager"
+            - "Tenant"
+            - "Landlord"
+            - "Investor"
+            - "Contractor"
+            - "Inspector"
+            - "Appraiser"
+            - "Lender"
+
+        - name: license_number
+          type: string
+          description: "Real estate license number (for agents/brokers)"
+
+        - name: license_state
+          type: string
+
+        - name: license_expiration
+          type: date
+
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Text", "In-Person"]
+          default: "Email"
+
+        - name: budget_min
+          type: money
+          description: "Minimum budget (for buyers)"
+
+        - name: budget_max
+          type: money
+          description: "Maximum budget (for buyers)"
+
+        - name: preferred_locations
+          type: array
+          item_type: string
+          description: "Preferred neighborhoods/cities"
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+          description: "Custom tags like 'VIP', 'First-time buyer'"
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_person_email"
+        - fields: ["person_type"]
+          name: "idx_person_type"
+        - fields: ["full_name"]
+          name: "idx_person_name"
+
+    # ------------------------------------------------------------------------
+    # Company Entity
+    # ------------------------------------------------------------------------
+    - name: Company
+      display_name: "Company"
+      description: "Business entity (brokerage, property management firm, developer)"
+      icon: "🏢"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: company_name
+          type: string
+          required: true
+
+        - name: legal_name
+          type: string
+          description: "Official legal entity name"
+
+        - name: company_type
+          type: enum
+          required: true
+          values:
+            - "Brokerage"
+            - "Property Management"
+            - "Developer"
+            - "REIT"
+            - "Investment Fund"
+            - "Title Company"
+            - "Escrow Company"
+            - "Lender"
+            - "Insurance Provider"
+
+        - name: tax_id
+          type: string
+          description: "EIN or Tax ID"
+
+        - name: license_number
+          type: string
+
+        - name: address
+          type: address
+
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+        - name: website
+          type: url
+
+        - name: founded_date
+          type: date
+
+        - name: employee_count
+          type: number
+
+        - name: annual_revenue
+          type: money
+
+      indexes:
+        - fields: ["company_name"]
+          name: "idx_company_name"
+        - fields: ["company_type"]
+          name: "idx_company_type"
+
+    # ------------------------------------------------------------------------
+    # Transaction Entity
+    # ------------------------------------------------------------------------
+    - name: Transaction
+      display_name: "Transaction"
+      description: "Real estate transaction (purchase, sale, lease)"
+      icon: "💰"
+      color: "#F59E0B"
+
+      attributes:
+        - name: transaction_type
+          type: enum
+          required: true
+          values:
+            - "Purchase"
+            - "Sale"
+            - "Lease"
+            - "Rental"
+            - "Refinance"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Under Contract"
+            - "In Escrow"
+            - "Contingent"
+            - "Closed"
+            - "Failed"
+            - "Cancelled"
+          default: "Pending"
+
+        - name: purchase_price
+          type: money
+          required: true
+
+        - name: down_payment
+          type: money
+
+        - name: loan_amount
+          type: money
+
+        - name: commission_rate
+          type: number
+          description: "Commission percentage"
+          unit: "percentage"
+
+        - name: commission_amount
+          type: money
+          computed: true
+          formula: "purchase_price * (commission_rate / 100)"
+
+        - name: contract_date
+          type: date
+
+        - name: closing_date
+          type: date
+
+        - name: actual_closing_date
+          type: date
+
+        - name: contingencies
+          type: array
+          item_type: string
+          description: "e.g., 'Inspection', 'Financing', 'Appraisal'"
+
+        - name: earnest_money
+          type: money
+
+        - name: closing_costs
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_transaction_status"
+        - fields: ["closing_date"]
+          name: "idx_closing_date"
+
+    # ------------------------------------------------------------------------
+    # Listing Entity
+    # ------------------------------------------------------------------------
+    - name: Listing
+      display_name: "Listing"
+      description: "Property listing with marketing details"
+      icon: "📋"
+      color: "#EC4899"
+
+      attributes:
+        - name: listing_type
+          type: enum
+          required: true
+          values:
+            - "For Sale"
+            - "For Rent"
+            - "For Lease"
+            - "Coming Soon"
+
+        - name: list_price
+          type: money
+          required: true
+
+        - name: listing_date
+          type: date
+          required: true
+
+        - name: expiration_date
+          type: date
+
+        - name: mls_syndication
+          type: boolean
+          default: true
+          description: "Syndicate to MLS"
+
+        - name: public_remarks
+          type: text
+          description: "Public description"
+
+        - name: private_remarks
+          type: text
+          description: "Agent-only notes"
+
+        - name: showing_instructions
+          type: text
+
+        - name: lockbox_code
+          type: string
+
+        - name: open_house_dates
+          type: array
+          item_type: datetime
+
+      indexes:
+        - fields: ["listing_type", "listing_date"]
+          name: "idx_listing_type_date"
+
+    # ------------------------------------------------------------------------
+    # Lease Entity
+    # ------------------------------------------------------------------------
+    - name: Lease
+      display_name: "Lease"
+      description: "Rental or commercial lease agreement"
+      icon: "📄"
+      color: "#6366F1"
+
+      attributes:
+        - name: lease_type
+          type: enum
+          required: true
+          values:
+            - "Residential"
+            - "Commercial"
+            - "Industrial"
+
+        - name: monthly_rent
+          type: money
+          required: true
+
+        - name: security_deposit
+          type: money
+
+        - name: lease_start_date
+          type: date
+          required: true
+
+        - name: lease_end_date
+          type: date
+          required: true
+
+        - name: lease_term_months
+          type: number
+          computed: true
+
+        - name: auto_renew
+          type: boolean
+          default: false
+
+        - name: rent_due_day
+          type: number
+          min: 1
+          max: 31
+          default: 1
+
+        - name: late_fee
+          type: money
+
+        - name: pet_policy
+          type: enum
+          values: ["Not Allowed", "Cats Only", "Dogs Only", "Cats and Dogs", "Any Pet"]
+          default: "Not Allowed"
+
+        - name: pet_deposit
+          type: money
+
+        - name: utilities_included
+          type: array
+          item_type: string
+          description: "e.g., 'Water', 'Gas', 'Electric', 'Internet'"
+
+        - name: lease_document_url
+          type: url
+
+      indexes:
+        - fields: ["lease_end_date"]
+          name: "idx_lease_expiration"
+
+    # ------------------------------------------------------------------------
+    # Showing Entity
+    # ------------------------------------------------------------------------
+    - name: Showing
+      display_name: "Property Showing"
+      description: "Scheduled property viewing"
+      icon: "🗓️"
+      color: "#14B8A6"
+
+      attributes:
+        - name: showing_date
+          type: datetime
+          required: true
+
+        - name: duration_minutes
+          type: number
+          default: 30
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Scheduled"
+            - "Confirmed"
+            - "Completed"
+            - "Cancelled"
+            - "No Show"
+          default: "Scheduled"
+
+        - name: feedback
+          type: text
+          description: "Buyer feedback after showing"
+
+        - name: interest_level
+          type: enum
+          values: ["Very Interested", "Interested", "Neutral", "Not Interested"]
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["showing_date"]
+          name: "idx_showing_date"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Property Relationships
+    - name: OWNS
+      from: Person
+      to: Property
+      description: "Person owns property"
+      cardinality: many_to_many
+      attributes:
+        - name: ownership_percentage
+          type: number
+          default: 100
+          min: 0
+          max: 100
+        - name: acquisition_date
+          type: date
+        - name: acquisition_price
+          type: money
+
+    - name: LISTED_BY
+      from: Property
+      to: Person
+      description: "Property is listed by agent"
+      cardinality: many_to_one
+      constraints:
+        - "Person must have person_type = 'Agent' or 'Broker'"
+
+    - name: MANAGED_BY
+      from: Property
+      to: Company
+      description: "Property managed by company"
+      cardinality: many_to_one
+      constraints:
+        - "Company must have company_type = 'Property Management'"
+
+    - name: HAS_LISTING
+      from: Property
+      to: Listing
+      description: "Property has active listing"
+      cardinality: one_to_many
+
+    - name: HAS_LEASE
+      from: Property
+      to: Lease
+      description: "Property has lease"
+      cardinality: one_to_many
+
+    # Person/Company Relationships
+    - name: WORKS_FOR
+      from: Person
+      to: Company
+      description: "Person works for company"
+      cardinality: many_to_one
+      attributes:
+        - name: position
+          type: string
+        - name: start_date
+          type: date
+        - name: employment_type
+          type: enum
+          values: ["Full-Time", "Part-Time", "Contract", "1099"]
+
+    - name: REPORTS_TO
+      from: Person
+      to: Person
+      description: "Agent reports to broker/manager"
+      cardinality: many_to_one
+
+    # Transaction Relationships
+    - name: BUYER_IN
+      from: Person
+      to: Transaction
+      description: "Person is buyer in transaction"
+      cardinality: many_to_many
+
+    - name: SELLER_IN
+      from: Person
+      to: Transaction
+      description: "Person is seller in transaction"
+      cardinality: many_to_many
+
+    - name: TRANSACTED
+      from: Transaction
+      to: Property
+      description: "Transaction involves property"
+      cardinality: many_to_one
+
+    - name: AGENT_FOR
+      from: Person
+      to: Transaction
+      description: "Agent representing buyer or seller"
+      cardinality: many_to_many
+      attributes:
+        - name: side
+          type: enum
+          values: ["Buyer", "Seller", "Dual"]
+          required: true
+
+    # Lease Relationships
+    - name: TENANT_OF
+      from: Person
+      to: Lease
+      description: "Person is tenant on lease"
+      cardinality: many_to_many
+
+    - name: LANDLORD_OF
+      from: Person
+      to: Lease
+      description: "Person is landlord"
+      cardinality: many_to_many
+
+    # Showing Relationships
+    - name: SCHEDULED_SHOWING
+      from: Person
+      to: Showing
+      description: "Person scheduled showing"
+      cardinality: many_to_many
+
+    - name: SHOWING_FOR
+      from: Showing
+      to: Property
+      description: "Showing is for property"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "find_comps"
+      description: "Find comparable properties (comps) for valuation"
+      cypher: |
+        MATCH (p:Property)
+        WHERE p.property_type = $property_type
+          AND p.status = 'Sold'
+          AND p.sold_date >= date() - duration({months: 6})
+          AND point.distance(p.location, $target_location) < $radius_meters
+          AND p.square_feet BETWEEN $min_sqft AND $max_sqft
+        RETURN p
+        ORDER BY p.sold_date DESC
+        LIMIT 10
+
+    - name: "agent_portfolio"
+      description: "Get all properties managed by an agent"
+      cypher: |
+        MATCH (agent:Person {id: $agent_id})-[:LISTED_BY]-(p:Property)
+        WHERE p.status IN ['Active', 'Pending']
+        RETURN p
+        ORDER BY p.listed_date DESC
+
+    - name: "buyer_matches"
+      description: "Find properties matching buyer criteria"
+      cypher: |
+        MATCH (buyer:Person {id: $buyer_id}), (p:Property)
+        WHERE p.status = 'Active'
+          AND p.list_price BETWEEN buyer.budget_min AND buyer.budget_max
+          AND p.property_type IN $desired_types
+          AND p.zip_code IN $desired_zip_codes
+        RETURN p
+        ORDER BY p.list_price ASC
+
+    - name: "lease_expirations"
+      description: "Find leases expiring in next 90 days"
+      cypher: |
+        MATCH (lease:Lease)-[:HAS_LEASE]-(p:Property)
+        WHERE lease.lease_end_date >= date()
+          AND lease.lease_end_date <= date() + duration({days: 90})
+        RETURN lease, p
+        ORDER BY lease.lease_end_date ASC
+
+    - name: "transaction_pipeline"
+      description: "Agent's transaction pipeline with commission forecast"
+      cypher: |
+        MATCH (agent:Person {id: $agent_id})-[r:AGENT_FOR]->(t:Transaction)
+        WHERE t.status IN ['Pending', 'Under Contract', 'In Escrow']
+        RETURN t, sum(t.commission_amount) AS total_pending_commission
+        ORDER BY t.closing_date ASC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  last_updated: "2024-01-15"

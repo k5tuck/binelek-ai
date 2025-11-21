@@ -1,0 +1,857 @@
+# Non-Profit & NGO UI Configuration
+# Frontend presentation layer for nonprofit domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for nonprofit donor management and program tracking"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#8B5CF6"      # Purple
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/nonprofit-logo.svg"
+    favicon_url: "/assets/favicons/nonprofit.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "donors"
+        label: "Donors"
+        icon: "heart"
+        route: "/donors"
+        badge_query: "count_active_donors"
+
+      - id: "donations"
+        label: "Donations"
+        icon: "gift"
+        route: "/donations"
+
+      - id: "campaigns"
+        label: "Campaigns"
+        icon: "megaphone"
+        route: "/campaigns"
+        badge_query: "count_active_campaigns"
+
+      - id: "grants"
+        label: "Grants"
+        icon: "file-text"
+        route: "/grants"
+        badge_query: "count_pending_reports"
+        submenu:
+          - id: "grant-pipeline"
+            label: "Pipeline"
+            route: "/grants/pipeline"
+          - id: "grant-reporting"
+            label: "Reporting"
+            route: "/grants/reporting"
+
+      - id: "programs"
+        label: "Programs"
+        icon: "clipboard-list"
+        route: "/programs"
+
+      - id: "beneficiaries"
+        label: "Beneficiaries"
+        icon: "users"
+        route: "/beneficiaries"
+
+      - id: "volunteers"
+        label: "Volunteers"
+        icon: "hand-helping"
+        route: "/volunteers"
+
+      - id: "events"
+        label: "Events"
+        icon: "calendar"
+        route: "/events"
+
+      - id: "impact"
+        label: "Impact"
+        icon: "trending-up"
+        route: "/impact"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Nonprofit Dashboard"
+      description: "Overview of fundraising, programs, and impact"
+      layout: "grid"
+
+      widgets:
+        - id: "total_raised_ytd"
+          type: "metric_card"
+          title: "Raised (YTD)"
+          query: "sum_donations_ytd"
+          format: "currency"
+          icon: "dollar-sign"
+          color: "#10B981"
+          size: "small"
+
+        - id: "donor_count"
+          type: "metric_card"
+          title: "Total Donors"
+          query: "count_donors_ytd"
+          icon: "heart"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "new_donors"
+          type: "metric_card"
+          title: "New Donors"
+          query: "count_new_donors_ytd"
+          icon: "user-plus"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "retention_rate"
+          type: "metric_card"
+          title: "Donor Retention"
+          query: "donor_retention_rate"
+          format: "percentage"
+          icon: "repeat"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "campaign_progress"
+          type: "progress_list"
+          title: "Active Campaigns"
+          query: "active_campaigns_progress"
+          size: "medium"
+          fields:
+            - campaign_name
+            - raised_amount
+            - goal_amount
+            - progress_percentage
+
+        - id: "recent_donations"
+          type: "entity_list"
+          title: "Recent Donations"
+          entity_type: "Donation"
+          query:
+            filter:
+              status: "Completed"
+            sort:
+              field: "donation_date"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - donor_name
+            - amount
+            - donation_date
+            - designation
+          size: "medium"
+
+        - id: "fundraising_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Monthly Fundraising"
+          query: "monthly_donations"
+          x_axis: "month"
+          y_axis: "total_amount"
+          compare_previous_year: true
+          size: "large"
+
+        - id: "grant_pipeline"
+          type: "entity_list"
+          title: "Grant Pipeline"
+          entity_type: "Grant"
+          query:
+            filter:
+              status: ["Prospect", "LOI Submitted", "Submitted", "Awarded"]
+            sort:
+              field: "application_deadline"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - grant_name
+            - funder_name
+            - amount_requested
+            - status
+            - application_deadline
+          size: "medium"
+
+        - id: "upcoming_reports"
+          type: "entity_list"
+          title: "Upcoming Grant Reports"
+          entity_type: "Grant"
+          query:
+            filter:
+              status: "Active"
+              next_report_due: "next_30_days"
+            sort:
+              field: "next_report_due"
+              direction: "ASC"
+          columns:
+            - grant_name
+            - funder_name
+            - next_report_due
+          size: "small"
+
+        - id: "donor_giving_levels"
+          type: "chart"
+          chart_type: "pie"
+          title: "Donors by Giving Level"
+          query: "donor_giving_level_distribution"
+          size: "medium"
+
+        - id: "beneficiaries_served"
+          type: "metric_card"
+          title: "Beneficiaries Served"
+          query: "count_beneficiaries_served"
+          icon: "users"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "volunteer_hours"
+          type: "metric_card"
+          title: "Volunteer Hours (YTD)"
+          query: "sum_volunteer_hours_ytd"
+          icon: "clock"
+          color: "#14B8A6"
+          size: "small"
+
+    # ----------------------------------------------------------------------
+    # Development Dashboard
+    # ----------------------------------------------------------------------
+    - id: "development"
+      name: "Development Dashboard"
+      description: "Fundraising metrics and donor pipeline"
+      layout: "grid"
+
+      widgets:
+        - id: "major_gift_pipeline"
+          type: "entity_list"
+          title: "Major Gift Prospects"
+          entity_type: "Donor"
+          query:
+            filter:
+              donor_status: ["Prospect", "First-Time Donor"]
+              giving_level: ["$10,000-$24,999", "$25,000-$99,999", "$100,000+"]
+            sort:
+              field: "lifetime_giving"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - full_name
+            - giving_level
+            - last_gift_date
+            - lifetime_giving
+          size: "large"
+
+        - id: "lapsed_donors"
+          type: "entity_list"
+          title: "Lapsed Donors to Re-engage"
+          query: "lapsed_donors"
+          columns:
+            - full_name
+            - last_gift_date
+            - lifetime_giving
+          size: "medium"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Donor List
+    # ----------------------------------------------------------------------
+    - entity_type: "Donor"
+      id: "donor_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              width: "200px"
+              render: "link"
+
+            - field: "donor_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "donor_status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Prospect": "secondary"
+                "First-Time Donor": "info"
+                "Repeat Donor": "success"
+                "Major Donor": "primary"
+                "Lapsed": "warning"
+
+            - field: "giving_level"
+              label: "Giving Level"
+              sortable: true
+              filterable: true
+
+            - field: "lifetime_giving"
+              label: "Lifetime"
+              sortable: true
+              format: "currency"
+
+            - field: "last_gift_date"
+              label: "Last Gift"
+              sortable: true
+              format: "date"
+
+            - field: "last_gift_amount"
+              label: "Amount"
+              format: "currency"
+
+            - field: "email"
+              label: "Email"
+
+        - type: "grid"
+          card_template:
+            title_field: "full_name"
+            subtitle_field: "organization_name"
+            badge_field: "donor_status"
+            metadata_fields:
+              - giving_level
+              - lifetime_giving
+              - last_gift_date
+
+      filters:
+        - field: "donor_status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "donor_type"
+          type: "select"
+          label: "Type"
+          multiple: true
+
+        - field: "giving_level"
+          type: "select"
+          label: "Giving Level"
+          multiple: true
+
+        - field: "last_gift_date"
+          type: "date_range"
+          label: "Last Gift Date"
+
+        - field: "interests"
+          type: "tag_select"
+          label: "Interests"
+
+      actions:
+        - id: "add_donor"
+          label: "Add Donor"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+        - id: "send_email"
+          label: "Send Email"
+          icon: "mail"
+          type: "bulk_action"
+
+    # ----------------------------------------------------------------------
+    # Donation List
+    # ----------------------------------------------------------------------
+    - entity_type: "Donation"
+      id: "donation_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "donor_name"
+              label: "Donor"
+              sortable: true
+
+            - field: "amount"
+              label: "Amount"
+              sortable: true
+              format: "currency"
+
+            - field: "donation_date"
+              label: "Date"
+              sortable: true
+              format: "date"
+
+            - field: "donation_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "designation"
+              label: "Designation"
+
+            - field: "payment_method"
+              label: "Payment"
+
+            - field: "acknowledgment_sent"
+              label: "Acknowledged"
+              render: "yes_no"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "donation_type"
+          type: "select"
+          multiple: true
+
+        - field: "donation_date"
+          type: "date_range"
+
+        - field: "amount"
+          type: "range"
+          min: 0
+          max: 1000000
+
+    # ----------------------------------------------------------------------
+    # Grant List
+    # ----------------------------------------------------------------------
+    - entity_type: "Grant"
+      id: "grant_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "grant_name"
+              label: "Grant"
+              sortable: true
+
+            - field: "funder_name"
+              label: "Funder"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Prospect": "secondary"
+                "Submitted": "info"
+                "Awarded": "success"
+                "Active": "primary"
+                "Declined": "danger"
+                "Closed": "secondary"
+
+            - field: "amount_requested"
+              label: "Requested"
+              format: "currency"
+
+            - field: "amount_awarded"
+              label: "Awarded"
+              format: "currency"
+
+            - field: "application_deadline"
+              label: "Deadline"
+              format: "date"
+
+            - field: "next_report_due"
+              label: "Next Report"
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Prospect"
+            - "LOI Submitted"
+            - "Submitted"
+            - "Awarded"
+            - "Active"
+            - "Closed"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "grant_type"
+          type: "select"
+          multiple: true
+
+        - field: "application_deadline"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Program List
+    # ----------------------------------------------------------------------
+    - entity_type: "Program"
+      id: "program_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "program_name"
+              label: "Program"
+              sortable: true
+
+            - field: "program_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "budget"
+              label: "Budget"
+              format: "currency"
+
+            - field: "actual_spend"
+              label: "Spent"
+              format: "currency"
+
+            - field: "target_beneficiaries"
+              label: "Target"
+
+            - field: "actual_beneficiaries"
+              label: "Actual"
+
+        - type: "grid"
+          card_template:
+            title_field: "program_name"
+            subtitle_field: "program_type"
+            badge_field: "status"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "program_type"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Donor Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Donor"
+      id: "donor_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "organization_name"
+        badge_field: "donor_status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "user"
+
+          sections:
+            - id: "contact_info"
+              title: "Contact Information"
+              layout: "two_column"
+              fields:
+                - field: "email"
+                - field: "phone"
+                - field: "address"
+                - field: "preferred_contact_method"
+
+            - id: "giving_summary"
+              title: "Giving Summary"
+              layout: "two_column"
+              fields:
+                - field: "donor_type"
+                - field: "donor_status"
+                - field: "giving_level"
+                - field: "lifetime_giving"
+                  format: "currency"
+                - field: "largest_gift"
+                  format: "currency"
+                - field: "first_gift_date"
+                  format: "date"
+                - field: "last_gift_date"
+                  format: "date"
+                - field: "last_gift_amount"
+                  format: "currency"
+
+            - id: "interests"
+              title: "Interests & Preferences"
+              fields:
+                - field: "interests"
+                  render: "tags"
+                - field: "communication_preferences"
+                  render: "tags"
+                - field: "connection_to_cause"
+
+        - id: "donations"
+          label: "Giving History"
+          icon: "gift"
+
+          sections:
+            - id: "donation_list"
+              title: "Donations"
+              type: "relationship_list"
+              relationship: "DONATES_TO"
+              direction: "outgoing"
+              display_fields:
+                - amount
+                - donation_date
+                - donation_type
+                - designation
+
+            - id: "giving_chart"
+              title: "Giving Over Time"
+              type: "chart"
+              chart_type: "bar"
+              query: "donor_giving_history"
+
+        - id: "engagement"
+          label: "Engagement"
+          icon: "activity"
+
+          sections:
+            - id: "events_attended"
+              title: "Events Attended"
+              type: "relationship_list"
+              relationship: "ATTENDS"
+              direction: "outgoing"
+              display_fields:
+                - event_name
+                - event_date
+                - attended
+
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+              events:
+                - "donation_made"
+                - "event_attended"
+                - "email_sent"
+                - "meeting_scheduled"
+
+        - id: "relationships"
+          label: "Relationships"
+          icon: "link"
+
+          sections:
+            - id: "referrals"
+              title: "Referred Donors"
+              type: "relationship_list"
+              relationship: "REFERRED_BY"
+              direction: "incoming"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Donor Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Donor"
+      id: "donor_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "donor_type"
+              required: true
+
+            - field: "first_name"
+              required: true
+              width: "half"
+
+            - field: "last_name"
+              required: true
+              width: "half"
+
+            - field: "organization_name"
+              condition: "donor_type != 'Individual'"
+
+            - field: "email"
+
+            - field: "phone"
+
+        - id: "address"
+          title: "Address"
+          fields:
+            - field: "address"
+              widget: "address_input"
+
+        - id: "preferences"
+          title: "Preferences"
+          fields:
+            - field: "preferred_contact_method"
+
+            - field: "communication_preferences"
+              widget: "checkbox_group"
+
+            - field: "interests"
+              widget: "tag_input"
+
+            - field: "do_not_solicit"
+              widget: "toggle"
+
+            - field: "anonymous_preference"
+              widget: "toggle"
+
+    # ----------------------------------------------------------------------
+    # Donation Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Donation"
+      id: "donation_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "donation_info"
+          title: "Donation Information"
+          fields:
+            - field: "amount"
+              required: true
+
+            - field: "donation_date"
+              required: true
+
+            - field: "donation_type"
+              required: true
+
+            - field: "payment_method"
+
+            - field: "designation"
+
+            - field: "campaign_source"
+
+        - id: "tribute"
+          title: "Tribute Information"
+          fields:
+            - field: "tribute_type"
+
+            - field: "tribute_name"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "donation_report"
+      name: "Donation Report"
+      description: "Summary of donations by period"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_donations
+            - total_amount
+            - average_donation
+            - donor_count
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Donations by Month"
+
+        - type: "table"
+          title: "Donation Details"
+          columns:
+            - donor_name
+            - amount
+            - donation_date
+            - designation
+
+    - id: "grant_report"
+      name: "Grant Status Report"
+      description: "Overview of grant pipeline and reporting"
+      parameters:
+        - field: "status"
+          type: "multi_select"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_grants
+            - total_requested
+            - total_awarded
+            - success_rate
+
+        - type: "table"
+          title: "Grant Details"
+          columns:
+            - grant_name
+            - funder_name
+            - status
+            - amount_awarded
+            - next_report_due
+
+    - id: "impact_report"
+      name: "Impact Report"
+      description: "Program outcomes and beneficiary impact"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - beneficiaries_served
+            - programs_active
+            - volunteer_hours
+            - outcomes_achieved
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

@@ -1,0 +1,956 @@
+# Retail & E-commerce UI Configuration
+# Frontend presentation layer for retail domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for retail operations and e-commerce management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#EC4899"      # Pink
+    secondary_color: "#8B5CF6"    # Purple
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/retail-logo.svg"
+    favicon_url: "/assets/favicons/retail.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "orders"
+        label: "Orders"
+        icon: "shopping-bag"
+        route: "/orders"
+        badge_query: "count_pending_orders"
+
+      - id: "products"
+        label: "Products"
+        icon: "package"
+        route: "/products"
+        badge_query: "count_active_products"
+
+      - id: "customers"
+        label: "Customers"
+        icon: "users"
+        route: "/customers"
+
+      - id: "inventory"
+        label: "Inventory"
+        icon: "database"
+        route: "/inventory"
+        badge_query: "count_low_stock"
+
+      - id: "promotions"
+        label: "Promotions"
+        icon: "percent"
+        route: "/promotions"
+
+      - id: "returns"
+        label: "Returns"
+        icon: "refresh-ccw"
+        route: "/returns"
+        badge_query: "count_pending_returns"
+
+      - id: "analytics"
+        label: "Analytics"
+        icon: "bar-chart-2"
+        route: "/analytics"
+        submenu:
+          - id: "sales"
+            label: "Sales"
+            route: "/analytics/sales"
+          - id: "customers"
+            label: "Customers"
+            route: "/analytics/customers"
+          - id: "products"
+            label: "Products"
+            route: "/analytics/products"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Retail Dashboard"
+      description: "Overview of sales, orders, and performance"
+      layout: "grid"
+
+      widgets:
+        - id: "today_sales"
+          type: "metric_card"
+          title: "Today's Sales"
+          query: "sum_today_sales"
+          format: "currency"
+          icon: "dollar-sign"
+          color: "#10B981"
+          size: "small"
+
+        - id: "pending_orders"
+          type: "metric_card"
+          title: "Pending Orders"
+          query: "count_pending_orders"
+          icon: "shopping-bag"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "total_customers"
+          type: "metric_card"
+          title: "Total Customers"
+          query: "count_total_customers"
+          icon: "users"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "conversion_rate"
+          type: "metric_card"
+          title: "Conversion Rate"
+          query: "current_conversion_rate"
+          format: "percentage"
+          icon: "trending-up"
+          color: "#EC4899"
+          size: "small"
+
+        - id: "recent_orders"
+          type: "entity_list"
+          title: "Recent Orders"
+          entity_type: "Order"
+          query:
+            sort:
+              field: "order_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - order_number
+            - customer_name
+            - total
+            - status
+            - order_date
+          size: "medium"
+
+        - id: "top_products"
+          type: "leaderboard"
+          title: "Top Selling Products"
+          query: "top_products_by_revenue"
+          metric: "revenue"
+          format: "currency"
+          limit: 5
+          size: "medium"
+
+        - id: "sales_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Sales (Last 30 Days)"
+          query: "daily_sales_trend"
+          x_axis: "date"
+          y_axis: "revenue"
+          size: "large"
+
+        - id: "orders_by_channel"
+          type: "chart"
+          chart_type: "pie"
+          title: "Orders by Channel"
+          query: "orders_by_channel"
+          size: "medium"
+
+        - id: "low_stock_alerts"
+          type: "entity_list"
+          title: "Low Stock Alerts"
+          entity_type: "Product"
+          query:
+            filter:
+              low_stock: true
+            sort:
+              field: "quantity_available"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - sku
+            - product_name
+            - quantity_available
+            - low_stock_threshold
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Customer Analytics Dashboard
+    # ----------------------------------------------------------------------
+    - id: "customer_analytics"
+      name: "Customer Analytics"
+      description: "Customer insights and segmentation"
+      layout: "grid"
+
+      widgets:
+        - id: "customer_segments"
+          type: "chart"
+          chart_type: "pie"
+          title: "Customers by Segment"
+          query: "customer_segment_distribution"
+
+        - id: "clv_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Customer Lifetime Value Trend"
+          query: "monthly_clv_trend"
+
+        - id: "acquisition_sources"
+          type: "chart"
+          chart_type: "bar"
+          title: "Customer Acquisition Sources"
+          query: "customer_acquisition_sources"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Order List
+    # ----------------------------------------------------------------------
+    - entity_type: "Order"
+      id: "order_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "order_number"
+              label: "Order"
+              sortable: true
+              render: "link"
+
+            - field: "order_date"
+              label: "Date"
+              sortable: true
+              format: "datetime"
+
+            - field: "customer_name"
+              label: "Customer"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Pending": "warning"
+                "Confirmed": "info"
+                "Processing": "primary"
+                "Shipped": "info"
+                "Delivered": "success"
+                "Cancelled": "danger"
+                "Refunded": "secondary"
+
+            - field: "fulfillment_status"
+              label: "Fulfillment"
+              render: "badge"
+
+            - field: "payment_status"
+              label: "Payment"
+              render: "badge"
+
+            - field: "total"
+              label: "Total"
+              format: "currency"
+              sortable: true
+
+            - field: "channel"
+              label: "Channel"
+              filterable: true
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Pending"
+            - "Confirmed"
+            - "Processing"
+            - "Shipped"
+            - "Delivered"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "fulfillment_status"
+          type: "select"
+          multiple: true
+
+        - field: "channel"
+          type: "select"
+          multiple: true
+
+        - field: "order_date"
+          type: "date_range"
+
+        - field: "total"
+          type: "range"
+          label: "Order Total"
+
+      actions:
+        - id: "create_order"
+          label: "Create Order"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Product List
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "featured_image"
+              label: ""
+              render: "thumbnail"
+              width: "60px"
+
+            - field: "sku"
+              label: "SKU"
+              sortable: true
+              render: "link"
+
+            - field: "product_name"
+              label: "Name"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Draft": "secondary"
+                "Out of Stock": "warning"
+                "Discontinued": "danger"
+
+            - field: "brand"
+              label: "Brand"
+              filterable: true
+
+            - field: "base_price"
+              label: "Price"
+              format: "currency"
+              sortable: true
+
+            - field: "quantity_available"
+              label: "Stock"
+              sortable: true
+
+            - field: "average_rating"
+              label: "Rating"
+              render: "stars"
+
+        - type: "grid"
+          card_template:
+            image_field: "featured_image"
+            title_field: "product_name"
+            subtitle_field: "sku"
+            price_field: "base_price"
+            badge_field: "status"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "brand"
+          type: "select"
+          multiple: true
+
+        - field: "product_type"
+          type: "select"
+          multiple: true
+
+        - field: "base_price"
+          type: "range"
+
+      actions:
+        - id: "add_product"
+          label: "Add Product"
+          icon: "plus"
+          type: "create"
+
+    # ----------------------------------------------------------------------
+    # Customer List
+    # ----------------------------------------------------------------------
+    - entity_type: "Customer"
+      id: "customer_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "email"
+              label: "Email"
+
+            - field: "customer_segment"
+              label: "Segment"
+              render: "badge"
+              color_map:
+                "VIP": "success"
+                "Returning": "primary"
+                "New": "info"
+                "At Risk": "warning"
+                "Churned": "danger"
+
+            - field: "total_orders"
+              label: "Orders"
+              sortable: true
+
+            - field: "total_spent"
+              label: "Total Spent"
+              format: "currency"
+              sortable: true
+
+            - field: "last_order_date"
+              label: "Last Order"
+              format: "date"
+              sortable: true
+
+            - field: "accepts_marketing"
+              label: "Marketing"
+              render: "boolean"
+
+      filters:
+        - field: "customer_segment"
+          type: "select"
+          multiple: true
+
+        - field: "accepts_marketing"
+          type: "boolean"
+
+        - field: "total_spent"
+          type: "range"
+
+    # ----------------------------------------------------------------------
+    # Return List
+    # ----------------------------------------------------------------------
+    - entity_type: "Return"
+      id: "return_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "return_number"
+              label: "Return #"
+              render: "link"
+
+            - field: "order_number"
+              label: "Order"
+
+            - field: "return_type"
+              label: "Type"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Requested": "warning"
+                "Approved": "info"
+                "Received": "primary"
+                "Processed": "success"
+                "Rejected": "danger"
+
+            - field: "reason"
+              label: "Reason"
+
+            - field: "refund_amount"
+              label: "Refund"
+              format: "currency"
+
+            - field: "request_date"
+              label: "Requested"
+              format: "date"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "reason"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Order Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Order"
+      id: "order_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "order_number"
+        subtitle_field: "order_date"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "order_info"
+              title: "Order Information"
+              layout: "two_column"
+              fields:
+                - field: "status"
+                  render: "badge"
+                - field: "fulfillment_status"
+                  render: "badge"
+                - field: "payment_status"
+                  render: "badge"
+                - field: "channel"
+                - field: "order_date"
+                  format: "datetime"
+
+            - id: "financial"
+              title: "Order Total"
+              layout: "two_column"
+              fields:
+                - field: "subtotal"
+                  format: "currency"
+                - field: "discount_total"
+                  format: "currency"
+                - field: "shipping_total"
+                  format: "currency"
+                - field: "tax_total"
+                  format: "currency"
+                - field: "total"
+                  format: "currency"
+
+        - id: "items"
+          label: "Items"
+          icon: "package"
+
+          sections:
+            - id: "order_items"
+              title: "Order Items"
+              type: "relationship_list"
+              relationship: "CONTAINS"
+              direction: "outgoing"
+              display_fields:
+                - sku
+                - product_name
+                - quantity
+                - unit_price
+                - total
+
+        - id: "customer"
+          label: "Customer"
+          icon: "user"
+
+          sections:
+            - id: "customer_info"
+              title: "Customer"
+              type: "relationship_list"
+              relationship: "PURCHASED_BY"
+              direction: "outgoing"
+              display_fields:
+                - full_name
+                - email
+                - phone
+                - customer_segment
+
+        - id: "shipping"
+          label: "Shipping"
+          icon: "truck"
+
+          sections:
+            - id: "shipping_info"
+              title: "Shipping Information"
+              fields:
+                - field: "shipping_address"
+                  render: "address"
+                - field: "shipping_method"
+                - field: "tracking_number"
+                - field: "tracking_url"
+                  render: "link"
+
+        - id: "activity"
+          label: "Activity"
+          icon: "activity"
+
+          sections:
+            - id: "timeline"
+              title: "Order Timeline"
+              type: "timeline"
+              events:
+                - "order_placed"
+                - "payment_received"
+                - "order_confirmed"
+                - "shipped"
+                - "delivered"
+
+    # ----------------------------------------------------------------------
+    # Product Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "product_name"
+        subtitle_field: "sku"
+        badge_field: "status"
+        image_field: "featured_image"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "product_details"
+              title: "Product Details"
+              layout: "two_column"
+              fields:
+                - product_type
+                - status
+                - brand
+                - barcode
+
+            - id: "pricing"
+              title: "Pricing"
+              layout: "two_column"
+              fields:
+                - field: "base_price"
+                  format: "currency"
+                - field: "compare_at_price"
+                  format: "currency"
+                - field: "cost"
+                  format: "currency"
+                - field: "margin"
+                  format: "percentage"
+
+            - id: "description"
+              title: "Description"
+              fields:
+                - field: "description"
+                  render: "markdown"
+
+        - id: "media"
+          label: "Media"
+          icon: "image"
+
+          sections:
+            - id: "images"
+              title: "Images"
+              fields:
+                - field: "images"
+                  render: "image_gallery"
+
+        - id: "inventory"
+          label: "Inventory"
+          icon: "database"
+
+          sections:
+            - id: "stock_levels"
+              title: "Stock Levels"
+              type: "relationship_list"
+              relationship: "STOCKED_AT"
+              direction: "outgoing"
+              display_fields:
+                - store_name
+                - quantity
+                - bin_location
+
+        - id: "reviews"
+          label: "Reviews"
+          icon: "star"
+
+          sections:
+            - id: "review_summary"
+              title: "Review Summary"
+              fields:
+                - field: "average_rating"
+                  render: "stars"
+                - field: "review_count"
+
+            - id: "product_reviews"
+              title: "Customer Reviews"
+              type: "relationship_list"
+              relationship: "REVIEW_OF"
+              direction: "incoming"
+              display_fields:
+                - rating
+                - title
+                - content
+                - review_date
+
+        - id: "analytics"
+          label: "Analytics"
+          icon: "bar-chart"
+
+          sections:
+            - id: "sales_metrics"
+              title: "Sales Metrics"
+              type: "summary"
+              metrics:
+                - units_sold
+                - revenue
+                - return_rate
+
+    # ----------------------------------------------------------------------
+    # Customer Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Customer"
+      id: "customer_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        subtitle_field: "email"
+        badge_field: "customer_segment"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "customer_info"
+              title: "Customer Information"
+              layout: "two_column"
+              fields:
+                - email
+                - phone
+                - status
+                - customer_segment
+                - acquisition_source
+
+            - id: "metrics"
+              title: "Customer Metrics"
+              layout: "two_column"
+              fields:
+                - total_orders
+                - total_spent
+                - average_order_value
+                - first_order_date
+                - last_order_date
+
+        - id: "orders"
+          label: "Orders"
+          icon: "shopping-bag"
+
+          sections:
+            - id: "order_history"
+              title: "Order History"
+              type: "relationship_list"
+              relationship: "PURCHASED_BY"
+              direction: "incoming"
+              display_fields:
+                - order_number
+                - order_date
+                - total
+                - status
+
+        - id: "reviews"
+          label: "Reviews"
+          icon: "star"
+
+          sections:
+            - id: "customer_reviews"
+              title: "Reviews Written"
+              type: "relationship_list"
+              relationship: "REVIEWED_BY"
+              direction: "incoming"
+              display_fields:
+                - product_name
+                - rating
+                - review_date
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Product Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "product_name"
+              required: true
+
+            - field: "sku"
+              required: true
+
+            - field: "product_type"
+              required: true
+
+            - field: "status"
+
+            - field: "brand"
+
+        - id: "pricing"
+          title: "Pricing"
+          fields:
+            - field: "base_price"
+              required: true
+
+            - field: "compare_at_price"
+
+            - field: "cost"
+
+            - field: "taxable"
+              widget: "toggle"
+
+        - id: "inventory"
+          title: "Inventory"
+          fields:
+            - field: "track_inventory"
+              widget: "toggle"
+
+            - field: "quantity_on_hand"
+
+            - field: "low_stock_threshold"
+
+            - field: "backorder_allowed"
+              widget: "toggle"
+
+        - id: "description"
+          title: "Description"
+          fields:
+            - field: "short_description"
+
+            - field: "description"
+              widget: "rich_text_editor"
+
+            - field: "tags"
+              widget: "tag_input"
+
+        - id: "media"
+          title: "Media"
+          fields:
+            - field: "images"
+              widget: "image_upload"
+              max_files: 20
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search orders, products, customers..."
+      entity_types:
+        - "Order"
+        - "Product"
+        - "Customer"
+
+    entity_search:
+      Product:
+        searchable_fields:
+          - "sku"
+          - "product_name"
+          - "description"
+          - "brand"
+        boost_fields:
+          - field: "sku"
+            boost: 2.0
+          - field: "product_name"
+            boost: 1.5
+
+      Customer:
+        searchable_fields:
+          - "email"
+          - "full_name"
+          - "phone"
+        boost_fields:
+          - field: "email"
+            boost: 2.0
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "sales_report"
+      name: "Sales Report"
+      description: "Revenue and order analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+        - field: "channel"
+          type: "select"
+          multiple: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_revenue
+            - order_count
+            - average_order_value
+            - units_sold
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Revenue Trend"
+
+        - type: "table"
+          title: "Top Products"
+
+    - id: "customer_report"
+      name: "Customer Report"
+      description: "Customer segmentation and lifetime value"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

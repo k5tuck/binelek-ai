@@ -1,0 +1,231 @@
+# Media & Entertainment Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: media
+  name: "Media & Entertainment"
+  version: "1.0.0"
+  description: |
+    Comprehensive media and entertainment knowledge graph platform for content management,
+    rights tracking, talent relationships, distribution channels, and revenue optimization.
+    Supports film, television, music, streaming, and digital media operations.
+
+  icon: "🎬"
+  color: "#8B5CF6"  # Purple
+
+  industry:
+    sector: "Media & Entertainment"
+    subsectors:
+      - "Film Production"
+      - "Television Broadcasting"
+      - "Music & Recording"
+      - "Streaming Platforms"
+      - "Digital Media"
+      - "Sports & Live Events"
+
+    primary_use_cases:
+      - "Content rights management and licensing"
+      - "Talent and contract management"
+      - "Distribution channel optimization"
+      - "Audience analytics and targeting"
+      - "Revenue and royalty tracking"
+      - "Production project management"
+
+  target_customers:
+    - type: "Production Studios"
+      size: "Mid to Large"
+      pain_points:
+        - "Complex rights tracking across multiple territories"
+        - "Difficulty managing talent relationships and contracts"
+        - "Fragmented production workflow tools"
+        - "Limited visibility into content performance"
+
+    - type: "Streaming Platforms"
+      size: "Enterprise"
+      pain_points:
+        - "Content licensing complexity across regions"
+        - "Audience segmentation and personalization"
+        - "Revenue attribution across content types"
+        - "Rights expiration management"
+
+    - type: "Music Labels & Publishers"
+      size: "5-500 employees"
+      pain_points:
+        - "Royalty calculation and distribution"
+        - "Multi-platform revenue tracking"
+        - "Artist relationship management"
+        - "Copyright compliance"
+
+    - type: "Broadcast Networks"
+      size: "Enterprise"
+      pain_points:
+        - "Programming schedule optimization"
+        - "Advertising inventory management"
+        - "Cross-platform audience measurement"
+        - "Content syndication tracking"
+
+  market_analysis:
+    market_size:
+      global_media_tech: "$45.8B (2023)"
+      projected_2030: "$125.2B"
+      cagr: "15.4%"
+
+    key_trends:
+      - "Streaming-first content strategies"
+      - "AI-driven content personalization"
+      - "Direct-to-consumer distribution"
+      - "NFTs and blockchain for rights management"
+      - "Interactive and immersive content"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Rightsline (rights management)"
+        - "MediaSilo (media asset management)"
+        - "Salesforce Media Cloud (CRM)"
+        - "SAP Media (ERP)"
+
+      differentiation:
+        - "Graph-based relationship intelligence for content and talent"
+        - "Unified view across production, distribution, and revenue"
+        - "AI-driven audience insights from connected data"
+        - "Cross-domain analytics (content + advertising + audience)"
+        - "Real-time rights availability and conflict detection"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Independent producers, small studios evaluating platform"
+      included:
+        - "1 user"
+        - "100 content items max"
+        - "10k API calls/month"
+        - "Basic rights tracking"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$799/month + $50/user"
+      target: "Small production companies, indie labels (5-25 employees)"
+      included:
+        - "5 users included, then $50/user"
+        - "2,500 content items"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Rights calendar"
+        - "Email support"
+      overage_rates:
+        - "Content items: $0.10 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$2,499/month + $85/user"
+      target: "Mid-size studios, regional broadcasters (25-200 employees)"
+      included:
+        - "15 users included, then $85/user"
+        - "25,000 content items"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "Royalty calculation engine"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Content items: $0.08 per 100 additional"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $7,999+/month)"
+      target: "Major studios, streaming platforms, broadcast networks"
+      included:
+        - "Unlimited users"
+        - "Unlimited content items"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (Rightsline, SAP, etc.)"
+        - "Advanced security (SOC 2, GDPR compliance)"
+        - "Multi-territory support"
+
+  compliance_requirements:
+    regulations:
+      - name: "Copyright Law (DMCA, Berne Convention)"
+        description: "Protection of intellectual property and content ownership"
+        impact: "Requires comprehensive rights tracking and chain of title documentation"
+
+      - name: "SAG-AFTRA Residuals"
+        description: "Union requirements for talent payments on content reuse"
+        impact: "Automatic residual calculation and payment tracking"
+
+      - name: "GDPR (for EU audiences)"
+        description: "Data privacy and protection for EU citizens"
+        impact: "Audience data anonymization, consent tracking"
+
+      - name: "Content Rating Systems (MPAA, TV Parental Guidelines)"
+        description: "Age-appropriate content classification"
+        impact: "Metadata tracking for content ratings across territories"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Rights Management"
+        providers: ["Rightsline", "FilmTrack", "FADEL"]
+        use_case: "Sync content rights, licenses, and availabilities"
+
+      - name: "Media Asset Management"
+        providers: ["MediaSilo", "Frame.io", "Wiredrive"]
+        use_case: "Link content metadata to actual media files"
+
+      - name: "CRM & Sales"
+        providers: ["Salesforce Media Cloud", "HubSpot"]
+        use_case: "Track buyer relationships and content deals"
+
+      - name: "Finance & ERP"
+        providers: ["SAP Media", "Oracle Media", "NetSuite"]
+        use_case: "Revenue recognition, royalty payments, budgeting"
+
+      - name: "Distribution Platforms"
+        providers: ["YouTube API", "Vimeo OTT", "Brightcove"]
+        use_case: "Content distribution and performance metrics"
+
+      - name: "Audience Analytics"
+        providers: ["Nielsen", "Comscore", "Parrot Analytics"]
+        use_case: "Audience measurement and demand signals"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Content items under management"
+        benchmark: "Average customer manages 15,000 content items"
+
+      - metric: "Time to license content"
+        benchmark: "Reduce from 2 weeks to 2 days with availability checks"
+
+      - metric: "Rights conflict detection"
+        benchmark: "Graph-based detection prevents 95% of conflicts"
+
+      - metric: "Revenue attribution accuracy"
+        benchmark: "Real-time dashboards improve attribution by 40%"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  status: "Planned"
+  target_release: "Q4 2026"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Media & Entertainment domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/media/SETUP.md"
+    api_reference: "docs/domains/media/API.md"
+    migration_guide: "docs/domains/media/MIGRATION.md"
+
+  contact:
+    domain_owner: "media-team@binelek.com"
+    support: "support@binelek.com"

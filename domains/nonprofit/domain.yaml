@@ -1,0 +1,247 @@
+# Non-Profit & NGO Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: nonprofit
+  name: "Non-Profit & NGO Management"
+  version: "1.0.0"
+  description: |
+    Comprehensive knowledge graph platform for non-profit organizations and NGOs. Manages
+    donor relationships, program outcomes, grant tracking, volunteer coordination, and
+    impact measurement. Supports fundraising campaigns, beneficiary services, and
+    compliance reporting.
+
+  icon: "heart"
+  color: "#8B5CF6"  # Purple
+
+  industry:
+    sector: "Non-Profit & Social Services"
+    subsectors:
+      - "Charitable Organizations"
+      - "Foundations"
+      - "International NGOs"
+      - "Community Organizations"
+      - "Religious Organizations"
+      - "Educational Non-Profits"
+      - "Healthcare Non-Profits"
+      - "Environmental Organizations"
+
+    primary_use_cases:
+      - "Donor relationship management (DRM)"
+      - "Grant tracking and reporting"
+      - "Program outcome measurement"
+      - "Volunteer management"
+      - "Fundraising campaign management"
+      - "Beneficiary services tracking"
+      - "Impact assessment and reporting"
+      - "Event management"
+
+  target_customers:
+    - type: "Small Non-Profits"
+      size: "1-10 staff, <$1M annual budget"
+      pain_points:
+        - "Fragmented donor data across spreadsheets and emails"
+        - "Manual grant reporting consuming staff time"
+        - "Difficulty demonstrating impact to funders"
+        - "Limited visibility into volunteer engagement"
+
+    - type: "Mid-Size Non-Profits"
+      size: "10-50 staff, $1M-$10M annual budget"
+      pain_points:
+        - "Multiple disconnected systems for donors, programs, and finance"
+        - "Complex grant compliance requirements"
+        - "Scaling volunteer programs without losing personal touch"
+        - "Board reporting and transparency demands"
+
+    - type: "Large Non-Profits & NGOs"
+      size: "50+ staff, $10M+ annual budget"
+      pain_points:
+        - "Enterprise-scale donor relationship management"
+        - "Multi-program impact measurement and attribution"
+        - "International operations and multi-currency support"
+        - "Federated chapter/affiliate management"
+
+    - type: "Foundations & Grantmakers"
+      size: "Variable"
+      pain_points:
+        - "Grantee relationship tracking"
+        - "Impact measurement across portfolio"
+        - "Due diligence and compliance verification"
+        - "Strategic giving optimization"
+
+  market_analysis:
+    market_size:
+      global_nonprofit_tech: "$6.8B (2023)"
+      projected_2030: "$18.2B"
+      cagr: "15.1%"
+
+    key_trends:
+      - "Data-driven philanthropy and impact measurement"
+      - "Digital-first donor engagement"
+      - "AI-powered donor matching and segmentation"
+      - "Blockchain for donation transparency"
+      - "Integrated fundraising across channels"
+      - "Outcome-based funding models"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Salesforce Nonprofit Cloud (enterprise CRM)"
+        - "Blackbaud (fundraising and financial management)"
+        - "Bloomerang (donor retention focus)"
+        - "Network for Good (small nonprofit tools)"
+        - "Little Green Light (mid-market)"
+
+      differentiation:
+        - "Graph-based relationship intelligence across donors, programs, and outcomes"
+        - "Unified view of donor journey from prospect to major gift"
+        - "AI-driven impact attribution and prediction"
+        - "Open API for custom grant reporting"
+        - "Multi-domain support (can expand to other sectors)"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small organizations evaluating platform"
+      included:
+        - "1 user"
+        - "500 contacts max"
+        - "10k API calls/month"
+        - "Basic reporting"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$299/month + $25/user"
+      target: "Small non-profits (1-10 staff)"
+      included:
+        - "5 users included, then $25/user"
+        - "5,000 contacts"
+        - "100k API calls/month"
+        - "Basic donor management"
+        - "Simple grant tracking"
+        - "Email support"
+      overage_rates:
+        - "Contacts: $0.03 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$999/month + $45/user"
+      target: "Mid-size non-profits (10-50 staff)"
+      included:
+        - "15 users included, then $45/user"
+        - "50,000 contacts"
+        - "1M API calls/month"
+        - "Advanced donor segmentation"
+        - "Grant compliance automation"
+        - "Impact dashboards"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "Contacts: $0.03 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $3,499+/month)"
+      target: "Large non-profits, international NGOs, foundations"
+      included:
+        - "Unlimited users"
+        - "Unlimited contacts"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated success manager"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations"
+        - "Advanced compliance (SOC 2, GDPR)"
+        - "Multi-entity/chapter support"
+
+  compliance_requirements:
+    regulations:
+      - name: "IRS 501(c)(3) Requirements"
+        description: "Tax-exempt status maintenance, annual Form 990 filing, public disclosure"
+        impact: "Comprehensive financial tracking, donor acknowledgment letters, public benefit documentation"
+
+      - name: "Grant Reporting Requirements"
+        description: "Funder-specific reporting on outcomes, expenditures, and activities"
+        impact: "Flexible report generation, outcome tracking, budget vs. actual comparison"
+
+      - name: "GDPR (for EU donors/beneficiaries)"
+        description: "Data privacy and protection for EU individuals"
+        impact: "Consent tracking, data deletion capabilities, cross-border data transfer compliance"
+
+      - name: "State Charitable Solicitation Laws"
+        description: "Registration and reporting requirements for fundraising in each state"
+        impact: "Multi-state registration tracking, required disclosures"
+
+      - name: "HIPAA (for healthcare non-profits)"
+        description: "Protected health information for beneficiaries receiving health services"
+        impact: "Secure data storage, access controls, audit trails"
+
+      - name: "PCI DSS"
+        description: "Payment card industry standards for donation processing"
+        impact: "Secure payment processing, tokenization, compliance validation"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "CRM & Donor Management"
+        providers: ["Salesforce Nonprofit", "Blackbaud CRM", "Bloomerang", "Little Green Light"]
+        use_case: "Migrate or sync existing donor data"
+
+      - name: "Fundraising & Payment"
+        providers: ["Stripe", "PayPal Giving Fund", "Classy", "GoFundMe Charity"]
+        use_case: "Process donations and sync to donor records"
+
+      - name: "Email Marketing"
+        providers: ["Mailchimp", "Constant Contact", "Emma", "Campaign Monitor"]
+        use_case: "Donor communication and campaign tracking"
+
+      - name: "Accounting & Finance"
+        providers: ["QuickBooks", "Sage Intacct", "Blackbaud Financial Edge", "Xero"]
+        use_case: "Sync donations, grants, and expenses"
+
+      - name: "Grant Management"
+        providers: ["Fluxx", "Submittable", "Foundant", "Survey Monkey Apply"]
+        use_case: "Grant applications, tracking, and reporting"
+
+      - name: "Volunteer Management"
+        providers: ["VolunteerHub", "SignUpGenius", "Galaxy Digital", "Better Impact"]
+        use_case: "Volunteer recruitment, scheduling, and hour tracking"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Donor retention rate"
+        benchmark: "Increase from 45% to 60% with relationship insights"
+
+      - metric: "Time to complete grant report"
+        benchmark: "Reduce from 20 hours to 4 hours with automated data aggregation"
+
+      - metric: "Volunteer engagement"
+        benchmark: "20% increase in repeat volunteers through better matching"
+
+      - metric: "Fundraising efficiency"
+        benchmark: "Reduce cost per dollar raised by 25%"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Non-Profit & NGO domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/nonprofit/SETUP.md"
+    api_reference: "docs/domains/nonprofit/API.md"
+    migration_guide: "docs/domains/nonprofit/MIGRATION.md"
+
+  contact:
+    domain_owner: "nonprofit-team@binelek.com"
+    support: "support@binelek.com"
+
+  status: "Future"
+  planned_release: "2027"

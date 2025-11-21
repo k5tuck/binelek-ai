@@ -1,0 +1,879 @@
+# Finance Ontology Definition
+# Financial entities, relationships, and wealth management data models
+
+ontology:
+  version: "1.0.0"
+  description: "Finance domain ontology covering clients, accounts, portfolios, and investments"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Client Entity
+    # ------------------------------------------------------------------------
+    - name: Client
+      display_name: "Client"
+      description: "Individual or entity receiving financial advisory services"
+      icon: "👤"
+      color: "#F59E0B"
+      pii_level: "high"
+
+      attributes:
+        # Individual vs. Entity
+        - name: client_type
+          type: enum
+          required: true
+          values:
+            - "Individual"
+            - "Joint"
+            - "Trust"
+            - "Estate"
+            - "Corporation"
+            - "Partnership"
+            - "LLC"
+            - "Foundation"
+            - "IRA"
+            - "401k"
+
+        # Personal Information (for Individual)
+        - name: first_name
+          type: string
+          required_if: "client_type == 'Individual'"
+          pii: true
+
+        - name: last_name
+          type: string
+          required_if: "client_type == 'Individual'"
+          pii: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: legal_name
+          type: string
+          description: "Legal entity name (for trusts, corporations, etc.)"
+          required_if: "client_type != 'Individual'"
+
+        - name: date_of_birth
+          type: date
+          pii: true
+
+        - name: age
+          type: number
+          computed: true
+
+        - name: ssn_tin
+          type: string
+          description: "Social Security Number or Tax ID Number"
+          pii: true
+          encrypted: true
+
+        # Contact Information
+        - name: email
+          type: email
+          pii: true
+          indexed: true
+
+        - name: phone
+          type: phone
+          pii: true
+
+        - name: mobile_phone
+          type: phone
+          pii: true
+
+        - name: address
+          type: address
+          pii: true
+
+        - name: citizenship
+          type: string
+          description: "Country of citizenship"
+
+        - name: tax_residency
+          type: string
+          description: "Country of tax residency"
+
+        # Client Status
+        - name: client_status
+          type: enum
+          required: true
+          values:
+            - "Prospect"
+            - "Active"
+            - "Inactive"
+            - "Closed"
+            - "Deceased"
+          default: "Prospect"
+
+        - name: onboarding_date
+          type: date
+          description: "Date client onboarded"
+
+        - name: termination_date
+          type: date
+
+        # KYC (Know Your Customer)
+        - name: kyc_status
+          type: enum
+          required: true
+          values:
+            - "Not Started"
+            - "In Progress"
+            - "Completed"
+            - "Expired"
+            - "Failed"
+          default: "Not Started"
+
+        - name: kyc_completion_date
+          type: date
+
+        - name: kyc_expiration_date
+          type: date
+
+        - name: identity_verified
+          type: boolean
+          default: false
+
+        - name: identity_verification_method
+          type: enum
+          values: ["Passport", "Driver's License", "Utility Bill", "Bank Statement"]
+
+        # Risk Profile
+        - name: risk_tolerance
+          type: enum
+          required: true
+          values:
+            - "Conservative"
+            - "Moderately Conservative"
+            - "Moderate"
+            - "Moderately Aggressive"
+            - "Aggressive"
+          default: "Moderate"
+
+        - name: investment_experience
+          type: enum
+          values:
+            - "None"
+            - "Limited (< 2 years)"
+            - "Good (2-5 years)"
+            - "Extensive (5+ years)"
+
+        - name: time_horizon
+          type: enum
+          values:
+            - "Short-term (< 3 years)"
+            - "Medium-term (3-10 years)"
+            - "Long-term (10+ years)"
+
+        # Financial Profile
+        - name: annual_income
+          type: money
+          pii: true
+
+        - name: net_worth
+          type: money
+          pii: true
+
+        - name: liquid_net_worth
+          type: money
+
+        - name: employment_status
+          type: enum
+          values: ["Employed", "Self-Employed", "Retired", "Student", "Unemployed"]
+
+        - name: occupation
+          type: string
+
+        - name: employer
+          type: string
+
+        # Investment Objectives
+        - name: investment_objectives
+          type: array
+          item_type: string
+          description: "e.g., 'Retirement', 'Education', 'Wealth Preservation', 'Tax Minimization'"
+
+        - name: liquidity_needs
+          type: text
+
+        # AML (Anti-Money Laundering)
+        - name: pep_status
+          type: boolean
+          description: "Politically Exposed Person"
+          default: false
+
+        - name: high_risk_jurisdiction
+          type: boolean
+          default: false
+
+        - name: source_of_funds
+          type: text
+          description: "Documentation of wealth source"
+
+        # Preferences
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Text", "In-Person"]
+          default: "Email"
+
+        - name: communication_preferences
+          type: array
+          item_type: string
+          description: "e.g., 'Quarterly Reviews', 'Market Commentary', 'Tax Reports'"
+
+        - name: esg_preferences
+          type: boolean
+          description: "Interested in ESG (Environmental, Social, Governance) investing"
+          default: false
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+          description: "Custom tags like 'UHNW', 'Retiree', 'Business Owner'"
+
+      indexes:
+        - fields: ["email"]
+          name: "idx_client_email"
+        - fields: ["client_status"]
+          name: "idx_client_status"
+        - fields: ["risk_tolerance"]
+          name: "idx_client_risk"
+
+      validation_rules:
+        - rule: "If client_type is Individual, first_name and last_name required"
+        - rule: "If client_status is Active, KYC must be Completed"
+        - rule: "Net worth must be >= 0"
+
+    # ------------------------------------------------------------------------
+    # Account Entity
+    # ------------------------------------------------------------------------
+    - name: Account
+      display_name: "Financial Account"
+      description: "Investment, bank, or retirement account"
+      icon: "🏦"
+      color: "#3B82F6"
+
+      attributes:
+        - name: account_number
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: account_name
+          type: string
+          required: true
+
+        - name: account_type
+          type: enum
+          required: true
+          values:
+            - "Taxable Brokerage"
+            - "Traditional IRA"
+            - "Roth IRA"
+            - "401k"
+            - "403b"
+            - "SEP IRA"
+            - "SIMPLE IRA"
+            - "529 Education Savings"
+            - "Trust"
+            - "Custodial (UTMA/UGMA)"
+            - "Checking"
+            - "Savings"
+            - "Money Market"
+            - "CD (Certificate of Deposit)"
+
+        - name: custodian
+          type: string
+          description: "Custodian or broker-dealer name"
+          indexed: true
+
+        - name: account_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Pending"
+            - "Closed"
+            - "Frozen"
+            - "Restricted"
+          default: "Pending"
+
+        - name: opened_date
+          type: date
+          required: true
+
+        - name: closed_date
+          type: date
+
+        - name: current_value
+          type: money
+          description: "Current market value"
+          required: true
+
+        - name: cash_balance
+          type: money
+
+        - name: cost_basis
+          type: money
+          description: "Total cost basis of holdings"
+
+        - name: unrealized_gain_loss
+          type: money
+          computed: true
+          formula: "current_value - cost_basis"
+
+        - name: ytd_return
+          type: number
+          description: "Year-to-date return"
+          unit: "percentage"
+
+        - name: inception_return
+          type: number
+          description: "Return since account inception"
+          unit: "percentage"
+
+        - name: tax_status
+          type: enum
+          required: true
+          values:
+            - "Taxable"
+            - "Tax-Deferred"
+            - "Tax-Free"
+
+        - name: management_style
+          type: enum
+          values:
+            - "Self-Directed"
+            - "Advisory"
+            - "Discretionary"
+            - "Non-Discretionary"
+
+        - name: billing_method
+          type: enum
+          values:
+            - "Assets Under Management (AUM)"
+            - "Flat Fee"
+            - "Commission"
+            - "Hourly"
+
+        - name: annual_fee_percentage
+          type: number
+          unit: "percentage"
+          description: "AUM fee percentage"
+
+        - name: last_rebalanced_date
+          type: date
+
+        - name: target_allocation
+          type: json
+          description: "Target asset allocation (e.g., {stocks: 60, bonds: 30, cash: 10})"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["account_number"]
+          unique: true
+          name: "idx_account_number"
+        - fields: ["custodian"]
+          name: "idx_account_custodian"
+        - fields: ["account_status"]
+          name: "idx_account_status"
+
+    # ------------------------------------------------------------------------
+    # Holding Entity
+    # ------------------------------------------------------------------------
+    - name: Holding
+      display_name: "Investment Holding"
+      description: "Individual security or asset holding within an account"
+      icon: "📊"
+      color: "#10B981"
+
+      attributes:
+        - name: symbol
+          type: string
+          required: true
+          indexed: true
+          description: "Ticker symbol (e.g., AAPL, VTSAX)"
+
+        - name: cusip
+          type: string
+          description: "CUSIP identifier"
+
+        - name: isin
+          type: string
+          description: "ISIN identifier"
+
+        - name: security_name
+          type: string
+          required: true
+
+        - name: asset_class
+          type: enum
+          required: true
+          values:
+            - "Equity"
+            - "Fixed Income"
+            - "Mutual Fund"
+            - "ETF"
+            - "Option"
+            - "Future"
+            - "Commodity"
+            - "Real Estate"
+            - "Private Equity"
+            - "Hedge Fund"
+            - "Cryptocurrency"
+            - "Cash"
+            - "Other"
+
+        - name: quantity
+          type: number
+          required: true
+
+        - name: cost_basis_per_share
+          type: money
+
+        - name: total_cost_basis
+          type: money
+          computed: true
+          formula: "quantity * cost_basis_per_share"
+
+        - name: current_price
+          type: money
+          required: true
+
+        - name: current_value
+          type: money
+          computed: true
+          formula: "quantity * current_price"
+
+        - name: unrealized_gain_loss
+          type: money
+          computed: true
+          formula: "current_value - total_cost_basis"
+
+        - name: unrealized_gain_loss_percentage
+          type: number
+          computed: true
+          unit: "percentage"
+
+        - name: acquisition_date
+          type: date
+
+        - name: last_price_update
+          type: datetime
+
+      indexes:
+        - fields: ["symbol"]
+          name: "idx_holding_symbol"
+        - fields: ["asset_class"]
+          name: "idx_holding_asset_class"
+
+    # ------------------------------------------------------------------------
+    # Transaction Entity
+    # ------------------------------------------------------------------------
+    - name: Transaction
+      display_name: "Financial Transaction"
+      description: "Buy, sell, dividend, or other account transaction"
+      icon: "💸"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: transaction_type
+          type: enum
+          required: true
+          values:
+            - "Buy"
+            - "Sell"
+            - "Dividend"
+            - "Interest"
+            - "Deposit"
+            - "Withdrawal"
+            - "Transfer In"
+            - "Transfer Out"
+            - "Fee"
+            - "Split"
+            - "Spin-Off"
+            - "Corporate Action"
+
+        - name: transaction_date
+          type: date
+          required: true
+
+        - name: settlement_date
+          type: date
+
+        - name: symbol
+          type: string
+          description: "Ticker symbol (if applicable)"
+
+        - name: quantity
+          type: number
+
+        - name: price
+          type: money
+
+        - name: amount
+          type: money
+          required: true
+          description: "Total transaction amount (positive or negative)"
+
+        - name: commission
+          type: money
+          default: 0
+
+        - name: fees
+          type: money
+          default: 0
+
+        - name: description
+          type: text
+
+        - name: confirmation_number
+          type: string
+
+      indexes:
+        - fields: ["transaction_date"]
+          name: "idx_transaction_date"
+        - fields: ["transaction_type"]
+          name: "idx_transaction_type"
+
+    # ------------------------------------------------------------------------
+    # Goal Entity
+    # ------------------------------------------------------------------------
+    - name: Goal
+      display_name: "Financial Goal"
+      description: "Client's financial planning goal"
+      icon: "🎯"
+      color: "#EC4899"
+
+      attributes:
+        - name: goal_name
+          type: string
+          required: true
+
+        - name: goal_type
+          type: enum
+          required: true
+          values:
+            - "Retirement"
+            - "Education"
+            - "Home Purchase"
+            - "Major Purchase"
+            - "Charitable Giving"
+            - "Legacy/Estate"
+            - "Emergency Fund"
+            - "Travel"
+            - "Business Purchase"
+            - "Other"
+
+        - name: target_amount
+          type: money
+          required: true
+
+        - name: current_amount
+          type: money
+          default: 0
+
+        - name: target_date
+          type: date
+          required: true
+
+        - name: priority
+          type: enum
+          required: true
+          values:
+            - "Critical"
+            - "High"
+            - "Medium"
+            - "Low"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "On Track"
+            - "At Risk"
+            - "Off Track"
+            - "Completed"
+            - "Cancelled"
+          default: "On Track"
+
+        - name: monthly_contribution
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["target_date"]
+          name: "idx_goal_target_date"
+        - fields: ["status"]
+          name: "idx_goal_status"
+
+    # ------------------------------------------------------------------------
+    # Advisor Entity
+    # ------------------------------------------------------------------------
+    - name: Advisor
+      display_name: "Financial Advisor"
+      description: "Financial advisor or wealth manager"
+      icon: "👔"
+      color: "#6366F1"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: email
+          type: email
+          indexed: true
+          unique: true
+
+        - name: phone
+          type: phone
+
+        - name: crd_number
+          type: string
+          description: "Central Registration Depository number"
+          unique: true
+          indexed: true
+
+        - name: designations
+          type: array
+          item_type: string
+          description: "e.g., 'CFP', 'CFA', 'ChFC', 'CLU'"
+
+        - name: advisor_type
+          type: enum
+          required: true
+          values:
+            - "Registered Investment Advisor (RIA)"
+            - "Broker-Dealer Representative"
+            - "Dual-Registered"
+            - "Insurance Agent"
+            - "Banker"
+
+        - name: firm_affiliation
+          type: string
+
+        - name: specializations
+          type: array
+          item_type: string
+          description: "e.g., 'Retirement Planning', 'Estate Planning', 'Tax Planning'"
+
+        - name: years_experience
+          type: number
+
+        - name: aum
+          type: money
+          description: "Total Assets Under Management"
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_advisor_email"
+        - fields: ["crd_number"]
+          name: "idx_advisor_crd"
+
+    # ------------------------------------------------------------------------
+    # Household Entity
+    # ------------------------------------------------------------------------
+    - name: Household
+      display_name: "Household"
+      description: "Family unit grouping multiple clients"
+      icon: "🏠"
+      color: "#14B8A6"
+
+      attributes:
+        - name: household_name
+          type: string
+          required: true
+
+        - name: total_aum
+          type: money
+          description: "Total household assets under management"
+          computed: true
+
+        - name: total_net_worth
+          type: money
+
+        - name: risk_tolerance
+          type: enum
+          values:
+            - "Conservative"
+            - "Moderately Conservative"
+            - "Moderate"
+            - "Moderately Aggressive"
+            - "Aggressive"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["household_name"]
+          name: "idx_household_name"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Client-Account Relationships
+    - name: OWNS_ACCOUNT
+      from: Client
+      to: Account
+      description: "Client owns account"
+      cardinality: one_to_many
+      attributes:
+        - name: ownership_type
+          type: enum
+          values: ["Primary", "Joint", "Beneficiary", "Trustee"]
+        - name: ownership_percentage
+          type: number
+          default: 100
+
+    # Account-Holding Relationships
+    - name: HAS_HOLDING
+      from: Account
+      to: Holding
+      description: "Account contains holding"
+      cardinality: one_to_many
+
+    # Account-Transaction Relationships
+    - name: HAS_TRANSACTION
+      from: Account
+      to: Transaction
+      description: "Account has transaction"
+      cardinality: one_to_many
+
+    # Client-Advisor Relationships
+    - name: ADVISED_BY
+      from: Client
+      to: Advisor
+      description: "Client is advised by advisor"
+      cardinality: many_to_one
+      attributes:
+        - name: relationship_start_date
+          type: date
+        - name: relationship_type
+          type: enum
+          values: ["Primary", "Secondary", "Assistant"]
+
+    # Client-Goal Relationships
+    - name: HAS_GOAL
+      from: Client
+      to: Goal
+      description: "Client has financial goal"
+      cardinality: one_to_many
+
+    # Household-Client Relationships
+    - name: MEMBER_OF_HOUSEHOLD
+      from: Client
+      to: Household
+      description: "Client is member of household"
+      cardinality: many_to_one
+      attributes:
+        - name: role
+          type: enum
+          values: ["Head of Household", "Spouse", "Dependent", "Other"]
+
+    # Client-Client Relationships
+    - name: RELATED_TO
+      from: Client
+      to: Client
+      description: "Family or beneficial ownership relationship"
+      cardinality: many_to_many
+      attributes:
+        - name: relationship_type
+          type: enum
+          values: ["Spouse", "Parent", "Child", "Sibling", "Beneficiary", "Trustee", "Grantor"]
+
+  # ============================================================================
+  # COMMON QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "client_portfolio_summary"
+      description: "Complete portfolio summary for a client"
+      cypher: |
+        MATCH (c:Client {id: $client_id})-[:OWNS_ACCOUNT]->(a:Account)
+        WHERE a.account_status = 'Active'
+        OPTIONAL MATCH (a)-[:HAS_HOLDING]->(h:Holding)
+        RETURN c, a, collect(h) AS holdings,
+               sum(a.current_value) AS total_portfolio_value
+
+    - name: "household_wealth"
+      description: "Aggregate wealth across household members"
+      cypher: |
+        MATCH (h:Household {id: $household_id})<-[:MEMBER_OF_HOUSEHOLD]-(c:Client)
+        MATCH (c)-[:OWNS_ACCOUNT]->(a:Account {account_status: 'Active'})
+        RETURN h,
+               collect(DISTINCT c) AS members,
+               sum(a.current_value) AS total_household_aum,
+               count(DISTINCT a) AS total_accounts
+
+    - name: "advisor_book_of_business"
+      description: "Advisor's client list and total AUM"
+      cypher: |
+        MATCH (advisor:Advisor {id: $advisor_id})<-[:ADVISED_BY]-(client:Client)
+        WHERE client.client_status = 'Active'
+        MATCH (client)-[:OWNS_ACCOUNT]->(account:Account {account_status: 'Active'})
+        RETURN advisor,
+               collect(DISTINCT client) AS clients,
+               sum(account.current_value) AS total_aum,
+               count(DISTINCT client) AS client_count
+
+    - name: "rebalancing_candidates"
+      description: "Accounts that need rebalancing based on drift from target allocation"
+      cypher: |
+        MATCH (a:Account {account_status: 'Active'})
+        WHERE a.target_allocation IS NOT NULL
+          AND (a.last_rebalanced_date IS NULL
+               OR a.last_rebalanced_date < date() - duration({months: 6}))
+        RETURN a
+        ORDER BY a.current_value DESC
+
+    - name: "tax_loss_harvesting_opportunities"
+      description: "Holdings with unrealized losses for tax-loss harvesting"
+      cypher: |
+        MATCH (a:Account {tax_status: 'Taxable', account_status: 'Active'})-[:HAS_HOLDING]->(h:Holding)
+        WHERE h.unrealized_gain_loss < 0
+        MATCH (a)<-[:OWNS_ACCOUNT]-(c:Client)
+        RETURN c, a, h, h.unrealized_gain_loss AS loss
+        ORDER BY h.unrealized_gain_loss ASC
+
+    - name: "kyc_expiring_soon"
+      description: "Clients whose KYC documentation is expiring within 30 days"
+      cypher: |
+        MATCH (c:Client {client_status: 'Active'})
+        WHERE c.kyc_expiration_date >= date()
+          AND c.kyc_expiration_date <= date() + duration({days: 30})
+        RETURN c
+        ORDER BY c.kyc_expiration_date ASC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  regulatory_compliance:
+    - "SEC Rule 204-2 (Books and Records)"
+    - "FINRA Rule 4512 (Customer Account Information)"
+    - "Reg BI (Best Interest)"

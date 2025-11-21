@@ -1,0 +1,79 @@
+domain:
+  id: retail-template
+  name: "Retail Store"
+  version: "1.0.0"
+  description: "Complete retail management with POS, inventory, customers, and multi-location support"
+  icon: "store"
+  color: "#8B5CF6"
+  category: "template"
+
+  target_users:
+    - "Brick-and-mortar retailers"
+    - "Boutiques"
+    - "Grocery stores"
+    - "Electronics stores"
+    - "Multi-location chains"
+
+  use_cases:
+    - name: "Point of Sale"
+      description: "Fast checkout with barcode scanning and multiple payment methods"
+    - name: "Inventory Management"
+      description: "Track stock across locations with automated reordering"
+    - name: "Customer Loyalty"
+      description: "Reward programs and customer purchase history"
+    - name: "Supplier Management"
+      description: "Purchase orders and supplier relationships"
+
+  features:
+    - "Point of Sale system"
+    - "Barcode scanning"
+    - "Inventory tracking across locations"
+    - "Customer loyalty programs"
+    - "Supplier and purchase orders"
+    - "Employee management"
+    - "Sales reporting"
+    - "Promotion management"
+
+  pricing_tiers:
+    - tier: "Single Store"
+      price: "$99/month"
+      features:
+        - "1 location"
+        - "Up to 5 registers"
+        - "Basic inventory"
+        - "Customer database"
+
+    - tier: "Multi-Store"
+      price: "$299/month"
+      features:
+        - "Up to 5 locations"
+        - "Unlimited registers"
+        - "Advanced inventory"
+        - "Loyalty programs"
+        - "Purchase orders"
+
+    - tier: "Enterprise"
+      price: "$799/month"
+      features:
+        - "Unlimited locations"
+        - "Central warehouse"
+        - "API access"
+        - "Custom integrations"
+        - "Dedicated support"
+
+  integrations:
+    - name: "Square"
+      type: "payments"
+      description: "Payment processing"
+    - name: "Shopify"
+      type: "ecommerce"
+      description: "Online store integration"
+    - name: "QuickBooks"
+      type: "accounting"
+      description: "Accounting integration"
+
+  compliance:
+    - standard: "PCI DSS"
+      description: "Payment security"
+    - standard: "GDPR"
+      description: "Customer data protection"

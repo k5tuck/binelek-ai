@@ -1,0 +1,232 @@
+# Pharmaceuticals & Life Sciences Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: pharmaceuticals
+  name: "Pharmaceuticals & Life Sciences"
+  version: "1.0.0"
+  description: |
+    Comprehensive pharmaceuticals and life sciences knowledge graph platform for clinical trial
+    management, drug development, regulatory compliance, and pharmacovigilance. Supports
+    pharmaceutical companies, CROs, biotechs, and research organizations.
+
+  icon: "💊"
+  color: "#10B981"  # Green
+
+  industry:
+    sector: "Pharmaceuticals & Life Sciences"
+    subsectors:
+      - "Pharmaceutical Manufacturing"
+      - "Biotechnology"
+      - "Clinical Research Organizations (CROs)"
+      - "Medical Devices"
+      - "Contract Manufacturing (CMOs)"
+
+    primary_use_cases:
+      - "Clinical trial management"
+      - "Drug development pipeline tracking"
+      - "Pharmacovigilance and adverse event reporting"
+      - "Regulatory submission management"
+      - "Manufacturing quality management"
+      - "Real-world evidence analytics"
+
+  target_customers:
+    - type: "Large Pharmaceutical Companies"
+      size: "10,000+ employees"
+      pain_points:
+        - "Fragmented clinical trial data across systems"
+        - "Complex regulatory submission management"
+        - "Global pharmacovigilance coordination"
+        - "Drug portfolio optimization"
+
+    - type: "Biotechnology Companies"
+      size: "50-1,000 employees"
+      pain_points:
+        - "Clinical trial site selection and management"
+        - "Investor reporting and milestone tracking"
+        - "Regulatory pathway optimization"
+        - "Research collaboration management"
+
+    - type: "Contract Research Organizations"
+      size: "500-10,000 employees"
+      pain_points:
+        - "Multi-sponsor study management"
+        - "Site performance analytics"
+        - "Patient recruitment optimization"
+        - "Real-time study monitoring"
+
+    - type: "Academic Medical Centers"
+      size: "Enterprise"
+      pain_points:
+        - "Investigator-initiated trial management"
+        - "IRB protocol tracking"
+        - "Research funding coordination"
+        - "Publication tracking"
+
+  market_analysis:
+    market_size:
+      global_clinical_trial_management: "$2.3B (2023)"
+      projected_2030: "$6.8B"
+      cagr: "16.2%"
+
+    key_trends:
+      - "Decentralized clinical trials (DCT)"
+      - "AI/ML for drug discovery"
+      - "Real-world evidence (RWE) integration"
+      - "Risk-based quality management"
+      - "Digital biomarkers and wearables"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Veeva Systems (Clinical Operations)"
+        - "Medidata Solutions (Trial Management)"
+        - "Oracle Health Sciences (CTMS)"
+        - "IQVIA (Real-World Data)"
+
+      differentiation:
+        - "Graph-based drug-disease-patient relationships"
+        - "Cross-study signal detection"
+        - "AI-driven site selection and patient recruitment"
+        - "Unified view from discovery to post-market"
+        - "Real-time regulatory intelligence"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Individual researchers, small biotechs evaluating platform"
+      included:
+        - "1 user"
+        - "2 active studies"
+        - "10k API calls/month"
+        - "Sample clinical data only"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No 21 CFR Part 11 compliance"
+
+    - tier: "Starter"
+      price: "$1,499/month + $100/user"
+      target: "Small biotechs, academic research groups (1-5 studies)"
+      included:
+        - "5 users included, then $100/user"
+        - "10 active studies"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Audit trails"
+        - "Email support"
+      overage_rates:
+        - "Studies: $100 per additional active study"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$4,999/month + $150/user"
+      target: "Mid-size pharma, CROs (10-50 studies)"
+      included:
+        - "15 users included, then $150/user"
+        - "50 active studies"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "SAML SSO"
+        - "21 CFR Part 11 compliance"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Studies: $75 per additional active study"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $19,999+/month)"
+      target: "Large pharma, global CROs, regulatory agencies"
+      included:
+        - "Unlimited users"
+        - "Unlimited studies"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.99% uptime)"
+        - "On-premise/private cloud deployment"
+        - "Custom integrations (EDC, CTMS, Safety)"
+        - "Full GxP compliance package"
+
+  compliance_requirements:
+    regulations:
+      - name: "FDA 21 CFR Part 11"
+        description: "Electronic records and electronic signatures"
+        impact: "Audit trails, electronic signatures, system validation"
+
+      - name: "GxP (GCP, GMP, GLP, GDP)"
+        description: "Good Practice regulations for clinical, manufacturing, lab, distribution"
+        impact: "Documented procedures, training records, deviation tracking"
+
+      - name: "ICH E6(R2) GCP"
+        description: "International guideline for clinical trial conduct"
+        impact: "Protocol compliance, informed consent, investigator oversight"
+
+      - name: "GDPR/HIPAA for Patient Data"
+        description: "Patient data privacy requirements"
+        impact: "Pseudonymization, consent management, data subject rights"
+
+      - name: "EU MDR/IVDR"
+        description: "Medical device and IVD regulations"
+        impact: "Unique Device Identification, clinical evaluation, vigilance"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Clinical Data Systems"
+        providers: ["Medidata Rave", "Oracle Clinical", "Veeva Vault CDMS"]
+        use_case: "Electronic data capture and clinical database"
+
+      - name: "Clinical Trial Management Systems"
+        providers: ["Veeva CTMS", "Oracle Siebel CTMS", "Medidata CTMS"]
+        use_case: "Study management and site tracking"
+
+      - name: "Safety/Pharmacovigilance"
+        providers: ["Oracle Argus", "Veeva Vault Safety", "ArisGlobal"]
+        use_case: "Adverse event capture and reporting"
+
+      - name: "Regulatory Information Management"
+        providers: ["Veeva Vault RIM", "IQVIA RIM", "Parexel Liquent"]
+        use_case: "Regulatory submissions and approvals"
+
+      - name: "Document Management"
+        providers: ["Veeva Vault", "Documentum", "SharePoint"]
+        use_case: "Controlled document management"
+
+      - name: "Laboratory Information Systems"
+        providers: ["LabVantage", "STARLIMS", "LabWare"]
+        use_case: "Lab data and sample management"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Study startup time reduction"
+        benchmark: "Graph-based site selection reduces startup by 30%"
+
+      - metric: "Patient enrollment velocity"
+        benchmark: "AI-driven recruitment improves enrollment by 40%"
+
+      - metric: "Signal detection time"
+        benchmark: "Cross-study analysis detects signals 60% faster"
+
+      - metric: "Regulatory submission cycle time"
+        benchmark: "Reduce submission preparation from weeks to days"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  status: "Planned"
+  planned_release: "Q4 2026"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Pharmaceuticals & Life Sciences domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/pharmaceuticals/SETUP.md"
+    api_reference: "docs/domains/pharmaceuticals/API.md"
+    migration_guide: "docs/domains/pharmaceuticals/MIGRATION.md"
+
+  contact:
+    domain_owner: "pharma-team@binelek.com"
+    support: "support@binelek.com"

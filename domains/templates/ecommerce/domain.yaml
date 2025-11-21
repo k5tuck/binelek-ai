@@ -1,0 +1,81 @@
+domain:
+  id: ecommerce-template
+  name: "E-Commerce Store"
+  version: "1.0.0"
+  description: "Complete e-commerce platform with products, orders, customers, inventory, and analytics"
+  icon: "shopping-cart"
+  color: "#10B981"
+  category: "template"
+
+  target_users:
+    - "Online retailers"
+    - "Direct-to-consumer brands"
+    - "Marketplace sellers"
+    - "Small business owners"
+
+  use_cases:
+    - name: "Product Management"
+      description: "Catalog management with variants, pricing, inventory tracking"
+    - name: "Order Processing"
+      description: "End-to-end order fulfillment from cart to delivery"
+    - name: "Customer Management"
+      description: "Customer profiles, order history, loyalty programs"
+    - name: "Inventory Tracking"
+      description: "Real-time stock levels, reorder points, supplier management"
+
+  features:
+    - "Product catalog with variants and SKUs"
+    - "Shopping cart and checkout flow"
+    - "Payment processing integration"
+    - "Order management and fulfillment"
+    - "Customer accounts and profiles"
+    - "Inventory tracking and alerts"
+    - "Sales analytics and reporting"
+    - "Discount codes and promotions"
+
+  pricing_tiers:
+    - tier: "Starter"
+      price: "$49/month"
+      features:
+        - "Up to 100 products"
+        - "Up to 500 orders/month"
+        - "Basic analytics"
+        - "Email support"
+
+    - tier: "Business"
+      price: "$149/month"
+      features:
+        - "Up to 1,000 products"
+        - "Up to 5,000 orders/month"
+        - "Advanced analytics"
+        - "Multi-location inventory"
+        - "Priority support"
+
+    - tier: "Enterprise"
+      price: "$499/month"
+      features:
+        - "Unlimited products"
+        - "Unlimited orders"
+        - "Custom integrations"
+        - "Dedicated account manager"
+        - "99.9% SLA"
+
+  integrations:
+    - name: "Stripe"
+      type: "payment"
+      description: "Payment processing"
+    - name: "ShipStation"
+      type: "shipping"
+      description: "Shipping and fulfillment"
+    - name: "Mailchimp"
+      type: "marketing"
+      description: "Email marketing"
+    - name: "QuickBooks"
+      type: "accounting"
+      description: "Accounting integration"
+
+  compliance:
+    - standard: "PCI DSS"
+      description: "Payment card security"
+    - standard: "GDPR"
+      description: "Customer data protection"

@@ -1,0 +1,836 @@
+# Construction & Engineering UI Configuration
+# Frontend presentation layer for construction domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for construction project management and coordination"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#F59E0B"      # Amber
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/construction-logo.svg"
+    favicon_url: "/assets/favicons/construction.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "projects"
+        label: "Projects"
+        icon: "🏗️"
+        route: "/projects"
+        badge_query: "count_active_projects"
+
+      - id: "contractors"
+        label: "Contractors"
+        icon: "👷"
+        route: "/contractors"
+
+      - id: "rfis"
+        label: "RFIs"
+        icon: "❓"
+        route: "/rfis"
+        badge_query: "count_open_rfis"
+
+      - id: "change_orders"
+        label: "Change Orders"
+        icon: "📝"
+        route: "/change-orders"
+        badge_query: "count_pending_cos"
+
+      - id: "permits"
+        label: "Permits & Inspections"
+        icon: "📋"
+        route: "/permits"
+        submenu:
+          - id: "permits"
+            label: "Permits"
+            route: "/permits/all"
+          - id: "inspections"
+            label: "Inspections"
+            route: "/permits/inspections"
+
+      - id: "materials"
+        label: "Materials"
+        icon: "📦"
+        route: "/materials"
+
+      - id: "equipment"
+        label: "Equipment"
+        icon: "🚜"
+        route: "/equipment"
+
+      - id: "drawings"
+        label: "Drawings"
+        icon: "📐"
+        route: "/drawings"
+
+      - id: "schedule"
+        label: "Schedule"
+        icon: "📅"
+        route: "/schedule"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Construction Dashboard"
+      description: "Overview of projects, RFIs, and change orders"
+      layout: "grid"
+
+      widgets:
+        - id: "active_projects"
+          type: "metric_card"
+          title: "Active Projects"
+          query: "count_active_projects"
+          icon: "🏗️"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "open_rfis"
+          type: "metric_card"
+          title: "Open RFIs"
+          query: "count_open_rfis"
+          icon: "❓"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "pending_cos"
+          type: "metric_card"
+          title: "Pending COs"
+          query: "count_pending_cos"
+          icon: "📝"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "upcoming_inspections"
+          type: "metric_card"
+          title: "Inspections (7 days)"
+          query: "count_upcoming_inspections"
+          icon: "🔍"
+          color: "#14B8A6"
+          size: "small"
+
+        - id: "project_list"
+          type: "entity_list"
+          title: "Active Projects"
+          entity_type: "Project"
+          query:
+            filter:
+              status: "In Progress"
+            sort:
+              field: "percent_complete"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - project_name
+            - project_type
+            - percent_complete
+            - substantial_completion_date
+          size: "medium"
+
+        - id: "rfi_list"
+          type: "entity_list"
+          title: "RFIs Awaiting Response"
+          entity_type: "RFI"
+          query:
+            filter:
+              status: ["Submitted", "In Review"]
+            sort:
+              field: "due_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - rfi_number
+            - subject
+            - priority
+            - due_date
+          size: "medium"
+
+        - id: "project_value_chart"
+          type: "chart"
+          chart_type: "bar"
+          title: "Project Values by Type"
+          query: "project_value_by_type"
+          size: "large"
+
+        - id: "co_impact_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Change Order Impact (Last 12 Months)"
+          query: "monthly_co_impact"
+          x_axis: "month"
+          y_axis: "total_impact"
+          size: "large"
+
+        - id: "contractor_leaderboard"
+          type: "leaderboard"
+          title: "Top Contractors by Volume"
+          query: "top_contractors_by_volume"
+          metric: "total_contract_value"
+          limit: 10
+          size: "medium"
+
+        - id: "project_map"
+          type: "map"
+          title: "Project Locations"
+          query:
+            entity_type: "Project"
+            filter:
+              status: ["In Progress", "Preconstruction"]
+          marker_color_by: "project_type"
+          marker_size_by: "contract_value"
+          size: "large"
+
+    # ----------------------------------------------------------------------
+    # Safety Dashboard
+    # ----------------------------------------------------------------------
+    - id: "safety"
+      name: "Safety & Compliance Dashboard"
+      description: "Monitor safety metrics and compliance"
+      layout: "grid"
+
+      widgets:
+        - id: "failed_inspections"
+          type: "metric_card"
+          title: "Failed Inspections"
+          query: "count_failed_inspections"
+          color: "#EF4444"
+
+        - id: "expiring_permits"
+          type: "metric_card"
+          title: "Expiring Permits (30 days)"
+          query: "count_expiring_permits"
+          color: "#F59E0B"
+
+        - id: "safety_incidents"
+          type: "metric_card"
+          title: "Safety Incidents YTD"
+          query: "count_safety_incidents"
+
+        - id: "inspection_calendar"
+          type: "calendar"
+          title: "Inspection Schedule"
+          query: "inspection_calendar"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Project List
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "project_name"
+              label: "Project Name"
+              sortable: true
+              width: "250px"
+              render: "link"
+
+            - field: "project_number"
+              label: "Number"
+              sortable: true
+              width: "100px"
+
+            - field: "project_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "In Progress": "success"
+                "Preconstruction": "info"
+                "On Hold": "warning"
+                "Completed": "secondary"
+
+            - field: "contract_value"
+              label: "Contract Value"
+              sortable: true
+              format: "currency"
+
+            - field: "percent_complete"
+              label: "% Complete"
+              sortable: true
+              render: "progress_bar"
+
+            - field: "substantial_completion_date"
+              label: "Completion"
+              sortable: true
+              format: "date"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "project_type"
+          popup_fields:
+            - project_name
+            - contract_value
+            - status
+            - percent_complete
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "project_type"
+          type: "select"
+          label: "Project Type"
+          multiple: true
+
+        - field: "contract_value"
+          type: "range"
+          label: "Contract Value"
+          min: 0
+          max: 100000000
+          step: 1000000
+
+        - field: "city"
+          type: "text"
+          label: "City"
+
+      actions:
+        - id: "add_project"
+          label: "Add Project"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # RFI List
+    # ----------------------------------------------------------------------
+    - entity_type: "RFI"
+      id: "rfi_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "rfi_number"
+              label: "RFI #"
+              sortable: true
+              width: "100px"
+
+            - field: "subject"
+              label: "Subject"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              render: "badge"
+              color_map:
+                "Submitted": "warning"
+                "In Review": "info"
+                "Answered": "success"
+                "Closed": "secondary"
+
+            - field: "priority"
+              label: "Priority"
+              render: "badge"
+              color_map:
+                "Critical": "danger"
+                "High": "warning"
+                "Medium": "info"
+                "Low": "secondary"
+
+            - field: "discipline"
+              label: "Discipline"
+              filterable: true
+
+            - field: "submitted_date"
+              label: "Submitted"
+              sortable: true
+              format: "date"
+
+            - field: "due_date"
+              label: "Due"
+              sortable: true
+              format: "date"
+
+            - field: "cost_impact"
+              label: "Cost Impact"
+              render: "yes_no"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Draft"
+            - "Submitted"
+            - "In Review"
+            - "Answered"
+            - "Closed"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+        - field: "discipline"
+          type: "select"
+          multiple: true
+
+        - field: "due_date"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Contractor List
+    # ----------------------------------------------------------------------
+    - entity_type: "Contractor"
+      id: "contractor_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "company_name"
+              label: "Company"
+              sortable: true
+
+            - field: "contractor_type"
+              label: "Type"
+              sortable: true
+
+            - field: "trade"
+              label: "Trade"
+              sortable: true
+
+            - field: "phone"
+              label: "Phone"
+              format: "phone"
+
+            - field: "email"
+              label: "Email"
+
+            - field: "safety_rating"
+              label: "Safety Rating"
+              render: "rating"
+
+            - field: "prequalified"
+              label: "Prequalified"
+              render: "yes_no"
+
+      filters:
+        - field: "contractor_type"
+          type: "select"
+
+        - field: "trade"
+          type: "select"
+
+        - field: "prequalified"
+          type: "boolean"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Project Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "project_name"
+        subtitle_field: "project_type"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "key_details"
+              title: "Project Details"
+              layout: "two_column"
+              fields:
+                - field: "project_number"
+                  label: "Project Number"
+
+                - field: "project_type"
+                  label: "Type"
+
+                - field: "status"
+                  label: "Status"
+                  render: "badge"
+
+                - field: "delivery_method"
+                  label: "Delivery Method"
+
+                - field: "contract_type"
+                  label: "Contract Type"
+
+                - field: "square_footage"
+                  label: "Square Footage"
+                  format: "number"
+
+            - id: "location"
+              title: "Location"
+              layout: "full_width"
+              fields:
+                - field: "address"
+                  label: "Address"
+
+                - field: "location"
+                  label: "Map"
+                  render: "map"
+
+            - id: "progress"
+              title: "Progress"
+              fields:
+                - field: "percent_complete"
+                  label: "Completion"
+                  render: "progress_bar"
+
+        - id: "financial"
+          label: "Financial"
+          icon: "💰"
+
+          sections:
+            - id: "budget"
+              title: "Budget"
+              layout: "two_column"
+              fields:
+                - field: "contract_value"
+                  format: "currency"
+
+                - field: "budget"
+                  format: "currency"
+
+                - field: "actual_cost"
+                  format: "currency"
+
+                - field: "cost_variance"
+                  format: "currency"
+
+                - field: "contingency"
+                  format: "currency"
+
+        - id: "schedule"
+          label: "Schedule"
+          icon: "📅"
+
+          sections:
+            - id: "dates"
+              title: "Key Dates"
+              layout: "two_column"
+              fields:
+                - field: "start_date"
+                  format: "date"
+
+                - field: "substantial_completion_date"
+                  format: "date"
+
+                - field: "final_completion_date"
+                  format: "date"
+
+                - field: "actual_completion_date"
+                  format: "date"
+
+            - id: "schedule_activities"
+              title: "Schedule Activities"
+              type: "relationship_list"
+              relationship: "PROJECT_SCHEDULE"
+              direction: "outgoing"
+              display_fields:
+                - activity_name
+                - start_date
+                - end_date
+                - percent_complete
+
+        - id: "team"
+          label: "Team"
+          icon: "👷"
+
+          sections:
+            - id: "contractors"
+              title: "Project Team"
+              type: "relationship_list"
+              relationship: "WORKS_ON"
+              direction: "incoming"
+              display_fields:
+                - company_name
+                - role
+                - contract_value
+                - phone
+
+        - id: "documents"
+          label: "Documents"
+          icon: "📐"
+
+          sections:
+            - id: "drawings"
+              title: "Drawings"
+              type: "relationship_list"
+              relationship: "PROJECT_DRAWINGS"
+              direction: "outgoing"
+              display_fields:
+                - drawing_number
+                - title
+                - discipline
+                - revision
+
+        - id: "compliance"
+          label: "Compliance"
+          icon: "📋"
+
+          sections:
+            - id: "permits"
+              title: "Permits"
+              type: "relationship_list"
+              relationship: "REQUIRES_PERMIT"
+              direction: "outgoing"
+              display_fields:
+                - permit_number
+                - permit_type
+                - status
+                - expiration_date
+
+            - id: "inspections"
+              title: "Inspections"
+              type: "relationship_list"
+              relationship: "PROJECT_INSPECTION"
+              direction: "outgoing"
+              display_fields:
+                - inspection_type
+                - scheduled_date
+                - status
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Project Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Project"
+      id: "project_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "project_name"
+              required: true
+
+            - field: "project_number"
+              required: true
+
+            - field: "project_type"
+              required: true
+
+            - field: "status"
+
+        - id: "location"
+          title: "Location"
+          fields:
+            - field: "address"
+              required: true
+
+            - field: "location"
+              widget: "map_picker"
+
+        - id: "financial"
+          title: "Financial"
+          fields:
+            - field: "contract_value"
+              required: true
+
+            - field: "budget"
+
+            - field: "contingency"
+
+        - id: "schedule"
+          title: "Schedule"
+          fields:
+            - field: "start_date"
+
+            - field: "substantial_completion_date"
+
+            - field: "final_completion_date"
+
+        - id: "details"
+          title: "Additional Details"
+          fields:
+            - field: "delivery_method"
+
+            - field: "contract_type"
+
+            - field: "square_footage"
+
+            - field: "description"
+              widget: "rich_text_editor"
+
+    # ----------------------------------------------------------------------
+    # RFI Form
+    # ----------------------------------------------------------------------
+    - entity_type: "RFI"
+      id: "rfi_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "rfi_info"
+          title: "RFI Information"
+          fields:
+            - rfi_number
+            - subject
+            - priority
+            - discipline
+
+        - id: "question"
+          title: "Question"
+          fields:
+            - field: "question"
+              widget: "rich_text_editor"
+
+        - id: "references"
+          title: "References"
+          fields:
+            - drawing_reference
+            - spec_reference
+
+        - id: "dates"
+          title: "Dates"
+          fields:
+            - submitted_date
+            - due_date
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search projects, contractors, RFIs..."
+      entity_types:
+        - Project
+        - Contractor
+        - RFI
+        - ChangeOrder
+
+    facets:
+      - field: "project_type"
+        label: "Project Type"
+      - field: "status"
+        label: "Status"
+      - field: "trade"
+        label: "Trade"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "project_status"
+      name: "Project Status Report"
+      description: "Summary of project progress and financials"
+      parameters:
+        - field: "project_id"
+          type: "entity_select"
+          entity_type: "Project"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - percent_complete
+            - budget_variance
+            - schedule_variance
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Progress Over Time"
+
+        - type: "table"
+          title: "Change Orders"
+          columns:
+            - co_number
+            - title
+            - cost_impact
+            - status
+
+    - id: "contractor_performance"
+      name: "Contractor Performance Report"
+      description: "Contractor performance metrics"
+      parameters:
+        - field: "contractor_id"
+          type: "entity_select"
+          entity_type: "Contractor"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_projects
+            - on_time_completion_rate
+            - safety_rating
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

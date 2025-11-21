@@ -1,0 +1,73 @@
+domain:
+  id: personal-template
+  name: "Personal Knowledge Base"
+  version: "1.0.0"
+  description: "Personal knowledge graph for life management, goals, habits, finances, health, and relationships"
+  icon: "user-circle"
+  color: "#EC4899"
+  category: "template"
+
+  target_users:
+    - "Individuals seeking life organization"
+    - "Personal productivity enthusiasts"
+    - "Lifelong learners"
+    - "Quantified self practitioners"
+
+  use_cases:
+    - name: "Life Dashboard"
+      description: "Centralized view of health, wealth, relationships, and productivity metrics"
+    - name: "Goal Tracking"
+      description: "Set, track, and achieve personal goals with milestones"
+    - name: "Knowledge Management"
+      description: "Capture notes, learnings, and insights with rich connections"
+    - name: "Habit Tracking"
+      description: "Build and maintain positive habits with streak tracking"
+
+  features:
+    - "Personal dashboard with life metrics"
+    - "Goal setting and progress tracking"
+    - "Habit formation and tracking"
+    - "Note-taking with bidirectional links"
+    - "Task and project management"
+    - "Financial tracking (assets, expenses)"
+    - "Health metrics (exercise, sleep, weight)"
+    - "Relationship tracking"
+    - "Time tracking and life analytics"
+
+  pricing_tiers:
+    - tier: "Personal"
+      price: "$9/month"
+      features:
+        - "Unlimited notes and tasks"
+        - "Up to 10 active goals"
+        - "Basic analytics"
+        - "Mobile app access"
+
+    - tier: "Personal Pro"
+      price: "$19/month"
+      features:
+        - "Unlimited everything"
+        - "Advanced analytics"
+        - "Custom dashboards"
+        - "Data export"
+        - "Priority support"
+
+  integrations:
+    - name: "Google Calendar"
+      type: "calendar"
+      description: "Sync events and tasks"
+    - name: "Fitbit"
+      type: "health"
+      description: "Import health metrics"
+    - name: "Mint"
+      type: "finance"
+      description: "Import financial data"
+    - name: "Notion"
+      type: "notes"
+      description: "Import notes and databases"
+
+  compliance:
+    - standard: "GDPR"
+      description: "Personal data protection"
+    - standard: "End-to-End Encryption"
+      description: "Optional E2E encryption"

@@ -1,0 +1,737 @@
+# Telecommunications UI Configuration
+# Frontend presentation layer for telecommunications domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for telecommunications network and service management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#3B82F6"      # Blue
+    secondary_color: "#8B5CF6"    # Violet
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/telecom-logo.svg"
+    favicon_url: "/assets/favicons/telecom.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "customers"
+        label: "Customers"
+        icon: "👥"
+        route: "/customers"
+        badge_query: "count_at_risk_customers"
+
+      - id: "services"
+        label: "Services"
+        icon: "📱"
+        route: "/services"
+
+      - id: "network"
+        label: "Network"
+        icon: "🌐"
+        route: "/network"
+        submenu:
+          - id: "overview"
+            label: "Overview"
+            route: "/network"
+          - id: "equipment"
+            label: "Equipment"
+            route: "/network/equipment"
+          - id: "topology"
+            label: "Topology"
+            route: "/network/topology"
+
+      - id: "sites"
+        label: "Sites"
+        icon: "🗼"
+        route: "/sites"
+
+      - id: "coverage"
+        label: "Coverage"
+        icon: "📍"
+        route: "/coverage"
+
+      - id: "tickets"
+        label: "Tickets"
+        icon: "🎫"
+        route: "/tickets"
+        badge_query: "count_open_tickets"
+
+      - id: "contracts"
+        label: "Contracts"
+        icon: "📄"
+        route: "/contracts"
+
+      - id: "spectrum"
+        label: "Spectrum"
+        icon: "📻"
+        route: "/spectrum"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Network Operations Dashboard"
+      description: "Real-time overview of network and service operations"
+      layout: "grid"
+
+      widgets:
+        - id: "total_customers"
+          type: "metric_card"
+          title: "Total Customers"
+          query: "count_active_customers"
+          icon: "👥"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "total_mrr"
+          type: "metric_card"
+          title: "Monthly Recurring Revenue"
+          query: "sum_mrr"
+          format: "currency"
+          icon: "💰"
+          color: "#10B981"
+          size: "small"
+
+        - id: "open_tickets"
+          type: "metric_card"
+          title: "Open Tickets"
+          query: "count_open_tickets"
+          icon: "🎫"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "network_uptime"
+          type: "metric_card"
+          title: "Network Uptime"
+          query: "average_network_uptime"
+          format: "percentage"
+          icon: "📶"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "churn_risk"
+          type: "entity_list"
+          title: "High Churn Risk Customers"
+          entity_type: "Customer"
+          query:
+            filter:
+              status: "Active"
+            sort:
+              field: "churn_risk_score"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - customer_name
+            - customer_type
+            - monthly_recurring_revenue
+            - churn_risk_score
+          size: "medium"
+
+        - id: "critical_tickets"
+          type: "entity_list"
+          title: "Critical Tickets"
+          entity_type: "Ticket"
+          query:
+            filter:
+              status: ["Open", "In Progress", "Escalated"]
+              priority: ["Critical", "High"]
+            sort:
+              field: "created_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - ticket_id
+            - subject
+            - priority
+            - status
+            - created_date
+          size: "medium"
+
+        - id: "network_utilization"
+          type: "chart"
+          chart_type: "gauge"
+          title: "Network Utilization"
+          query: "average_network_utilization"
+          size: "medium"
+
+        - id: "ticket_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Ticket Volume (30 Days)"
+          query: "daily_ticket_count"
+          x_axis: "date"
+          y_axis: "count"
+          size: "large"
+
+        - id: "service_distribution"
+          type: "chart"
+          chart_type: "pie"
+          title: "Services by Type"
+          query: "services_by_type"
+          size: "medium"
+
+        - id: "coverage_map"
+          type: "map"
+          title: "Coverage Areas"
+          query:
+            entity_type: "Coverage"
+            filter:
+              status: "Active"
+          polygon_field: "geometry"
+          color_by: "coverage_type"
+          size: "large"
+
+    # ----------------------------------------------------------------------
+    # Customer Experience Dashboard
+    # ----------------------------------------------------------------------
+    - id: "customer_experience"
+      name: "Customer Experience Dashboard"
+      description: "Customer satisfaction and churn metrics"
+      layout: "grid"
+
+      widgets:
+        - id: "avg_csat"
+          type: "metric_card"
+          title: "Avg CSAT Score"
+          query: "average_satisfaction"
+
+        - id: "nps"
+          type: "metric_card"
+          title: "Net Promoter Score"
+          query: "net_promoter_score"
+
+        - id: "avg_churn_risk"
+          type: "metric_card"
+          title: "Avg Churn Risk"
+          query: "average_churn_risk"
+          format: "percentage"
+
+        - id: "churn_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Churn Rate Trend"
+          query: "monthly_churn_rate"
+          size: "large"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Customer List
+    # ----------------------------------------------------------------------
+    - entity_type: "Customer"
+      id: "customer_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "account_number"
+              label: "Account"
+              sortable: true
+              width: "120px"
+
+            - field: "customer_name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "customer_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Suspended": "warning"
+                "Disconnected": "danger"
+
+            - field: "monthly_recurring_revenue"
+              label: "MRR"
+              format: "currency"
+              sortable: true
+
+            - field: "churn_risk_score"
+              label: "Churn Risk"
+              sortable: true
+              render: "progress_bar"
+              color_thresholds:
+                - value: 30
+                  color: "success"
+                - value: 60
+                  color: "warning"
+                - value: 100
+                  color: "danger"
+
+            - field: "satisfaction_score"
+              label: "CSAT"
+              sortable: true
+
+            - field: "contract_end_date"
+              label: "Contract End"
+              format: "date"
+              sortable: true
+
+      filters:
+        - field: "customer_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "churn_risk_score"
+          type: "range"
+          label: "Churn Risk"
+          min: 0
+          max: 100
+
+        - field: "monthly_recurring_revenue"
+          type: "range"
+          label: "MRR"
+
+      actions:
+        - id: "add_customer"
+          label: "Add Customer"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Ticket List
+    # ----------------------------------------------------------------------
+    - entity_type: "Ticket"
+      id: "ticket_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "ticket_id"
+              label: "ID"
+              sortable: true
+
+            - field: "subject"
+              label: "Subject"
+              render: "link"
+
+            - field: "ticket_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Open": "info"
+                "In Progress": "warning"
+                "Pending Customer": "secondary"
+                "Escalated": "danger"
+                "Resolved": "success"
+
+            - field: "priority"
+              label: "Priority"
+              sortable: true
+
+            - field: "created_date"
+              label: "Created"
+              format: "datetime"
+              sortable: true
+
+            - field: "assigned_to"
+              label: "Assigned To"
+
+            - field: "sla_breached"
+              label: "SLA"
+              render: "boolean"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Open"
+            - "In Progress"
+            - "Pending Customer"
+            - "Escalated"
+            - "Resolved"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+        - field: "ticket_type"
+          type: "select"
+          multiple: true
+
+        - field: "created_date"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Equipment List
+    # ----------------------------------------------------------------------
+    - entity_type: "Equipment"
+      id: "equipment_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "equipment_id"
+              label: "ID"
+              sortable: true
+
+            - field: "name"
+              label: "Name"
+              render: "link"
+
+            - field: "equipment_type"
+              label: "Type"
+              sortable: true
+
+            - field: "equipment_class"
+              label: "Class"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "manufacturer"
+              label: "Manufacturer"
+
+            - field: "model"
+              label: "Model"
+
+            - field: "ip_address"
+              label: "IP Address"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "status"
+
+      filters:
+        - field: "equipment_type"
+          type: "select"
+          multiple: true
+
+        - field: "equipment_class"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Site List
+    # ----------------------------------------------------------------------
+    - entity_type: "Site"
+      id: "site_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "site_id"
+              label: "ID"
+              sortable: true
+
+            - field: "name"
+              label: "Name"
+              render: "link"
+
+            - field: "site_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "address"
+              label: "Address"
+
+            - field: "tenant_count"
+              label: "Tenants"
+
+            - field: "lease_expiration"
+              label: "Lease Expires"
+              format: "date"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "site_type"
+
+      filters:
+        - field: "site_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Customer Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Customer"
+      id: "customer_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "customer_name"
+        subtitle_field: "account_number"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "account_info"
+              title: "Account Information"
+              layout: "two_column"
+              fields:
+                - customer_id
+                - account_number
+                - customer_type
+                - status
+                - account_start_date
+                - contract_end_date
+
+            - id: "contact"
+              title: "Contact Information"
+              layout: "two_column"
+              fields:
+                - email
+                - phone
+                - service_address
+                - billing_address
+                - preferred_contact_method
+
+            - id: "metrics"
+              title: "Customer Metrics"
+              layout: "two_column"
+              fields:
+                - monthly_recurring_revenue
+                - lifetime_value
+                - churn_risk_score
+                - satisfaction_score
+
+        - id: "services"
+          label: "Services"
+          icon: "📱"
+
+          sections:
+            - id: "active_services"
+              title: "Active Services"
+              type: "relationship_list"
+              relationship: "SUBSCRIBES_TO"
+              direction: "outgoing"
+              display_fields:
+                - service_type
+                - product_name
+                - plan_name
+                - monthly_charge
+                - status
+
+        - id: "tickets"
+          label: "Tickets"
+          icon: "🎫"
+
+          sections:
+            - id: "customer_tickets"
+              title: "Support Tickets"
+              type: "relationship_list"
+              relationship: "OPENED_BY"
+              direction: "incoming"
+              display_fields:
+                - ticket_id
+                - subject
+                - status
+                - priority
+                - created_date
+
+        - id: "usage"
+          label: "Usage"
+          icon: "📊"
+
+          sections:
+            - id: "usage_summary"
+              title: "Usage Summary"
+              type: "chart"
+              chart_type: "bar"
+              query: "customer_monthly_usage"
+
+        - id: "activity"
+          label: "Activity"
+          icon: "📋"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    - entity_type: "Ticket"
+      id: "ticket_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "basic_info"
+          title: "Ticket Information"
+          fields:
+            - ticket_type
+            - priority
+            - subject
+            - description
+
+        - id: "assignment"
+          title: "Assignment"
+          fields:
+            - assigned_to
+            - due_date
+
+    - entity_type: "Service"
+      id: "service_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "service_type"
+          title: "Service Selection"
+          fields:
+            - service_type
+            - product_name
+            - plan_name
+
+        - id: "configuration"
+          title: "Configuration"
+          fields:
+            - bandwidth_mbps
+            - data_cap_gb
+            - phone_number
+            - sla_tier
+
+        - id: "pricing"
+          title: "Pricing"
+          fields:
+            - monthly_charge
+            - contract_term_months
+            - early_termination_fee
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "churn_analysis"
+      name: "Churn Analysis Report"
+      description: "Customer churn metrics and risk analysis"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_churned
+            - churn_rate
+            - revenue_lost
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Churn Trend"
+
+        - type: "table"
+          title: "High Risk Customers"
+
+    - id: "network_performance"
+      name: "Network Performance Report"
+      description: "Network uptime and utilization metrics"
+      parameters:
+        - field: "network_type"
+          type: "select"
+        - field: "date_range"
+          type: "date_range"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - avg_uptime
+            - avg_utilization
+            - total_outages
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Performance Trend"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

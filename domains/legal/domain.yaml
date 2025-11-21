@@ -1,0 +1,237 @@
+# Legal & Law Practice Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: legal
+  name: "Legal & Law Practice"
+  version: "1.0.0"
+  description: |
+    Comprehensive legal knowledge graph platform for case management, client relationships,
+    document management, and legal research. Supports law firms, corporate legal departments,
+    and legal service providers.
+
+  icon: "balance-scale"
+  color: "#6366F1"  # Indigo
+
+  industry:
+    sector: "Legal Services"
+    subsectors:
+      - "Law Firms"
+      - "Corporate Legal Departments"
+      - "Legal Aid Organizations"
+      - "Litigation Support"
+      - "Legal Research"
+
+    primary_use_cases:
+      - "Case management and tracking"
+      - "Client relationship management"
+      - "Document management and e-discovery"
+      - "Legal research and precedent analysis"
+      - "Billing and time tracking"
+      - "Deadline and calendar management"
+      - "Matter management"
+
+  target_customers:
+    - type: "Small to Mid-Size Law Firms"
+      size: "5-50 attorneys"
+      pain_points:
+        - "Fragmented case information across email, documents, and spreadsheets"
+        - "Difficulty tracking deadlines and court dates"
+        - "Inefficient time tracking and billing"
+        - "Limited visibility into case relationships and precedents"
+
+    - type: "Large Law Firms"
+      size: "100+ attorneys"
+      pain_points:
+        - "Managing complex multi-jurisdictional matters"
+        - "Knowledge management across practice groups"
+        - "Conflict checking across large client bases"
+        - "Associate training and precedent access"
+
+    - type: "Corporate Legal Departments"
+      size: "5-100 attorneys"
+      pain_points:
+        - "Managing outside counsel relationships"
+        - "Budget tracking and legal spend analysis"
+        - "Contract lifecycle management"
+        - "Regulatory compliance tracking"
+
+    - type: "Legal Aid Organizations"
+      size: "Non-profit"
+      pain_points:
+        - "High case volumes with limited resources"
+        - "Tracking client eligibility and outcomes"
+        - "Grant reporting and impact measurement"
+        - "Volunteer attorney coordination"
+
+  market_analysis:
+    market_size:
+      global_legal_tech: "$27.6B (2023)"
+      projected_2030: "$68.4B"
+      cagr: "13.7%"
+
+    key_trends:
+      - "AI-powered legal research and document review"
+      - "Cloud-based practice management"
+      - "Client self-service portals"
+      - "Alternative legal service providers (ALSPs)"
+      - "Legal process automation"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Clio (practice management)"
+        - "PracticePanther (small firm management)"
+        - "LexisNexis (legal research)"
+        - "Westlaw (legal research)"
+        - "NetDocuments (document management)"
+
+      differentiation:
+        - "Graph-based case relationship intelligence"
+        - "AI-driven precedent discovery"
+        - "Cross-matter knowledge extraction"
+        - "Unified client and matter view"
+        - "Open API for custom integrations"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Solo practitioners evaluating platform"
+      included:
+        - "1 user"
+        - "50 matters max"
+        - "10k API calls/month"
+        - "Basic case management"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No document storage"
+        - "No integrations"
+
+    - tier: "Starter"
+      price: "$599/month + $49/user"
+      target: "Small law firms (2-10 attorneys)"
+      included:
+        - "5 users included, then $49/user"
+        - "500 matters"
+        - "100k API calls/month"
+        - "Document management (50GB)"
+        - "Basic billing and time tracking"
+        - "Email support"
+      overage_rates:
+        - "Matters: $0.50 per additional"
+        - "Storage: $0.10 per GB"
+
+    - tier: "Professional"
+      price: "$1,999/month + $79/user"
+      target: "Mid-size firms (10-50 attorneys)"
+      included:
+        - "15 users included, then $79/user"
+        - "5,000 matters"
+        - "1M API calls/month"
+        - "Document management (500GB)"
+        - "Advanced billing and trust accounting"
+        - "Legal research integration"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "Matters: $0.50 per additional"
+        - "Storage: $0.08 per GB"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $7,999+/month)"
+      target: "Large firms, corporate legal departments"
+      included:
+        - "Unlimited users"
+        - "Unlimited matters"
+        - "Unlimited API calls"
+        - "Unlimited storage"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (DMS, billing, research)"
+        - "Advanced security (SOC 2, HIPAA compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "Attorney-Client Privilege"
+        description: "Protection of confidential communications between attorney and client"
+        impact: "Strict access controls, encryption, audit trails for all client communications"
+
+      - name: "State Bar Requirements"
+        description: "Each state has specific requirements for record retention, trust accounting, and advertising"
+        impact: "Configurable rules engine for multi-jurisdictional compliance"
+
+      - name: "E-Discovery Rules (FRCP)"
+        description: "Federal Rules of Civil Procedure for electronic discovery"
+        impact: "Document retention policies, legal holds, chain of custody tracking"
+
+      - name: "HIPAA (for healthcare-related matters)"
+        description: "Health information privacy for medical malpractice, healthcare clients"
+        impact: "PHI protection, BAA support, access logging"
+
+      - name: "GDPR (for EU clients)"
+        description: "Data privacy and protection for EU citizens"
+        impact: "Data deletion capabilities, consent tracking, cross-border transfer controls"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "Practice Management"
+        providers: ["Clio", "PracticePanther", "MyCase", "Smokeball"]
+        use_case: "Sync matters, contacts, and calendar events"
+
+      - name: "Legal Research"
+        providers: ["LexisNexis", "Westlaw", "Fastcase", "Casetext"]
+        use_case: "Link cases to relevant precedents and citations"
+
+      - name: "Document Management"
+        providers: ["NetDocuments", "iManage", "SharePoint", "Google Drive"]
+        use_case: "Store and organize case documents"
+
+      - name: "E-Discovery"
+        providers: ["Relativity", "Logikcull", "Disco", "Nuix"]
+        use_case: "Import and analyze discovery documents"
+
+      - name: "Billing and Accounting"
+        providers: ["QuickBooks", "Xero", "TimeSolv", "LEAP"]
+        use_case: "Sync time entries, invoices, and payments"
+
+      - name: "Court Filing Systems"
+        providers: ["PACER", "File & ServeXpress", "One Legal"]
+        use_case: "Track court filings and deadlines"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Matters managed"
+        benchmark: "Average customer manages 500 active matters"
+
+      - metric: "Time to find precedent"
+        benchmark: "Reduce from 2 hours to 10 minutes with graph-based search"
+
+      - metric: "Billing efficiency"
+        benchmark: "Increase captured billable time by 15%"
+
+      - metric: "Deadline compliance"
+        benchmark: "Reduce missed deadlines by 95%"
+
+  status: "coming_soon"
+  expected_release: "Q1 2026"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Legal & Law Practice domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/legal/SETUP.md"
+    api_reference: "docs/domains/legal/API.md"
+    migration_guide: "docs/domains/legal/MIGRATION.md"
+
+  contact:
+    domain_owner: "legal-team@binelek.com"
+    support: "support@binelek.com"

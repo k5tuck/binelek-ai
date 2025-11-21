@@ -1,0 +1,907 @@
+# Government & Public Sector UI Configuration
+# Frontend presentation layer for government domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for government citizen services and case management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#1E40AF"      # Deep Blue
+    secondary_color: "#059669"    # Green
+    accent_color: "#7C3AED"       # Purple
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/government-logo.svg"
+    favicon_url: "/assets/favicons/government.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "cases"
+        label: "Cases"
+        icon: "folder"
+        route: "/cases"
+        badge_query: "count_open_cases"
+
+      - id: "requests"
+        label: "Service Requests"
+        icon: "message-circle"
+        route: "/requests"
+        badge_query: "count_open_requests"
+
+      - id: "permits"
+        label: "Permits"
+        icon: "file-check"
+        route: "/permits"
+        submenu:
+          - id: "permit-applications"
+            label: "Applications"
+            route: "/permits/applications"
+          - id: "permit-inspections"
+            label: "Inspections"
+            route: "/permits/inspections"
+
+      - id: "citizens"
+        label: "Citizens"
+        icon: "users"
+        route: "/citizens"
+
+      - id: "services"
+        label: "Services"
+        icon: "clipboard-check"
+        route: "/services"
+
+      - id: "assets"
+        label: "Assets"
+        icon: "package"
+        route: "/assets"
+
+      - id: "employees"
+        label: "Employees"
+        icon: "user-check"
+        route: "/employees"
+
+      - id: "departments"
+        label: "Departments"
+        icon: "building"
+        route: "/departments"
+
+      - id: "budgets"
+        label: "Budgets"
+        icon: "dollar-sign"
+        route: "/budgets"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Operations Dashboard"
+      description: "Overview of cases, permits, and service requests"
+      layout: "grid"
+
+      widgets:
+        - id: "open_cases"
+          type: "metric_card"
+          title: "Open Cases"
+          query: "count_open_cases"
+          icon: "folder"
+          color: "#7C3AED"
+          size: "small"
+
+        - id: "pending_permits"
+          type: "metric_card"
+          title: "Pending Permits"
+          query: "count_pending_permits"
+          icon: "file-check"
+          color: "#0891B2"
+          size: "small"
+
+        - id: "open_requests"
+          type: "metric_card"
+          title: "Open Requests"
+          query: "count_open_requests"
+          icon: "message-circle"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "avg_resolution_time"
+          type: "metric_card"
+          title: "Avg Resolution (Days)"
+          query: "average_case_resolution_days"
+          icon: "clock"
+          color: "#059669"
+          size: "small"
+
+        - id: "cases_by_status"
+          type: "chart"
+          chart_type: "pie"
+          title: "Cases by Status"
+          query: "case_status_distribution"
+          size: "medium"
+
+        - id: "recent_cases"
+          type: "entity_list"
+          title: "Recent Cases"
+          entity_type: "Case"
+          query:
+            sort:
+              field: "created_date"
+              direction: "DESC"
+            limit: 10
+          columns:
+            - case_number
+            - subject
+            - status
+            - priority
+            - created_date
+          size: "medium"
+
+        - id: "sla_at_risk"
+          type: "entity_list"
+          title: "SLA At Risk"
+          entity_type: "Case"
+          query:
+            filter:
+              sla_status: ["At Risk", "Breached"]
+              status: ["New", "Assigned", "In Progress"]
+            sort:
+              field: "due_date"
+              direction: "ASC"
+            limit: 10
+          columns:
+            - case_number
+            - subject
+            - due_date
+            - sla_status
+          size: "medium"
+
+        - id: "permit_pipeline"
+          type: "entity_list"
+          title: "Permit Applications"
+          entity_type: "Permit"
+          query:
+            filter:
+              status: ["Submitted", "Under Review", "Corrections Required"]
+            sort:
+              field: "application_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - permit_number
+            - permit_type
+            - project_address
+            - status
+            - application_date
+          size: "medium"
+
+        - id: "cases_over_time"
+          type: "chart"
+          chart_type: "line"
+          title: "Cases Opened vs Closed"
+          query: "cases_trend"
+          x_axis: "week"
+          y_axis: "count"
+          series: ["opened", "closed"]
+          size: "large"
+
+        - id: "request_map"
+          type: "map"
+          title: "Service Requests Map"
+          query:
+            entity_type: "Request"
+            filter:
+              status: "Open"
+          marker_color_by: "request_type"
+          cluster: true
+          size: "large"
+
+        - id: "department_workload"
+          type: "chart"
+          chart_type: "bar"
+          title: "Cases by Department"
+          query: "cases_by_department"
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Citizen Services Dashboard
+    # ----------------------------------------------------------------------
+    - id: "citizen-services"
+      name: "Citizen Services Dashboard"
+      description: "Public-facing service metrics"
+      layout: "grid"
+
+      widgets:
+        - id: "satisfaction_score"
+          type: "metric_card"
+          title: "Satisfaction Score"
+          query: "average_satisfaction"
+          format: "decimal"
+          icon: "smile"
+          color: "#10B981"
+          size: "small"
+
+        - id: "requests_completed_today"
+          type: "metric_card"
+          title: "Completed Today"
+          query: "requests_completed_today"
+          icon: "check-circle"
+          color: "#059669"
+          size: "small"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Case List
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "case_number"
+              label: "Case #"
+              sortable: true
+              width: "120px"
+              render: "link"
+
+            - field: "subject"
+              label: "Subject"
+              sortable: true
+
+            - field: "case_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "New": "info"
+                "Assigned": "primary"
+                "In Progress": "warning"
+                "Pending Review": "secondary"
+                "Resolved": "success"
+                "Closed": "secondary"
+
+            - field: "priority"
+              label: "Priority"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Low": "secondary"
+                "Medium": "info"
+                "High": "warning"
+                "Critical": "danger"
+
+            - field: "citizen_name"
+              label: "Citizen"
+
+            - field: "assigned_to_name"
+              label: "Assigned To"
+
+            - field: "created_date"
+              label: "Created"
+              sortable: true
+              format: "datetime"
+
+            - field: "due_date"
+              label: "Due"
+              sortable: true
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "New"
+            - "Assigned"
+            - "In Progress"
+            - "Pending Review"
+            - "Resolved"
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "case_type"
+          type: "select"
+          label: "Type"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          label: "Priority"
+          multiple: true
+
+        - field: "created_date"
+          type: "date_range"
+          label: "Created Date"
+
+        - field: "assigned_to"
+          type: "lookup"
+          label: "Assigned To"
+          entity_type: "Employee"
+
+      actions:
+        - id: "add_case"
+          label: "New Case"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # Permit List
+    # ----------------------------------------------------------------------
+    - entity_type: "Permit"
+      id: "permit_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "permit_number"
+              label: "Permit #"
+              sortable: true
+              render: "link"
+
+            - field: "permit_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Draft": "secondary"
+                "Submitted": "info"
+                "Under Review": "warning"
+                "Approved": "success"
+                "Issued": "primary"
+                "Denied": "danger"
+                "Expired": "secondary"
+
+            - field: "project_address"
+              label: "Address"
+
+            - field: "applicant_name"
+              label: "Applicant"
+
+            - field: "valuation"
+              label: "Valuation"
+              format: "currency"
+
+            - field: "application_date"
+              label: "Applied"
+              sortable: true
+              format: "date"
+
+            - field: "expiration_date"
+              label: "Expires"
+              sortable: true
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Submitted"
+            - "Under Review"
+            - "Corrections Required"
+            - "Approved"
+            - "Issued"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "permit_type"
+          type: "select"
+          multiple: true
+
+        - field: "application_date"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Request List
+    # ----------------------------------------------------------------------
+    - entity_type: "Request"
+      id: "request_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "request_number"
+              label: "Request #"
+              sortable: true
+              render: "link"
+
+            - field: "request_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "priority"
+              label: "Priority"
+              render: "badge"
+
+            - field: "address"
+              label: "Location"
+
+            - field: "submitted_date"
+              label: "Submitted"
+              sortable: true
+              format: "datetime"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "request_type"
+          popup_fields:
+            - request_number
+            - request_type
+            - status
+            - description
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "request_type"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Asset List
+    # ----------------------------------------------------------------------
+    - entity_type: "Asset"
+      id: "asset_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "asset_id"
+              label: "Asset ID"
+              sortable: true
+              render: "link"
+
+            - field: "asset_name"
+              label: "Name"
+              sortable: true
+
+            - field: "asset_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "condition"
+              label: "Condition"
+              render: "badge"
+
+            - field: "location"
+              label: "Location"
+
+            - field: "current_value"
+              label: "Value"
+              format: "currency"
+
+            - field: "next_inspection_date"
+              label: "Next Inspection"
+              format: "date"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "condition"
+
+      filters:
+        - field: "asset_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "condition"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Case Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "case_number"
+        subtitle_field: "subject"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "case_info"
+              title: "Case Information"
+              layout: "two_column"
+              fields:
+                - field: "case_type"
+                - field: "status"
+                - field: "priority"
+                - field: "source"
+                - field: "created_date"
+                  format: "datetime"
+                - field: "due_date"
+                  format: "datetime"
+
+            - id: "description"
+              title: "Description"
+              fields:
+                - field: "description"
+                  render: "markdown"
+
+            - id: "location"
+              title: "Location"
+              fields:
+                - field: "address"
+                - field: "location"
+                  render: "map"
+
+        - id: "assignment"
+          label: "Assignment"
+          icon: "user-check"
+
+          sections:
+            - id: "assigned"
+              title: "Assigned To"
+              type: "relationship_list"
+              relationship: "ASSIGNED_TO"
+              direction: "outgoing"
+              display_fields:
+                - full_name
+                - job_title
+                - email
+
+            - id: "citizen"
+              title: "Requestor"
+              type: "relationship_list"
+              relationship: "REQUESTS"
+              direction: "incoming"
+              display_fields:
+                - full_name
+                - email
+                - phone
+
+        - id: "resolution"
+          label: "Resolution"
+          icon: "check-circle"
+
+          sections:
+            - id: "resolution_details"
+              title: "Resolution Details"
+              fields:
+                - field: "resolution"
+                - field: "resolved_date"
+                  format: "datetime"
+                - field: "satisfaction_rating"
+
+        - id: "activity"
+          label: "Activity"
+          icon: "activity"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+              events:
+                - "case_created"
+                - "case_assigned"
+                - "status_changed"
+                - "comment_added"
+                - "case_resolved"
+
+            - id: "attachments"
+              title: "Attachments"
+              fields:
+                - field: "attachments"
+                  render: "file_list"
+
+    # ----------------------------------------------------------------------
+    # Citizen Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Citizen"
+      id: "citizen_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "full_name"
+        badge_field: "verified"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "user"
+
+          sections:
+            - id: "contact"
+              title: "Contact Information"
+              layout: "two_column"
+              fields:
+                - email
+                - phone
+                - address
+                - preferred_language
+                - preferred_contact_method
+
+            - id: "demographics"
+              title: "Demographics"
+              layout: "two_column"
+              fields:
+                - date_of_birth
+                - veteran_status
+                - household_size
+                - accessibility_needs
+
+        - id: "cases"
+          label: "Cases"
+          icon: "folder"
+
+          sections:
+            - id: "case_history"
+              title: "Case History"
+              type: "relationship_list"
+              relationship: "REQUESTS"
+              direction: "outgoing"
+              display_fields:
+                - case_number
+                - subject
+                - status
+                - created_date
+
+        - id: "permits"
+          label: "Permits"
+          icon: "file-check"
+
+          sections:
+            - id: "permit_history"
+              title: "Permit History"
+              type: "relationship_list"
+              relationship: "APPLIES_FOR"
+              direction: "outgoing"
+              display_fields:
+                - permit_number
+                - permit_type
+                - status
+                - application_date
+
+        - id: "services"
+          label: "Services"
+          icon: "clipboard-check"
+
+          sections:
+            - id: "enrolled_services"
+              title: "Enrolled Services"
+              type: "relationship_list"
+              relationship: "RECEIVES"
+              direction: "outgoing"
+              display_fields:
+                - service_name
+                - enrollment_date
+                - status
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Case Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "basic_info"
+          title: "Case Information"
+          fields:
+            - field: "case_type"
+              required: true
+
+            - field: "priority"
+              required: true
+
+            - field: "subject"
+              required: true
+
+            - field: "description"
+              widget: "rich_text_editor"
+
+        - id: "location"
+          title: "Location"
+          fields:
+            - field: "address"
+              widget: "address_input"
+
+            - field: "location"
+              widget: "map_picker"
+
+        - id: "assignment"
+          title: "Assignment"
+          fields:
+            - field: "assigned_to"
+              widget: "lookup"
+              entity_type: "Employee"
+
+            - field: "due_date"
+              widget: "datetime_picker"
+
+    # ----------------------------------------------------------------------
+    # Permit Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Permit"
+      id: "permit_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "permit_type"
+          title: "Permit Type"
+          fields:
+            - field: "permit_type"
+              required: true
+
+            - field: "project_name"
+
+            - field: "project_description"
+
+        - id: "location"
+          title: "Project Location"
+          fields:
+            - field: "project_address"
+              required: true
+              widget: "address_input"
+
+        - id: "details"
+          title: "Project Details"
+          fields:
+            - field: "valuation"
+
+            - field: "contractor_name"
+
+            - field: "contractor_license"
+
+        - id: "documents"
+          title: "Documents"
+          fields:
+            - field: "attachments"
+              widget: "file_upload"
+              max_files: 20
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "case_report"
+      name: "Case Management Report"
+      description: "Summary of case activity and resolution"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+        - field: "department"
+          type: "lookup"
+          entity_type: "Department"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_cases
+            - cases_resolved
+            - avg_resolution_days
+            - satisfaction_score
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Cases by Type"
+
+        - type: "table"
+          title: "Case Details"
+          columns:
+            - case_number
+            - subject
+            - status
+            - created_date
+            - resolved_date
+
+    - id: "permit_report"
+      name: "Permit Activity Report"
+      description: "Permit applications and processing times"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - permits_issued
+            - total_valuation
+            - avg_processing_days
+            - approval_rate
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

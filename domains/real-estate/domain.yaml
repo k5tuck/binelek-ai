@@ -1,0 +1,226 @@
+# Real Estate Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: real-estate
+  name: "Real Estate & Property Management"
+  version: "1.0.0"
+  description: |
+    Comprehensive real estate knowledge graph platform for property listings, transactions,
+    portfolio management, and market analysis. Supports residential, commercial, and industrial
+    real estate operations.
+
+  icon: "🏡"
+  color: "#10B981"  # Green
+
+  industry:
+    sector: "Real Estate"
+    subsectors:
+      - "Residential Real Estate"
+      - "Commercial Real Estate"
+      - "Property Management"
+      - "Real Estate Investment Trusts (REITs)"
+      - "Real Estate Development"
+
+    primary_use_cases:
+      - "MLS (Multiple Listing Service) platforms"
+      - "Property portfolio management"
+      - "Real estate CRM and transaction management"
+      - "Commercial lease management"
+      - "Property valuation and market analysis"
+      - "Real estate investment tracking"
+
+  target_customers:
+    - type: "Real Estate Brokerages"
+      size: "5-500 agents"
+      pain_points:
+        - "Fragmented property data across multiple systems"
+        - "Difficulty tracking relationships (buyers, sellers, agents, properties)"
+        - "Manual transaction management processes"
+        - "Limited market insights and analytics"
+
+    - type: "Property Management Companies"
+      size: "100-10,000 units"
+      pain_points:
+        - "Tenant relationship tracking"
+        - "Maintenance request management"
+        - "Lease expiration monitoring"
+        - "Portfolio performance analytics"
+
+    - type: "Commercial Real Estate Firms"
+      size: "Enterprise"
+      pain_points:
+        - "Complex lease structures with multiple parties"
+        - "Space utilization tracking"
+        - "Market comps and valuation"
+        - "Investment portfolio analysis"
+
+    - type: "REITs and Institutional Investors"
+      size: "Enterprise"
+      pain_points:
+        - "Portfolio diversification analysis"
+        - "Risk assessment across properties"
+        - "Market trend forecasting"
+        - "Asset performance benchmarking"
+
+  market_analysis:
+    market_size:
+      global_real_estate_tech: "$18.2B (2023)"
+      projected_2030: "$86.5B"
+      cagr: "25.3%"
+
+    key_trends:
+      - "PropTech digital transformation"
+      - "AI-powered property valuations"
+      - "Virtual tours and remote transactions"
+      - "ESG (Environmental, Social, Governance) considerations"
+      - "Blockchain for title management"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Zillow (listings and valuations)"
+        - "CoStar (commercial real estate data)"
+        - "Realtor.com (MLS aggregation)"
+        - "Yardi (property management)"
+
+      differentiation:
+        - "Graph-based relationship intelligence"
+        - "Multi-domain support (residential + commercial + investment)"
+        - "AI-driven market insights from connected data"
+        - "Open API for custom integrations"
+        - "Domain-agnostic platform (can pivot to other industries)"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Individual agents, small brokerages evaluating platform"
+      included:
+        - "1 user"
+        - "500 properties max"
+        - "10k API calls/month"
+        - "Public data only (no sensitive client info)"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$499/month + $35/user"
+      target: "Small to mid-size brokerages (5-20 agents)"
+      included:
+        - "5 users included, then $35/user"
+        - "5,000 properties"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Webhooks for notifications"
+        - "Email support"
+      overage_rates:
+        - "Properties: $0.05 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,499/month + $60/user"
+      target: "Large brokerages, property management firms (15-100 agents)"
+      included:
+        - "15 users included, then $60/user"
+        - "50,000 properties"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Properties: $0.05 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $4,999+/month)"
+      target: "National brokerages, REITs, institutional investors"
+      included:
+        - "Unlimited users"
+        - "Unlimited properties"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (MLS, CRM, etc.)"
+        - "Advanced security (SOC 2, GDPR compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "Fair Housing Act (FHA)"
+        description: "Prohibits discrimination in housing based on race, color, religion, sex, disability, familial status, or national origin"
+        impact: "Requires audit trails for all listing decisions and client interactions"
+
+      - name: "Real Estate Settlement Procedures Act (RESPA)"
+        description: "Requires disclosure of settlement costs and prohibits kickbacks"
+        impact: "Transaction tracking must include detailed fee breakdowns"
+
+      - name: "GDPR (for EU clients)"
+        description: "Data privacy and protection for EU citizens"
+        impact: "Data deletion capabilities, consent tracking"
+
+      - name: "State-specific MLS regulations"
+        description: "Each state has different MLS data sharing rules"
+        impact: "Data access controls based on user's licensed states"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "MLS Feeds"
+        providers: ["CoreLogic", "Zillow Group", "Bright MLS", "RESO Web API"]
+        use_case: "Import property listings from regional MLS systems"
+
+      - name: "CRM Systems"
+        providers: ["Salesforce", "HubSpot", "Follow Up Boss", "LionDesk"]
+        use_case: "Sync contacts and deals with existing CRM"
+
+      - name: "Transaction Management"
+        providers: ["Dotloop", "SkySlope", "DocuSign"]
+        use_case: "Link transactions to properties and parties"
+
+      - name: "Accounting/Finance"
+        providers: ["QuickBooks", "Xero", "AppFolio"]
+        use_case: "Sync rent rolls, commissions, expenses"
+
+      - name: "Marketing Tools"
+        providers: ["Mailchimp", "Constant Contact", "Canva"]
+        use_case: "Email campaigns for property listings"
+
+      - name: "Property Data Enrichment"
+        providers: ["Zillow API", "Redfin", "Attom Data"]
+        use_case: "Enrich listings with market data, valuations, school ratings"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Properties under management"
+        benchmark: "Average customer manages 2,500 properties"
+
+      - metric: "Time to list property"
+        benchmark: "Reduce from 45 min to 10 min with data import"
+
+      - metric: "Client match accuracy"
+        benchmark: "Graph-based matching increases conversions by 35%"
+
+      - metric: "Portfolio ROI visibility"
+        benchmark: "Real-time dashboards save 10 hours/month in reporting"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Real Estate domain extraction from monolithic platform"
+
+  documentation:
+    setup_guide: "docs/domains/real-estate/SETUP.md"
+    api_reference: "docs/domains/real-estate/API.md"
+    migration_guide: "docs/domains/real-estate/MIGRATION.md"
+
+  contact:
+    domain_owner: "real-estate-team@binelek.com"
+    support: "support@binelek.com"

@@ -1,0 +1,139 @@
+ui:
+  theme:
+    primary_color: "#EC4899"
+    icon: "user-circle"
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Life Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+      - id: "goals"
+        label: "Goals"
+        icon: "target"
+        route: "/goals"
+      - id: "tasks"
+        label: "Tasks"
+        icon: "check-square"
+        route: "/tasks"
+      - id: "habits"
+        label: "Habits"
+        icon: "repeat"
+        route: "/habits"
+      - id: "notes"
+        label: "Notes"
+        icon: "book-open"
+        route: "/notes"
+      - id: "finance"
+        label: "Finance"
+        icon: "dollar-sign"
+        route: "/finance"
+      - id: "health"
+        label: "Health"
+        icon: "activity"
+        route: "/health"
+
+  dashboards:
+    - id: "life-overview"
+      name: "Life Dashboard"
+      widgets:
+        - type: "metric_card"
+          title: "Active Goals"
+          entity_type: "Goal"
+          aggregation: "count"
+          filter: "status = 'active'"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Habit Streak"
+          entity_type: "Habit"
+          aggregation: "average"
+          field: "currentStreak"
+          filter: "active = true"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Net Worth"
+          entity_type: "Asset"
+          aggregation: "sum"
+          field: "currentValue"
+          size: "medium"
+
+        - type: "metric_card"
+          title: "Tasks Completed"
+          entity_type: "Task"
+          aggregation: "count"
+          filter: "status = 'completed'"
+          time_period: "7d"
+          size: "medium"
+
+        - type: "progress_list"
+          title: "Goal Progress"
+          entity_type: "Goal"
+          filter: "status = 'active'"
+          columns: ["title", "progress", "targetDate"]
+          size: "large"
+
+        - type: "habit_calendar"
+          title: "Habit Tracking"
+          entity_type: "Habit"
+          size: "large"
+
+        - type: "line_chart"
+          title: "Spending Trend"
+          entity_type: "Expense"
+          x_axis: "date"
+          y_axis: "amount"
+          aggregation: "sum"
+          time_period: "90d"
+          size: "large"
+
+  entity_lists:
+    Goal:
+      default_view: "cards"
+      columns:
+        - field: "title"
+          label: "Goal"
+        - field: "category"
+          label: "Category"
+          format: "badge"
+        - field: "progress"
+          label: "Progress"
+          format: "progress_bar"
+        - field: "status"
+          label: "Status"
+          format: "badge"
+
+    Note:
+      default_view: "grid"
+      columns:
+        - field: "title"
+          label: "Title"
+        - field: "category"
+          label: "Category"
+        - field: "tags"
+          label: "Tags"
+          format: "tag_list"
+
+    Task:
+      default_view: "table"
+      columns:
+        - field: "title"
+          label: "Task"
+        - field: "priority"
+          label: "Priority"
+          format: "badge"
+        - field: "status"
+          label: "Status"
+          format: "badge"
+        - field: "dueDate"
+          label: "Due"
+          format: "date"
+
+  search:
+    entities:
+      - Goal
+      - Task
+      - Note
+      - Contact

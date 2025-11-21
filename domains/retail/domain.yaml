@@ -1,0 +1,236 @@
+# Retail & E-commerce Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: retail
+  name: "Retail & E-commerce"
+  version: "1.0.0"
+  description: |
+    Comprehensive retail knowledge graph platform for product management, customer relationships,
+    inventory tracking, and omnichannel operations. Supports brick-and-mortar, e-commerce, and
+    hybrid retail models.
+
+  icon: "shopping-cart"
+  color: "#EC4899"  # Pink
+
+  industry:
+    sector: "Retail"
+    subsectors:
+      - "E-commerce"
+      - "Brick-and-Mortar Retail"
+      - "Omnichannel Retail"
+      - "Marketplaces"
+      - "Direct-to-Consumer (DTC)"
+      - "Wholesale/B2B"
+
+    primary_use_cases:
+      - "Product information management"
+      - "Customer 360 and personalization"
+      - "Inventory and fulfillment management"
+      - "Order management and tracking"
+      - "Promotion and pricing optimization"
+      - "Supplier and vendor management"
+      - "Returns and refunds processing"
+
+  target_customers:
+    - type: "E-commerce Brands"
+      size: "$5M-$100M GMV"
+      pain_points:
+        - "Siloed data across platforms (Shopify, Amazon, etc.)"
+        - "Limited customer segmentation capabilities"
+        - "Manual inventory reconciliation"
+        - "Personalization at scale"
+
+    - type: "Omnichannel Retailers"
+      size: "$50M-$1B revenue"
+      pain_points:
+        - "Unified inventory across channels"
+        - "Customer journey tracking across touchpoints"
+        - "Ship-from-store optimization"
+        - "Consistent pricing and promotions"
+
+    - type: "Multi-Brand Retailers"
+      size: "Various"
+      pain_points:
+        - "Brand portfolio management"
+        - "Cross-brand customer insights"
+        - "Centralized vendor relationships"
+        - "Consolidated reporting"
+
+    - type: "Marketplace Operators"
+      size: "$100M+ GMV"
+      pain_points:
+        - "Seller management and onboarding"
+        - "Product catalog quality"
+        - "Fraud detection"
+        - "Search and discovery"
+
+  market_analysis:
+    market_size:
+      global_retail_tech: "$35.3B (2023)"
+      projected_2030: "$87.9B"
+      cagr: "13.8%"
+
+    key_trends:
+      - "Unified commerce platforms"
+      - "AI-powered personalization"
+      - "Social commerce integration"
+      - "Sustainability and circular economy"
+      - "Headless commerce architectures"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Shopify Plus (e-commerce platform)"
+        - "BigCommerce (enterprise e-commerce)"
+        - "Salesforce Commerce Cloud"
+        - "Adobe Commerce (Magento)"
+        - "Square (POS and e-commerce)"
+
+      differentiation:
+        - "Graph-based product and customer intelligence"
+        - "Cross-platform unified customer view"
+        - "AI-driven personalization from connected data"
+        - "Real-time inventory graph"
+        - "Open API for headless commerce"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Small brands evaluating platform"
+      included:
+        - "1 user"
+        - "500 products max"
+        - "10k API calls/month"
+        - "Basic product catalog"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No integrations"
+        - "No customer analytics"
+
+    - tier: "Starter"
+      price: "$599/month + $45/user"
+      target: "Growing e-commerce brands ($1M-$10M GMV)"
+      included:
+        - "5 users included, then $45/user"
+        - "10,000 products"
+        - "500k API calls/month"
+        - "Product and customer management"
+        - "Basic analytics"
+        - "Email support"
+      overage_rates:
+        - "Products: $0.02 per additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,999/month + $75/user"
+      target: "Established retailers ($10M-$100M GMV)"
+      included:
+        - "15 users included, then $75/user"
+        - "100,000 products"
+        - "5M API calls/month"
+        - "Advanced customer segmentation"
+        - "Inventory management"
+        - "Multi-channel support"
+        - "SAML SSO"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "Products: $0.015 per additional"
+        - "API calls: $0.08 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $7,999+/month)"
+      target: "Large retailers, marketplaces"
+      included:
+        - "Unlimited users"
+        - "Unlimited products"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (ERP, WMS, PIM)"
+        - "Advanced security (SOC 2, PCI-DSS compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "PCI-DSS"
+        description: "Payment Card Industry Data Security Standard"
+        impact: "Secure payment processing, cardholder data protection, audit requirements"
+
+      - name: "Consumer Protection Laws"
+        description: "FTC regulations, state consumer protection laws"
+        impact: "Accurate pricing display, return policy compliance, advertising standards"
+
+      - name: "GDPR/CCPA"
+        description: "Consumer data privacy and protection"
+        impact: "Consent management, data deletion, privacy preference tracking"
+
+      - name: "ADA/WCAG Accessibility"
+        description: "Digital accessibility requirements"
+        impact: "Accessible product catalogs, checkout flows, documentation"
+
+      - name: "Tax Compliance"
+        description: "Sales tax, VAT, duty requirements"
+        impact: "Tax calculation integration, nexus tracking, reporting"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "E-commerce Platforms"
+        providers: ["Shopify", "BigCommerce", "Magento", "WooCommerce"]
+        use_case: "Sync products, orders, and customers"
+
+      - name: "Marketplaces"
+        providers: ["Amazon", "Walmart", "eBay", "Etsy"]
+        use_case: "Multi-channel product listing and orders"
+
+      - name: "Payment Processors"
+        providers: ["Stripe", "Square", "PayPal", "Klarna"]
+        use_case: "Payment processing and reconciliation"
+
+      - name: "Inventory/WMS"
+        providers: ["ShipBob", "Flexport", "Fulfillment by Amazon", "ShipStation"]
+        use_case: "Inventory sync and fulfillment"
+
+      - name: "Marketing Platforms"
+        providers: ["Klaviyo", "Mailchimp", "Google Ads", "Meta Ads"]
+        use_case: "Customer segments and campaign attribution"
+
+      - name: "Customer Service"
+        providers: ["Zendesk", "Gorgias", "Freshdesk", "Intercom"]
+        use_case: "Support ticket integration and customer context"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Products managed"
+        benchmark: "Average customer manages 15,000 active SKUs"
+
+      - metric: "Customer lifetime value"
+        benchmark: "Increase CLV by 25% with graph-based personalization"
+
+      - metric: "Inventory accuracy"
+        benchmark: "Achieve 99%+ inventory accuracy across channels"
+
+      - metric: "Return rate reduction"
+        benchmark: "Reduce returns by 15% with better product information"
+
+  status: "coming_soon"
+  expected_release: "Q2 2026"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Retail & E-commerce domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/retail/SETUP.md"
+    api_reference: "docs/domains/retail/API.md"
+    migration_guide: "docs/domains/retail/MIGRATION.md"
+
+  contact:
+    domain_owner: "retail-team@binelek.com"
+    support: "support@binelek.com"

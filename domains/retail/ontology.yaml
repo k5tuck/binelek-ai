@@ -1,0 +1,1133 @@
+# Retail & E-commerce Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Retail domain ontology covering products, customers, orders, and inventory"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Product Entity
+    # ------------------------------------------------------------------------
+    - name: Product
+      display_name: "Product"
+      description: "Retail product or SKU"
+      icon: "package"
+      color: "#EC4899"
+
+      attributes:
+        # Core Identification
+        - name: sku
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Stock Keeping Unit"
+
+        - name: product_name
+          type: string
+          required: true
+
+        - name: short_description
+          type: string
+
+        - name: description
+          type: text
+
+        - name: brand
+          type: string
+          indexed: true
+
+        # Classification
+        - name: product_type
+          type: enum
+          required: true
+          values:
+            - "Physical"
+            - "Digital"
+            - "Service"
+            - "Subscription"
+            - "Bundle"
+            - "Gift Card"
+          default: "Physical"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Draft"
+            - "Archived"
+            - "Out of Stock"
+            - "Discontinued"
+          default: "Draft"
+
+        # Pricing
+        - name: base_price
+          type: money
+          required: true
+
+        - name: compare_at_price
+          type: money
+          description: "Original price for showing discount"
+
+        - name: cost
+          type: money
+          description: "Cost of goods"
+
+        - name: margin
+          type: number
+          computed: true
+          formula: "((base_price - cost) / base_price) * 100"
+
+        - name: taxable
+          type: boolean
+          default: true
+
+        - name: tax_code
+          type: string
+
+        # Inventory
+        - name: track_inventory
+          type: boolean
+          default: true
+
+        - name: quantity_on_hand
+          type: number
+          default: 0
+
+        - name: quantity_reserved
+          type: number
+          default: 0
+
+        - name: quantity_available
+          type: number
+          computed: true
+          formula: "quantity_on_hand - quantity_reserved"
+
+        - name: low_stock_threshold
+          type: number
+
+        - name: backorder_allowed
+          type: boolean
+          default: false
+
+        # Physical Attributes
+        - name: weight
+          type: number
+          unit: "kg"
+
+        - name: weight_unit
+          type: enum
+          values: ["kg", "lb", "oz", "g"]
+          default: "kg"
+
+        - name: dimensions
+          type: object
+          description: "Length, width, height in cm"
+
+        - name: requires_shipping
+          type: boolean
+          default: true
+
+        # Variants
+        - name: has_variants
+          type: boolean
+          default: false
+
+        - name: variant_options
+          type: array
+          item_type: string
+          description: "e.g., Size, Color, Material"
+
+        # SEO & Marketing
+        - name: url_handle
+          type: string
+          indexed: true
+
+        - name: meta_title
+          type: string
+
+        - name: meta_description
+          type: string
+
+        - name: tags
+          type: array
+          item_type: string
+
+        # Media
+        - name: images
+          type: array
+          item_type: url
+
+        - name: featured_image
+          type: url
+
+        - name: videos
+          type: array
+          item_type: url
+
+        # External IDs
+        - name: barcode
+          type: string
+          indexed: true
+
+        - name: upc
+          type: string
+
+        - name: gtin
+          type: string
+
+        - name: vendor_sku
+          type: string
+
+        # Ratings
+        - name: average_rating
+          type: number
+          min: 0
+          max: 5
+
+        - name: review_count
+          type: number
+          default: 0
+
+      indexes:
+        - fields: ["sku"]
+          unique: true
+          name: "idx_sku"
+        - fields: ["status"]
+          name: "idx_product_status"
+        - fields: ["brand"]
+          name: "idx_brand"
+        - fields: ["url_handle"]
+          name: "idx_url_handle"
+
+      validation_rules:
+        - rule: "base_price >= 0"
+        - rule: "quantity_on_hand >= 0"
+
+    # ------------------------------------------------------------------------
+    # Customer Entity
+    # ------------------------------------------------------------------------
+    - name: Customer
+      display_name: "Customer"
+      description: "Retail customer"
+      icon: "user"
+      color: "#3B82F6"
+
+      attributes:
+        - name: customer_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: first_name
+          type: string
+
+        - name: last_name
+          type: string
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: phone
+          type: phone
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "VIP", "Blocked"]
+          default: "Active"
+
+        # Addresses
+        - name: default_billing_address
+          type: address
+
+        - name: default_shipping_address
+          type: address
+
+        # Marketing
+        - name: accepts_marketing
+          type: boolean
+          default: false
+
+        - name: marketing_opt_in_date
+          type: datetime
+
+        - name: acquisition_source
+          type: string
+          description: "How customer was acquired"
+
+        # Segmentation
+        - name: customer_segment
+          type: enum
+          values:
+            - "New"
+            - "Returning"
+            - "VIP"
+            - "At Risk"
+            - "Churned"
+          default: "New"
+
+        - name: tags
+          type: array
+          item_type: string
+
+        - name: notes
+          type: text
+
+        # Metrics (computed or synced)
+        - name: total_orders
+          type: number
+          default: 0
+
+        - name: total_spent
+          type: money
+          default: 0
+
+        - name: average_order_value
+          type: money
+          computed: true
+          formula: "total_spent / total_orders"
+
+        - name: first_order_date
+          type: date
+
+        - name: last_order_date
+          type: date
+
+        - name: lifetime_value
+          type: money
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_customer_email"
+        - fields: ["customer_segment"]
+          name: "idx_segment"
+        - fields: ["last_order_date"]
+          name: "idx_last_order"
+
+    # ------------------------------------------------------------------------
+    # Order Entity
+    # ------------------------------------------------------------------------
+    - name: Order
+      display_name: "Order"
+      description: "Customer order"
+      icon: "shopping-bag"
+      color: "#10B981"
+
+      attributes:
+        - name: order_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: order_date
+          type: datetime
+          required: true
+          indexed: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Confirmed"
+            - "Processing"
+            - "Shipped"
+            - "Delivered"
+            - "Cancelled"
+            - "Refunded"
+            - "On Hold"
+          default: "Pending"
+
+        - name: fulfillment_status
+          type: enum
+          values:
+            - "Unfulfilled"
+            - "Partially Fulfilled"
+            - "Fulfilled"
+            - "Restocked"
+          default: "Unfulfilled"
+
+        - name: payment_status
+          type: enum
+          values:
+            - "Pending"
+            - "Authorized"
+            - "Paid"
+            - "Partially Refunded"
+            - "Refunded"
+            - "Voided"
+          default: "Pending"
+
+        # Financials
+        - name: subtotal
+          type: money
+          required: true
+
+        - name: discount_total
+          type: money
+          default: 0
+
+        - name: shipping_total
+          type: money
+          default: 0
+
+        - name: tax_total
+          type: money
+          default: 0
+
+        - name: total
+          type: money
+          required: true
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        # Shipping
+        - name: shipping_address
+          type: address
+
+        - name: billing_address
+          type: address
+
+        - name: shipping_method
+          type: string
+
+        - name: tracking_number
+          type: string
+
+        - name: tracking_url
+          type: url
+
+        # Channel
+        - name: channel
+          type: enum
+          values:
+            - "Online"
+            - "POS"
+            - "Phone"
+            - "Wholesale"
+            - "Marketplace"
+          default: "Online"
+
+        - name: source
+          type: string
+          description: "Specific source (e.g., Shopify, Amazon)"
+
+        # Additional
+        - name: customer_notes
+          type: text
+
+        - name: internal_notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+        - name: discount_codes
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["order_number"]
+          unique: true
+          name: "idx_order_number"
+        - fields: ["status"]
+          name: "idx_order_status"
+        - fields: ["order_date"]
+          name: "idx_order_date"
+        - fields: ["channel"]
+          name: "idx_channel"
+
+    # ------------------------------------------------------------------------
+    # Inventory Entity
+    # ------------------------------------------------------------------------
+    - name: Inventory
+      display_name: "Inventory"
+      description: "Inventory location and quantity"
+      icon: "database"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: inventory_item_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: location_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: quantity_on_hand
+          type: number
+          required: true
+          default: 0
+
+        - name: quantity_available
+          type: number
+          default: 0
+
+        - name: quantity_reserved
+          type: number
+          default: 0
+
+        - name: quantity_incoming
+          type: number
+          default: 0
+
+        - name: reorder_point
+          type: number
+
+        - name: reorder_quantity
+          type: number
+
+        - name: last_count_date
+          type: datetime
+
+        - name: last_received_date
+          type: datetime
+
+        - name: bin_location
+          type: string
+
+      indexes:
+        - fields: ["inventory_item_id", "location_id"]
+          name: "idx_inventory_location"
+
+    # ------------------------------------------------------------------------
+    # Supplier Entity
+    # ------------------------------------------------------------------------
+    - name: Supplier
+      display_name: "Supplier"
+      description: "Product supplier or vendor"
+      icon: "truck"
+      color: "#F59E0B"
+
+      attributes:
+        - name: supplier_code
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: supplier_name
+          type: string
+          required: true
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "On Hold"]
+          default: "Active"
+
+        # Contact
+        - name: contact_name
+          type: string
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        - name: website
+          type: url
+
+        # Business Terms
+        - name: payment_terms
+          type: string
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        - name: minimum_order
+          type: money
+
+        - name: lead_time_days
+          type: number
+
+        # Performance
+        - name: on_time_rate
+          type: number
+          min: 0
+          max: 100
+
+        - name: fill_rate
+          type: number
+          min: 0
+          max: 100
+
+        - name: quality_rating
+          type: number
+          min: 0
+          max: 5
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["supplier_code"]
+          unique: true
+          name: "idx_supplier_code"
+        - fields: ["status"]
+          name: "idx_supplier_status"
+
+    # ------------------------------------------------------------------------
+    # Promotion Entity
+    # ------------------------------------------------------------------------
+    - name: Promotion
+      display_name: "Promotion"
+      description: "Discount or promotional offer"
+      icon: "percent"
+      color: "#EF4444"
+
+      attributes:
+        - name: promotion_code
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: promotion_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: promotion_type
+          type: enum
+          required: true
+          values:
+            - "Percentage Off"
+            - "Fixed Amount Off"
+            - "Buy X Get Y"
+            - "Free Shipping"
+            - "Bundle"
+
+        - name: status
+          type: enum
+          values: ["Active", "Scheduled", "Expired", "Disabled"]
+          default: "Scheduled"
+
+        - name: discount_value
+          type: number
+          description: "Percentage or fixed amount"
+
+        - name: minimum_purchase
+          type: money
+
+        - name: maximum_discount
+          type: money
+
+        - name: usage_limit
+          type: number
+
+        - name: usage_count
+          type: number
+          default: 0
+
+        - name: per_customer_limit
+          type: number
+
+        - name: start_date
+          type: datetime
+          required: true
+
+        - name: end_date
+          type: datetime
+
+        - name: applies_to
+          type: enum
+          values: ["All Products", "Specific Products", "Specific Collections", "Specific Customers"]
+          default: "All Products"
+
+        - name: stackable
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["promotion_code"]
+          unique: true
+          name: "idx_promo_code"
+        - fields: ["status"]
+          name: "idx_promo_status"
+        - fields: ["start_date", "end_date"]
+          name: "idx_promo_dates"
+
+    # ------------------------------------------------------------------------
+    # Return Entity
+    # ------------------------------------------------------------------------
+    - name: Return
+      display_name: "Return"
+      description: "Product return or exchange"
+      icon: "refresh-ccw"
+      color: "#6366F1"
+
+      attributes:
+        - name: return_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: return_type
+          type: enum
+          required: true
+          values:
+            - "Return"
+            - "Exchange"
+            - "Store Credit"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Requested"
+            - "Approved"
+            - "Shipped"
+            - "Received"
+            - "Inspected"
+            - "Processed"
+            - "Closed"
+            - "Rejected"
+          default: "Requested"
+
+        - name: request_date
+          type: datetime
+          required: true
+
+        - name: reason
+          type: enum
+          values:
+            - "Wrong Item"
+            - "Defective"
+            - "Not as Described"
+            - "Changed Mind"
+            - "Fit Issue"
+            - "Quality Issue"
+            - "Arrived Late"
+            - "Other"
+
+        - name: reason_details
+          type: text
+
+        - name: refund_amount
+          type: money
+
+        - name: restocking_fee
+          type: money
+
+        - name: return_shipping_cost
+          type: money
+
+        - name: tracking_number
+          type: string
+
+        - name: received_date
+          type: datetime
+
+        - name: processed_date
+          type: datetime
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["return_number"]
+          unique: true
+          name: "idx_return_number"
+        - fields: ["status"]
+          name: "idx_return_status"
+        - fields: ["request_date"]
+          name: "idx_request_date"
+
+    # ------------------------------------------------------------------------
+    # Review Entity
+    # ------------------------------------------------------------------------
+    - name: Review
+      display_name: "Review"
+      description: "Customer product review"
+      icon: "star"
+      color: "#FCD34D"
+
+      attributes:
+        - name: review_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: rating
+          type: number
+          required: true
+          min: 1
+          max: 5
+
+        - name: title
+          type: string
+
+        - name: content
+          type: text
+
+        - name: status
+          type: enum
+          values: ["Pending", "Approved", "Rejected", "Flagged"]
+          default: "Pending"
+
+        - name: verified_purchase
+          type: boolean
+          default: false
+
+        - name: review_date
+          type: datetime
+          required: true
+
+        - name: helpful_votes
+          type: number
+          default: 0
+
+        - name: reported_count
+          type: number
+          default: 0
+
+        - name: images
+          type: array
+          item_type: url
+
+        - name: response
+          type: text
+          description: "Store response to review"
+
+        - name: response_date
+          type: datetime
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_review_status"
+        - fields: ["rating"]
+          name: "idx_rating"
+        - fields: ["review_date"]
+          name: "idx_review_date"
+
+    # ------------------------------------------------------------------------
+    # Category Entity
+    # ------------------------------------------------------------------------
+    - name: Category
+      display_name: "Category"
+      description: "Product category or collection"
+      icon: "folder"
+      color: "#14B8A6"
+
+      attributes:
+        - name: category_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: category_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: url_handle
+          type: string
+          indexed: true
+
+        - name: status
+          type: enum
+          values: ["Active", "Hidden", "Archived"]
+          default: "Active"
+
+        - name: sort_order
+          type: number
+          default: 0
+
+        - name: image_url
+          type: url
+
+        - name: meta_title
+          type: string
+
+        - name: meta_description
+          type: string
+
+        - name: product_count
+          type: number
+          default: 0
+
+      indexes:
+        - fields: ["category_id"]
+          name: "idx_category_id"
+        - fields: ["url_handle"]
+          name: "idx_category_handle"
+
+    # ------------------------------------------------------------------------
+    # Store Entity
+    # ------------------------------------------------------------------------
+    - name: Store
+      display_name: "Store"
+      description: "Physical retail store location"
+      icon: "store"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: store_code
+          type: string
+          required: true
+          indexed: true
+
+        - name: store_name
+          type: string
+          required: true
+
+        - name: store_type
+          type: enum
+          values:
+            - "Flagship"
+            - "Retail"
+            - "Outlet"
+            - "Pop-up"
+            - "Warehouse"
+
+        - name: status
+          type: enum
+          values: ["Open", "Closed", "Temporarily Closed", "Coming Soon"]
+          default: "Open"
+
+        - name: address
+          type: address
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+        - name: manager
+          type: string
+
+        - name: hours
+          type: object
+          description: "Operating hours by day"
+
+        - name: services
+          type: array
+          item_type: string
+          description: "e.g., Buy Online Pickup, Alterations"
+
+        - name: opened_date
+          type: date
+
+      indexes:
+        - fields: ["store_code"]
+          unique: true
+          name: "idx_store_code"
+        - fields: ["location"]
+          type: "spatial"
+          name: "idx_store_location"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Customer-Order Relationships
+    - name: PURCHASED_BY
+      from: Order
+      to: Customer
+      description: "Order purchased by customer"
+      cardinality: many_to_one
+
+    # Order-Product Relationships
+    - name: CONTAINS
+      from: Order
+      to: Product
+      description: "Order contains product"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity
+          type: number
+          required: true
+        - name: unit_price
+          type: money
+          required: true
+        - name: discount
+          type: money
+        - name: total
+          type: money
+
+    # Product-Supplier Relationships
+    - name: SUPPLIED_BY
+      from: Product
+      to: Supplier
+      description: "Product supplied by vendor"
+      cardinality: many_to_many
+      attributes:
+        - name: supplier_sku
+          type: string
+        - name: cost
+          type: money
+        - name: lead_time_days
+          type: number
+        - name: preferred
+          type: boolean
+
+    # Product-Category Relationships
+    - name: BELONGS_TO_CATEGORY
+      from: Product
+      to: Category
+      description: "Product belongs to category"
+      cardinality: many_to_many
+      attributes:
+        - name: primary
+          type: boolean
+          default: false
+
+    # Category Hierarchy
+    - name: PARENT_CATEGORY
+      from: Category
+      to: Category
+      description: "Category parent relationship"
+      cardinality: many_to_one
+
+    # Review Relationships
+    - name: REVIEWED_BY
+      from: Review
+      to: Customer
+      description: "Review written by customer"
+      cardinality: many_to_one
+
+    - name: REVIEW_OF
+      from: Review
+      to: Product
+      description: "Review is for product"
+      cardinality: many_to_one
+
+    # Return Relationships
+    - name: RETURNS
+      from: Return
+      to: Order
+      description: "Return is for order"
+      cardinality: many_to_one
+
+    - name: RETURNS_PRODUCT
+      from: Return
+      to: Product
+      description: "Return contains product"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity
+          type: number
+        - name: reason
+          type: string
+        - name: condition
+          type: string
+
+    # Inventory Relationships
+    - name: STOCKED_AT
+      from: Product
+      to: Store
+      description: "Product stocked at store"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity
+          type: number
+        - name: bin_location
+          type: string
+
+    # Promotion Relationships
+    - name: APPLIES_TO
+      from: Promotion
+      to: Product
+      description: "Promotion applies to product"
+      cardinality: many_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "customer_360"
+      description: "Complete customer view with orders, reviews, and returns"
+      cypher: |
+        MATCH (c:Customer {id: $customer_id})
+        OPTIONAL MATCH (c)<-[:PURCHASED_BY]-(o:Order)
+        OPTIONAL MATCH (c)<-[:REVIEWED_BY]-(r:Review)
+        RETURN c, collect(DISTINCT o) AS orders,
+               collect(DISTINCT r) AS reviews,
+               sum(o.total) AS total_spent
+
+    - name: "product_performance"
+      description: "Product sales and review analysis"
+      cypher: |
+        MATCH (p:Product {id: $product_id})
+        OPTIONAL MATCH (o:Order)-[oi:CONTAINS]->(p)
+        OPTIONAL MATCH (r:Review)-[:REVIEW_OF]->(p)
+        RETURN p,
+               count(DISTINCT o) AS order_count,
+               sum(oi.quantity) AS units_sold,
+               sum(oi.total) AS revenue,
+               avg(r.rating) AS avg_rating
+
+    - name: "frequently_bought_together"
+      description: "Products frequently purchased together"
+      cypher: |
+        MATCH (p1:Product {id: $product_id})<-[:CONTAINS]-(o:Order)-[:CONTAINS]->(p2:Product)
+        WHERE p1.id <> p2.id
+        RETURN p2, count(o) AS co_purchase_count
+        ORDER BY co_purchase_count DESC
+        LIMIT 10
+
+    - name: "customer_segments"
+      description: "Analyze customer segments by purchase behavior"
+      cypher: |
+        MATCH (c:Customer)<-[:PURCHASED_BY]-(o:Order)
+        WHERE o.order_date >= date() - duration({days: 90})
+        WITH c, count(o) AS order_count, sum(o.total) AS total_spent
+        RETURN c.customer_segment AS segment,
+               count(c) AS customer_count,
+               avg(order_count) AS avg_orders,
+               avg(total_spent) AS avg_spent
+        ORDER BY avg_spent DESC
+
+    - name: "inventory_optimization"
+      description: "Products with low stock across locations"
+      cypher: |
+        MATCH (p:Product)-[i:STOCKED_AT]->(s:Store)
+        WHERE i.quantity <= p.low_stock_threshold
+        RETURN p, s, i.quantity AS current_stock
+        ORDER BY i.quantity ASC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

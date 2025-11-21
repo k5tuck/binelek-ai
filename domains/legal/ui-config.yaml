@@ -1,0 +1,826 @@
+# Legal & Law Practice UI Configuration
+# Frontend presentation layer for legal domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for legal case management and practice operations"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#6366F1"      # Indigo
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/legal-logo.svg"
+    favicon_url: "/assets/favicons/legal.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "cases"
+        label: "Cases"
+        icon: "briefcase"
+        route: "/cases"
+        badge_query: "count_active_cases"
+
+      - id: "clients"
+        label: "Clients"
+        icon: "users"
+        route: "/clients"
+
+      - id: "documents"
+        label: "Documents"
+        icon: "file-text"
+        route: "/documents"
+
+      - id: "calendar"
+        label: "Calendar"
+        icon: "calendar"
+        route: "/calendar"
+        badge_query: "count_upcoming_deadlines"
+
+      - id: "billing"
+        label: "Billing"
+        icon: "receipt"
+        route: "/billing"
+        submenu:
+          - id: "time_entries"
+            label: "Time Entries"
+            route: "/billing/time"
+          - id: "expenses"
+            label: "Expenses"
+            route: "/billing/expenses"
+          - id: "invoices"
+            label: "Invoices"
+            route: "/billing/invoices"
+
+      - id: "research"
+        label: "Research"
+        icon: "search"
+        route: "/research"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Legal Dashboard"
+      description: "Overview of cases, deadlines, and firm performance"
+      layout: "grid"
+
+      widgets:
+        - id: "active_cases_count"
+          type: "metric_card"
+          title: "Active Cases"
+          query: "count_active_cases"
+          icon: "briefcase"
+          color: "#6366F1"
+          size: "small"
+
+        - id: "pending_deadlines"
+          type: "metric_card"
+          title: "Deadlines This Week"
+          query: "count_week_deadlines"
+          icon: "calendar-alert"
+          color: "#DC2626"
+          size: "small"
+
+        - id: "unbilled_hours"
+          type: "metric_card"
+          title: "Unbilled Hours"
+          query: "sum_unbilled_hours"
+          icon: "clock"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "monthly_revenue"
+          type: "metric_card"
+          title: "Monthly Revenue"
+          query: "sum_monthly_revenue"
+          format: "currency"
+          icon: "dollar-sign"
+          color: "#10B981"
+          size: "small"
+
+        - id: "urgent_deadlines"
+          type: "entity_list"
+          title: "Urgent Deadlines"
+          entity_type: "Deadline"
+          query:
+            filter:
+              status: "Pending"
+              priority: ["High", "Critical"]
+            sort:
+              field: "due_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - title
+            - deadline_type
+            - due_date
+            - case_name
+            - priority
+          size: "medium"
+
+        - id: "recent_cases"
+          type: "entity_list"
+          title: "Recent Cases"
+          entity_type: "Case"
+          query:
+            filter:
+              status: ["Active", "Discovery", "Trial"]
+            sort:
+              field: "open_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - case_number
+            - case_title
+            - case_type
+            - status
+            - lead_attorney
+          size: "medium"
+
+        - id: "billable_hours_chart"
+          type: "chart"
+          chart_type: "bar"
+          title: "Billable Hours (Last 30 Days)"
+          query: "daily_billable_hours"
+          x_axis: "date"
+          y_axis: "hours"
+          size: "large"
+
+        - id: "case_type_distribution"
+          type: "chart"
+          chart_type: "pie"
+          title: "Cases by Practice Area"
+          query: "case_type_distribution"
+          size: "medium"
+
+        - id: "top_clients"
+          type: "leaderboard"
+          title: "Top Clients by Revenue"
+          query: "top_clients_by_revenue"
+          metric: "total_billed"
+          format: "currency"
+          limit: 10
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Attorney Dashboard
+    # ----------------------------------------------------------------------
+    - id: "attorney"
+      name: "My Dashboard"
+      description: "Individual attorney workload and performance"
+      layout: "grid"
+
+      filters:
+        - field: "attorney_id"
+          type: "current_user"
+
+      widgets:
+        - id: "my_active_cases"
+          type: "metric_card"
+          title: "My Active Cases"
+          query: "count_my_cases"
+
+        - id: "my_deadlines"
+          type: "metric_card"
+          title: "My Deadlines"
+          query: "count_my_deadlines"
+
+        - id: "my_billable_target"
+          type: "metric_card"
+          title: "Monthly Hours"
+          query: "my_monthly_hours"
+          format: "number"
+
+        - id: "my_realization_rate"
+          type: "metric_card"
+          title: "Realization Rate"
+          query: "my_realization_rate"
+          format: "percentage"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Case List
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "case_number"
+              label: "Case #"
+              sortable: true
+              width: "120px"
+              render: "link"
+
+            - field: "case_title"
+              label: "Title"
+              sortable: true
+              width: "250px"
+
+            - field: "case_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Active": "primary"
+                "Discovery": "info"
+                "Trial": "warning"
+                "Closed - Won": "success"
+                "Closed - Lost": "danger"
+
+            - field: "client_name"
+              label: "Client"
+              sortable: true
+
+            - field: "lead_attorney"
+              label: "Lead Attorney"
+              sortable: true
+
+            - field: "jurisdiction"
+              label: "Jurisdiction"
+              filterable: true
+
+            - field: "open_date"
+              label: "Opened"
+              sortable: true
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Intake"
+            - "Active"
+            - "Discovery"
+            - "Trial"
+            - "Closed - Won"
+            - "Closed - Lost"
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "case_type"
+          type: "select"
+          label: "Case Type"
+          multiple: true
+
+        - field: "jurisdiction"
+          type: "select"
+          label: "Jurisdiction"
+
+        - field: "lead_attorney"
+          type: "select"
+          label: "Lead Attorney"
+
+        - field: "open_date"
+          type: "date_range"
+          label: "Open Date"
+
+      actions:
+        - id: "add_case"
+          label: "New Case"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # Client List
+    # ----------------------------------------------------------------------
+    - entity_type: "Client"
+      id: "client_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "client_number"
+              label: "Client #"
+              sortable: true
+              render: "link"
+
+            - field: "display_name"
+              label: "Name"
+              sortable: true
+
+            - field: "client_type"
+              label: "Type"
+              filterable: true
+
+            - field: "email"
+              label: "Email"
+
+            - field: "phone"
+              label: "Phone"
+              format: "phone"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "active_cases"
+              label: "Active Cases"
+              sortable: true
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "client_type"
+          type: "select"
+          multiple: true
+
+      actions:
+        - id: "add_client"
+          label: "New Client"
+          icon: "plus"
+          type: "create"
+
+    # ----------------------------------------------------------------------
+    # Document List
+    # ----------------------------------------------------------------------
+    - entity_type: "Document"
+      id: "document_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "document_name"
+              label: "Document"
+              sortable: true
+              render: "link"
+
+            - field: "document_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "case_name"
+              label: "Case"
+
+            - field: "author"
+              label: "Author"
+
+            - field: "created_date"
+              label: "Created"
+              format: "datetime"
+
+            - field: "confidentiality"
+              label: "Confidentiality"
+              render: "badge"
+
+      filters:
+        - field: "document_type"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "confidentiality"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Deadline List
+    # ----------------------------------------------------------------------
+    - entity_type: "Deadline"
+      id: "deadline_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "title"
+              label: "Title"
+              render: "link"
+
+            - field: "deadline_type"
+              label: "Type"
+
+            - field: "due_date"
+              label: "Due Date"
+              format: "datetime"
+              sortable: true
+
+            - field: "case_name"
+              label: "Case"
+
+            - field: "priority"
+              label: "Priority"
+              render: "badge"
+              color_map:
+                "Critical": "danger"
+                "High": "warning"
+                "Medium": "info"
+                "Low": "secondary"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+        - type: "calendar"
+          date_field: "due_date"
+          title_field: "title"
+          color_by: "priority"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+        - field: "due_date"
+          type: "date_range"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Case Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "case_title"
+        subtitle_field: "case_number"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "case_details"
+              title: "Case Details"
+              layout: "two_column"
+              fields:
+                - field: "case_type"
+                  label: "Case Type"
+                - field: "status"
+                  label: "Status"
+                  render: "badge"
+                - field: "practice_area"
+                  label: "Practice Area"
+                - field: "jurisdiction"
+                  label: "Jurisdiction"
+                - field: "court_case_number"
+                  label: "Court Case #"
+                - field: "fee_arrangement"
+                  label: "Fee Arrangement"
+
+            - id: "dates"
+              title: "Important Dates"
+              layout: "two_column"
+              fields:
+                - field: "open_date"
+                  label: "Open Date"
+                  format: "date"
+                - field: "statute_of_limitations"
+                  label: "SOL"
+                  format: "date"
+
+            - id: "description"
+              title: "Description"
+              fields:
+                - field: "description"
+                  render: "markdown"
+
+        - id: "parties"
+          label: "Parties"
+          icon: "users"
+
+          sections:
+            - id: "client"
+              title: "Client"
+              type: "relationship_list"
+              relationship: "INVOLVES"
+              direction: "outgoing"
+              display_fields:
+                - display_name
+                - email
+                - phone
+
+            - id: "parties"
+              title: "Other Parties"
+              type: "relationship_list"
+              relationship: "HAS_PARTY"
+              direction: "outgoing"
+              display_fields:
+                - party_name
+                - party_type
+                - represented_by
+
+        - id: "team"
+          label: "Team"
+          icon: "user-tie"
+
+          sections:
+            - id: "assigned_attorneys"
+              title: "Assigned Attorneys"
+              type: "relationship_list"
+              relationship: "ASSIGNED_TO"
+              direction: "outgoing"
+              display_fields:
+                - full_name
+                - role
+                - email
+
+        - id: "documents"
+          label: "Documents"
+          icon: "file-text"
+
+          sections:
+            - id: "case_documents"
+              title: "Case Documents"
+              type: "relationship_list"
+              relationship: "CONTAINS_DOCUMENT"
+              direction: "outgoing"
+              display_fields:
+                - document_name
+                - document_type
+                - status
+                - created_date
+
+        - id: "deadlines"
+          label: "Deadlines"
+          icon: "calendar"
+
+          sections:
+            - id: "case_deadlines"
+              title: "Deadlines"
+              type: "relationship_list"
+              relationship: "HAS_DEADLINE"
+              direction: "outgoing"
+              display_fields:
+                - title
+                - due_date
+                - priority
+                - status
+
+        - id: "billing"
+          label: "Billing"
+          icon: "receipt"
+
+          sections:
+            - id: "billing_summary"
+              title: "Billing Summary"
+              type: "summary"
+              metrics:
+                - total_billed
+                - total_paid
+                - outstanding_balance
+
+            - id: "billing_entries"
+              title: "Time & Expenses"
+              type: "relationship_list"
+              relationship: "HAS_BILLING"
+              direction: "outgoing"
+              display_fields:
+                - date
+                - description
+                - hours
+                - amount
+                - status
+
+        - id: "activity"
+          label: "Activity"
+          icon: "activity"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+              events:
+                - "case_created"
+                - "document_added"
+                - "deadline_created"
+                - "status_changed"
+                - "billing_entry_added"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Case Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Case"
+      id: "case_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "case_title"
+              required: true
+
+            - field: "case_type"
+              required: true
+
+            - field: "practice_area"
+
+            - field: "status"
+              required: true
+
+            - field: "jurisdiction"
+              required: true
+
+        - id: "financial"
+          title: "Fee Arrangement"
+          fields:
+            - field: "fee_arrangement"
+              required: true
+
+            - field: "retainer_amount"
+
+            - field: "contingency_percentage"
+
+            - field: "estimated_value"
+
+        - id: "dates"
+          title: "Dates"
+          fields:
+            - field: "open_date"
+              required: true
+
+            - field: "statute_of_limitations"
+
+        - id: "description"
+          title: "Description"
+          fields:
+            - field: "description"
+              widget: "rich_text_editor"
+
+            - field: "tags"
+              widget: "tag_input"
+
+    # ----------------------------------------------------------------------
+    # Time Entry Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Billing"
+      id: "time_entry_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "entry_info"
+          title: "Time Entry"
+          fields:
+            - field: "date"
+              required: true
+
+            - field: "hours"
+              required: true
+
+            - field: "description"
+              required: true
+              widget: "textarea"
+
+            - field: "activity_code"
+
+            - field: "billable"
+              widget: "toggle"
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search cases, clients, documents..."
+      entity_types:
+        - "Case"
+        - "Client"
+        - "Document"
+        - "Precedent"
+
+    entity_search:
+      Case:
+        searchable_fields:
+          - "case_number"
+          - "case_title"
+          - "description"
+        boost_fields:
+          - field: "case_title"
+            boost: 2.0
+
+      Document:
+        searchable_fields:
+          - "document_name"
+          - "ocr_text"
+          - "summary"
+        boost_fields:
+          - field: "document_name"
+            boost: 2.0
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "productivity_report"
+      name: "Attorney Productivity Report"
+      description: "Billable hours and utilization by attorney"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_hours
+            - billable_hours
+            - utilization_rate
+            - realization_rate
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Hours by Attorney"
+
+        - type: "table"
+          title: "Detailed Breakdown"
+
+    - id: "case_status_report"
+      name: "Case Status Report"
+      description: "Overview of all cases by status and type"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

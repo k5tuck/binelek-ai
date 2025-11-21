@@ -1,0 +1,1156 @@
+# Non-Profit & NGO Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Non-profit domain ontology covering donors, programs, beneficiaries, and impact measurement"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Donor Entity
+    # ------------------------------------------------------------------------
+    - name: Donor
+      display_name: "Donor"
+      description: "Individual or organization that contributes funds or resources"
+      icon: "heart"
+      color: "#8B5CF6"
+
+      attributes:
+        # Core Identification
+        - name: donor_type
+          type: enum
+          required: true
+          values:
+            - "Individual"
+            - "Foundation"
+            - "Corporation"
+            - "Government"
+            - "Religious Organization"
+            - "Other Organization"
+          default: "Individual"
+
+        - name: first_name
+          type: string
+          required: true
+          description: "First name (individuals) or contact first name (organizations)"
+
+        - name: last_name
+          type: string
+          required: true
+          description: "Last name (individuals) or contact last name (organizations)"
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: organization_name
+          type: string
+          description: "Organization name (for non-individual donors)"
+
+        - name: email
+          type: email
+          indexed: true
+          unique_per_tenant: true
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        # Donor Classification
+        - name: donor_status
+          type: enum
+          required: true
+          values:
+            - "Prospect"
+            - "First-Time Donor"
+            - "Repeat Donor"
+            - "Major Donor"
+            - "Lapsed"
+            - "Deceased"
+          default: "Prospect"
+
+        - name: giving_level
+          type: enum
+          values:
+            - "Under $100"
+            - "$100-$499"
+            - "$500-$999"
+            - "$1,000-$4,999"
+            - "$5,000-$9,999"
+            - "$10,000-$24,999"
+            - "$25,000-$99,999"
+            - "$100,000+"
+
+        - name: lifetime_giving
+          type: money
+          description: "Total lifetime contributions"
+          computed: true
+
+        - name: largest_gift
+          type: money
+          description: "Largest single gift"
+
+        - name: last_gift_date
+          type: date
+
+        - name: last_gift_amount
+          type: money
+
+        - name: first_gift_date
+          type: date
+
+        # Engagement
+        - name: preferred_contact_method
+          type: enum
+          values: ["Email", "Phone", "Mail", "In-Person"]
+          default: "Email"
+
+        - name: communication_preferences
+          type: array
+          item_type: string
+          description: "e.g., 'Newsletter', 'Event Invitations', 'Annual Report'"
+
+        - name: interests
+          type: array
+          item_type: string
+          description: "Areas of interest like 'Education', 'Health', 'Environment'"
+
+        - name: connection_to_cause
+          type: text
+          description: "Personal connection or motivation for giving"
+
+        # Planned Giving
+        - name: planned_gift_prospect
+          type: boolean
+          default: false
+
+        - name: bequest_intention
+          type: boolean
+          default: false
+
+        # Compliance
+        - name: do_not_solicit
+          type: boolean
+          default: false
+
+        - name: do_not_email
+          type: boolean
+          default: false
+
+        - name: anonymous_preference
+          type: boolean
+          default: false
+          description: "Prefers anonymous recognition"
+
+        - name: gdpr_consent
+          type: boolean
+          description: "GDPR consent for EU donors"
+
+        - name: gdpr_consent_date
+          type: date
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_donor_email"
+        - fields: ["donor_status"]
+          name: "idx_donor_status"
+        - fields: ["giving_level"]
+          name: "idx_giving_level"
+        - fields: ["last_gift_date"]
+          name: "idx_last_gift"
+
+    # ------------------------------------------------------------------------
+    # Donation Entity
+    # ------------------------------------------------------------------------
+    - name: Donation
+      display_name: "Donation"
+      description: "Individual gift or contribution"
+      icon: "gift"
+      color: "#10B981"
+
+      attributes:
+        - name: amount
+          type: money
+          required: true
+
+        - name: donation_date
+          type: date
+          required: true
+
+        - name: donation_type
+          type: enum
+          required: true
+          values:
+            - "One-Time"
+            - "Recurring"
+            - "Pledge Payment"
+            - "In-Kind"
+            - "Stock"
+            - "DAF"
+            - "Matching Gift"
+            - "Bequest"
+
+        - name: payment_method
+          type: enum
+          values:
+            - "Credit Card"
+            - "Check"
+            - "ACH/Bank Transfer"
+            - "Wire Transfer"
+            - "Cash"
+            - "Stock"
+            - "Cryptocurrency"
+            - "DAF"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Completed"
+            - "Declined"
+            - "Refunded"
+          default: "Completed"
+
+        - name: designation
+          type: string
+          description: "Specific fund or program designation"
+
+        - name: campaign_source
+          type: string
+          description: "Campaign or appeal that generated donation"
+
+        - name: tribute_type
+          type: enum
+          values: ["In Honor Of", "In Memory Of"]
+
+        - name: tribute_name
+          type: string
+
+        - name: acknowledgment_sent
+          type: boolean
+          default: false
+
+        - name: acknowledgment_date
+          type: date
+
+        - name: tax_deductible_amount
+          type: money
+          description: "Tax-deductible portion"
+
+        - name: fair_market_value
+          type: money
+          description: "FMV for in-kind donations"
+
+        - name: receipt_number
+          type: string
+          indexed: true
+
+        - name: transaction_id
+          type: string
+          description: "Payment processor transaction ID"
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["donation_date"]
+          name: "idx_donation_date"
+        - fields: ["status"]
+          name: "idx_donation_status"
+        - fields: ["receipt_number"]
+          name: "idx_receipt"
+
+    # ------------------------------------------------------------------------
+    # Program Entity
+    # ------------------------------------------------------------------------
+    - name: Program
+      display_name: "Program"
+      description: "Service program or initiative"
+      icon: "clipboard-list"
+      color: "#3B82F6"
+
+      attributes:
+        - name: program_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: program_type
+          type: enum
+          required: true
+          values:
+            - "Direct Service"
+            - "Advocacy"
+            - "Research"
+            - "Education"
+            - "Community Development"
+            - "Emergency Relief"
+            - "Capacity Building"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planning"
+            - "Active"
+            - "Paused"
+            - "Completed"
+            - "Discontinued"
+          default: "Planning"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: budget
+          type: money
+
+        - name: actual_spend
+          type: money
+
+        - name: target_beneficiaries
+          type: number
+          description: "Target number of beneficiaries"
+
+        - name: actual_beneficiaries
+          type: number
+          description: "Actual beneficiaries served"
+
+        - name: geographic_area
+          type: array
+          item_type: string
+          description: "Service areas or regions"
+
+        - name: goals
+          type: array
+          item_type: string
+
+        - name: success_metrics
+          type: array
+          item_type: string
+
+        - name: funding_sources
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["program_name"]
+          name: "idx_program_name"
+        - fields: ["status"]
+          name: "idx_program_status"
+
+    # ------------------------------------------------------------------------
+    # Beneficiary Entity
+    # ------------------------------------------------------------------------
+    - name: Beneficiary
+      display_name: "Beneficiary"
+      description: "Individual or entity receiving services"
+      icon: "users"
+      color: "#F59E0B"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: date_of_birth
+          type: date
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Graduated"
+            - "Waitlist"
+          default: "Active"
+
+        - name: enrollment_date
+          type: date
+
+        - name: exit_date
+          type: date
+
+        - name: demographics
+          type: object
+          description: "Demographic information for reporting"
+
+        - name: needs_assessment
+          type: text
+
+        - name: case_notes
+          type: text
+
+        - name: consent_form_signed
+          type: boolean
+          default: false
+
+        - name: consent_date
+          type: date
+
+        - name: photo_release
+          type: boolean
+          default: false
+
+        - name: emergency_contact_name
+          type: string
+
+        - name: emergency_contact_phone
+          type: phone
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["full_name"]
+          name: "idx_beneficiary_name"
+        - fields: ["status"]
+          name: "idx_beneficiary_status"
+
+      validation_rules:
+        - rule: "consent_form_signed must be true for Active status"
+
+    # ------------------------------------------------------------------------
+    # Grant Entity
+    # ------------------------------------------------------------------------
+    - name: Grant
+      display_name: "Grant"
+      description: "Funding grant from foundation or government"
+      icon: "file-text"
+      color: "#EC4899"
+
+      attributes:
+        - name: grant_name
+          type: string
+          required: true
+
+        - name: funder_name
+          type: string
+          required: true
+
+        - name: grant_type
+          type: enum
+          required: true
+          values:
+            - "Foundation"
+            - "Government - Federal"
+            - "Government - State"
+            - "Government - Local"
+            - "Corporate"
+            - "Individual"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Prospect"
+            - "LOI Submitted"
+            - "Application In Progress"
+            - "Submitted"
+            - "Awarded"
+            - "Declined"
+            - "Active"
+            - "Closed"
+          default: "Prospect"
+
+        - name: amount_requested
+          type: money
+
+        - name: amount_awarded
+          type: money
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: application_deadline
+          type: date
+
+        - name: reporting_requirements
+          type: text
+
+        - name: next_report_due
+          type: date
+
+        - name: restrictions
+          type: text
+          description: "Funding restrictions or requirements"
+
+        - name: indirect_cost_rate
+          type: number
+          description: "Allowed indirect cost percentage"
+          unit: "percentage"
+
+        - name: match_required
+          type: boolean
+          default: false
+
+        - name: match_amount
+          type: money
+
+        - name: grant_number
+          type: string
+          indexed: true
+
+        - name: contact_name
+          type: string
+
+        - name: contact_email
+          type: email
+
+        - name: notes
+          type: text
+
+        - name: attachments
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_grant_status"
+        - fields: ["end_date"]
+          name: "idx_grant_end"
+        - fields: ["next_report_due"]
+          name: "idx_next_report"
+
+    # ------------------------------------------------------------------------
+    # Volunteer Entity
+    # ------------------------------------------------------------------------
+    - name: Volunteer
+      display_name: "Volunteer"
+      description: "Individual who contributes time and skills"
+      icon: "hand-helping"
+      color: "#14B8A6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: address
+          type: address
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Applicant"
+            - "Active"
+            - "Inactive"
+            - "Alumni"
+          default: "Applicant"
+
+        - name: start_date
+          type: date
+
+        - name: skills
+          type: array
+          item_type: string
+          description: "Skills like 'Graphic Design', 'Legal', 'Accounting'"
+
+        - name: interests
+          type: array
+          item_type: string
+          description: "Program areas of interest"
+
+        - name: availability
+          type: array
+          item_type: string
+          description: "e.g., 'Weekday Mornings', 'Weekend Afternoons'"
+
+        - name: total_hours
+          type: number
+          description: "Total volunteer hours"
+          computed: true
+
+        - name: background_check_status
+          type: enum
+          values: ["Not Started", "Pending", "Cleared", "Failed"]
+          default: "Not Started"
+
+        - name: background_check_date
+          type: date
+
+        - name: training_completed
+          type: array
+          item_type: string
+
+        - name: emergency_contact_name
+          type: string
+
+        - name: emergency_contact_phone
+          type: phone
+
+        - name: t_shirt_size
+          type: enum
+          values: ["XS", "S", "M", "L", "XL", "XXL"]
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_volunteer_email"
+        - fields: ["status"]
+          name: "idx_volunteer_status"
+
+    # ------------------------------------------------------------------------
+    # Outcome Entity
+    # ------------------------------------------------------------------------
+    - name: Outcome
+      display_name: "Outcome"
+      description: "Measurable result or impact indicator"
+      icon: "target"
+      color: "#6366F1"
+
+      attributes:
+        - name: outcome_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: outcome_type
+          type: enum
+          required: true
+          values:
+            - "Output"
+            - "Short-term Outcome"
+            - "Medium-term Outcome"
+            - "Long-term Impact"
+
+        - name: indicator
+          type: string
+          required: true
+          description: "How the outcome is measured"
+
+        - name: target_value
+          type: number
+
+        - name: actual_value
+          type: number
+
+        - name: unit_of_measure
+          type: string
+          description: "e.g., 'participants', 'percentage', 'dollars'"
+
+        - name: measurement_date
+          type: date
+
+        - name: data_source
+          type: string
+
+        - name: verification_method
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["outcome_type"]
+          name: "idx_outcome_type"
+
+    # ------------------------------------------------------------------------
+    # Campaign Entity
+    # ------------------------------------------------------------------------
+    - name: Campaign
+      display_name: "Campaign"
+      description: "Fundraising or awareness campaign"
+      icon: "megaphone"
+      color: "#F97316"
+
+      attributes:
+        - name: campaign_name
+          type: string
+          required: true
+
+        - name: campaign_type
+          type: enum
+          required: true
+          values:
+            - "Annual Fund"
+            - "Capital Campaign"
+            - "Planned Giving"
+            - "Event"
+            - "Peer-to-Peer"
+            - "Crowdfunding"
+            - "Emergency Appeal"
+            - "Awareness"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planning"
+            - "Active"
+            - "Completed"
+            - "Cancelled"
+          default: "Planning"
+
+        - name: goal_amount
+          type: money
+
+        - name: raised_amount
+          type: money
+          computed: true
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: target_audience
+          type: array
+          item_type: string
+
+        - name: channels
+          type: array
+          item_type: string
+          description: "e.g., 'Email', 'Social Media', 'Direct Mail'"
+
+        - name: description
+          type: text
+
+        - name: landing_page_url
+          type: url
+
+        - name: donor_count
+          type: number
+          computed: true
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_campaign_status"
+        - fields: ["campaign_type"]
+          name: "idx_campaign_type"
+
+    # ------------------------------------------------------------------------
+    # Event Entity
+    # ------------------------------------------------------------------------
+    - name: Event
+      display_name: "Event"
+      description: "Fundraising or community event"
+      icon: "calendar"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: event_name
+          type: string
+          required: true
+
+        - name: event_type
+          type: enum
+          required: true
+          values:
+            - "Gala"
+            - "Auction"
+            - "Walk/Run"
+            - "Golf Tournament"
+            - "Concert"
+            - "Conference"
+            - "Workshop"
+            - "Volunteer Event"
+            - "Open House"
+            - "Virtual Event"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planning"
+            - "Registration Open"
+            - "Sold Out"
+            - "Completed"
+            - "Cancelled"
+          default: "Planning"
+
+        - name: event_date
+          type: datetime
+          required: true
+
+        - name: end_date
+          type: datetime
+
+        - name: location
+          type: address
+
+        - name: virtual_event_url
+          type: url
+
+        - name: capacity
+          type: number
+
+        - name: registered_count
+          type: number
+          computed: true
+
+        - name: attended_count
+          type: number
+
+        - name: ticket_price
+          type: money
+
+        - name: revenue_goal
+          type: money
+
+        - name: actual_revenue
+          type: money
+          computed: true
+
+        - name: expenses
+          type: money
+
+        - name: description
+          type: text
+
+        - name: registration_url
+          type: url
+
+        - name: sponsors
+          type: array
+          item_type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["event_date"]
+          name: "idx_event_date"
+        - fields: ["status"]
+          name: "idx_event_status"
+
+    # ------------------------------------------------------------------------
+    # Impact Entity
+    # ------------------------------------------------------------------------
+    - name: Impact
+      display_name: "Impact"
+      description: "Aggregate impact measurement or story"
+      icon: "trending-up"
+      color: "#84CC16"
+
+      attributes:
+        - name: impact_title
+          type: string
+          required: true
+
+        - name: impact_type
+          type: enum
+          required: true
+          values:
+            - "Quantitative"
+            - "Qualitative"
+            - "Story"
+
+        - name: description
+          type: text
+
+        - name: measurement_period
+          type: string
+          description: "e.g., 'FY2024', 'Q1 2024'"
+
+        - name: metric_name
+          type: string
+
+        - name: metric_value
+          type: number
+
+        - name: metric_unit
+          type: string
+
+        - name: baseline_value
+          type: number
+
+        - name: change_percentage
+          type: number
+          computed: true
+          formula: "((metric_value - baseline_value) / baseline_value) * 100"
+
+        - name: beneficiary_quote
+          type: text
+
+        - name: media_url
+          type: url
+          description: "Photo or video URL"
+
+        - name: verified
+          type: boolean
+          default: false
+
+        - name: verification_source
+          type: string
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["impact_type"]
+          name: "idx_impact_type"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Donation Relationships
+    - name: DONATES_TO
+      from: Donor
+      to: Donation
+      description: "Donor makes donation"
+      cardinality: one_to_many
+
+    - name: DONATION_FOR_PROGRAM
+      from: Donation
+      to: Program
+      description: "Donation designated for program"
+      cardinality: many_to_one
+
+    - name: DONATION_FROM_CAMPAIGN
+      from: Donation
+      to: Campaign
+      description: "Donation came from campaign"
+      cardinality: many_to_one
+
+    # Program Relationships
+    - name: BENEFITS_FROM
+      from: Beneficiary
+      to: Program
+      description: "Beneficiary receives services from program"
+      cardinality: many_to_many
+      attributes:
+        - name: enrollment_date
+          type: date
+        - name: exit_date
+          type: date
+        - name: status
+          type: string
+
+    - name: VOLUNTEERS_FOR
+      from: Volunteer
+      to: Program
+      description: "Volunteer serves in program"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+        - name: hours
+          type: number
+        - name: start_date
+          type: date
+
+    - name: MEASURES
+      from: Outcome
+      to: Program
+      description: "Outcome measures program success"
+      cardinality: many_to_one
+
+    # Grant Relationships
+    - name: FUNDS
+      from: Grant
+      to: Program
+      description: "Grant funds program"
+      cardinality: many_to_many
+      attributes:
+        - name: allocation_amount
+          type: money
+        - name: budget_category
+          type: string
+
+    - name: GRANT_FROM
+      from: Grant
+      to: Donor
+      description: "Grant from funder (foundation/government)"
+      cardinality: many_to_one
+
+    # Campaign Relationships
+    - name: CAMPAIGN_SUPPORTS
+      from: Campaign
+      to: Program
+      description: "Campaign raises funds for program"
+      cardinality: many_to_many
+
+    # Event Relationships
+    - name: EVENT_FOR_CAMPAIGN
+      from: Event
+      to: Campaign
+      description: "Event is part of campaign"
+      cardinality: many_to_one
+
+    - name: ATTENDS
+      from: Donor
+      to: Event
+      description: "Donor attends event"
+      cardinality: many_to_many
+      attributes:
+        - name: registration_date
+          type: date
+        - name: attended
+          type: boolean
+        - name: ticket_type
+          type: string
+
+    - name: VOLUNTEERS_AT
+      from: Volunteer
+      to: Event
+      description: "Volunteer helps at event"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+        - name: hours
+          type: number
+
+    # Impact Relationships
+    - name: IMPACT_FROM
+      from: Impact
+      to: Program
+      description: "Impact resulted from program"
+      cardinality: many_to_one
+
+    - name: BENEFICIARY_IMPACT
+      from: Impact
+      to: Beneficiary
+      description: "Impact story features beneficiary"
+      cardinality: many_to_one
+
+    # Donor Relationships
+    - name: REFERRED_BY
+      from: Donor
+      to: Donor
+      description: "Donor referred by another donor"
+      cardinality: many_to_one
+
+    - name: SOLICITS
+      from: Donor
+      to: Donor
+      description: "Donor solicits another donor (peer fundraising)"
+      cardinality: many_to_many
+      attributes:
+        - name: campaign_id
+          type: string
+        - name: ask_amount
+          type: money
+        - name: result
+          type: string
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "donor_journey"
+      description: "Get complete donor journey with all touchpoints"
+      cypher: |
+        MATCH (d:Donor {id: $donor_id})
+        OPTIONAL MATCH (d)-[:DONATES_TO]->(don:Donation)
+        OPTIONAL MATCH (d)-[:ATTENDS]->(e:Event)
+        RETURN d, collect(DISTINCT don) as donations, collect(DISTINCT e) as events
+        ORDER BY don.donation_date DESC
+
+    - name: "lapsed_donors"
+      description: "Find donors who haven't given in 18+ months"
+      cypher: |
+        MATCH (d:Donor)-[:DONATES_TO]->(don:Donation)
+        WITH d, max(don.donation_date) as last_gift
+        WHERE last_gift < date() - duration({months: 18})
+        RETURN d, last_gift
+        ORDER BY last_gift DESC
+
+    - name: "program_impact"
+      description: "Get all outcomes and impact for a program"
+      cypher: |
+        MATCH (p:Program {id: $program_id})
+        OPTIONAL MATCH (o:Outcome)-[:MEASURES]->(p)
+        OPTIONAL MATCH (i:Impact)-[:IMPACT_FROM]->(p)
+        OPTIONAL MATCH (b:Beneficiary)-[:BENEFITS_FROM]->(p)
+        RETURN p, collect(DISTINCT o) as outcomes, collect(DISTINCT i) as impacts, count(DISTINCT b) as beneficiary_count
+
+    - name: "grant_pipeline"
+      description: "Get grant pipeline with amounts and deadlines"
+      cypher: |
+        MATCH (g:Grant)
+        WHERE g.status IN ['Prospect', 'LOI Submitted', 'Application In Progress', 'Submitted']
+        RETURN g
+        ORDER BY g.application_deadline ASC
+
+    - name: "volunteer_hours_by_program"
+      description: "Total volunteer hours by program"
+      cypher: |
+        MATCH (v:Volunteer)-[r:VOLUNTEERS_FOR]->(p:Program)
+        RETURN p.program_name, sum(r.hours) as total_hours, count(DISTINCT v) as volunteer_count
+        ORDER BY total_hours DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

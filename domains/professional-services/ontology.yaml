@@ -1,0 +1,1048 @@
+# Professional Services Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Professional services domain ontology covering clients, projects, resources, and billing"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Client Entity
+    # ------------------------------------------------------------------------
+    - name: Client
+      display_name: "Client"
+      description: "Client organization or individual"
+      icon: "building-2"
+      color: "#0F766E"
+
+      attributes:
+        - name: client_name
+          type: string
+          required: true
+
+        - name: legal_name
+          type: string
+
+        - name: client_type
+          type: enum
+          required: true
+          values:
+            - "Enterprise"
+            - "Mid-Market"
+            - "Small Business"
+            - "Startup"
+            - "Government"
+            - "Non-Profit"
+            - "Individual"
+          default: "Enterprise"
+
+        - name: industry
+          type: string
+          indexed: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Prospect"
+            - "Active"
+            - "Inactive"
+            - "Former"
+          default: "Prospect"
+
+        - name: client_since
+          type: date
+
+        - name: address
+          type: address
+
+        - name: phone
+          type: phone
+
+        - name: website
+          type: url
+
+        - name: annual_revenue
+          type: money
+          description: "Client's annual revenue"
+
+        - name: employee_count
+          type: number
+
+        - name: primary_contact_name
+          type: string
+
+        - name: primary_contact_email
+          type: email
+
+        - name: primary_contact_phone
+          type: phone
+
+        - name: billing_contact_name
+          type: string
+
+        - name: billing_contact_email
+          type: email
+
+        - name: payment_terms
+          type: enum
+          values: ["Net 15", "Net 30", "Net 45", "Net 60", "Due on Receipt"]
+          default: "Net 30"
+
+        - name: credit_limit
+          type: money
+
+        - name: tax_id
+          type: string
+
+        - name: lifetime_revenue
+          type: money
+          computed: true
+          description: "Total revenue from client"
+
+        - name: outstanding_balance
+          type: money
+          computed: true
+
+        - name: nda_signed
+          type: boolean
+          default: false
+
+        - name: nda_expiration
+          type: date
+
+        - name: msa_signed
+          type: boolean
+          default: false
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["client_name"]
+          name: "idx_client_name"
+        - fields: ["status"]
+          name: "idx_client_status"
+        - fields: ["industry"]
+          name: "idx_client_industry"
+
+    # ------------------------------------------------------------------------
+    # Project Entity
+    # ------------------------------------------------------------------------
+    - name: Project
+      display_name: "Project"
+      description: "Client engagement or project"
+      icon: "folder-kanban"
+      color: "#7C3AED"
+
+      attributes:
+        - name: project_name
+          type: string
+          required: true
+
+        - name: project_code
+          type: string
+          indexed: true
+          unique_per_tenant: true
+
+        - name: project_type
+          type: enum
+          required: true
+          values:
+            - "Time & Materials"
+            - "Fixed Fee"
+            - "Retainer"
+            - "Milestone-Based"
+            - "Value-Based"
+            - "Subscription"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Proposal"
+            - "Sold"
+            - "Active"
+            - "On Hold"
+            - "Completed"
+            - "Cancelled"
+          default: "Proposal"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: actual_end_date
+          type: date
+
+        - name: description
+          type: text
+
+        - name: objectives
+          type: array
+          item_type: string
+
+        - name: budget_amount
+          type: money
+
+        - name: contract_value
+          type: money
+
+        - name: billed_amount
+          type: money
+          computed: true
+
+        - name: collected_amount
+          type: money
+          computed: true
+
+        - name: budget_hours
+          type: number
+
+        - name: actual_hours
+          type: number
+          computed: true
+
+        - name: estimated_margin
+          type: number
+          description: "Estimated gross margin percentage"
+          unit: "percentage"
+
+        - name: actual_margin
+          type: number
+          computed: true
+          unit: "percentage"
+
+        - name: probability
+          type: number
+          description: "Win probability for proposals"
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        - name: risk_level
+          type: enum
+          values: ["Low", "Medium", "High"]
+          default: "Medium"
+
+        - name: billing_frequency
+          type: enum
+          values: ["Weekly", "Bi-Weekly", "Monthly", "Milestone", "On Completion"]
+          default: "Monthly"
+
+        - name: po_number
+          type: string
+
+        - name: sow_url
+          type: url
+
+        - name: notes
+          type: text
+
+        - name: tags
+          type: array
+          item_type: string
+
+      indexes:
+        - fields: ["project_code"]
+          unique: true
+          name: "idx_project_code"
+        - fields: ["status"]
+          name: "idx_project_status"
+        - fields: ["end_date"]
+          name: "idx_project_end"
+
+      validation_rules:
+        - rule: "end_date must be >= start_date"
+        - rule: "budget_amount required if project_type is 'Fixed Fee'"
+
+    # ------------------------------------------------------------------------
+    # Resource Entity
+    # ------------------------------------------------------------------------
+    - name: Resource
+      display_name: "Resource"
+      description: "Team member or contractor"
+      icon: "user"
+      color: "#3B82F6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: email
+          type: email
+          required: true
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: resource_type
+          type: enum
+          required: true
+          values:
+            - "Employee"
+            - "Contractor"
+            - "Subcontractor"
+            - "Partner"
+          default: "Employee"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "On Leave"
+            - "Terminated"
+          default: "Active"
+
+        - name: job_title
+          type: string
+
+        - name: department
+          type: string
+
+        - name: level
+          type: enum
+          values:
+            - "Intern"
+            - "Junior"
+            - "Mid-Level"
+            - "Senior"
+            - "Lead"
+            - "Manager"
+            - "Director"
+            - "VP"
+            - "Partner"
+
+        - name: hire_date
+          type: date
+
+        - name: termination_date
+          type: date
+
+        - name: location
+          type: string
+          description: "Office location or remote"
+
+        - name: timezone
+          type: string
+
+        - name: cost_rate
+          type: money
+          description: "Internal cost per hour"
+
+        - name: default_bill_rate
+          type: money
+          description: "Default billing rate per hour"
+
+        - name: utilization_target
+          type: number
+          description: "Target billable utilization"
+          unit: "percentage"
+          default: 75
+
+        - name: capacity_hours
+          type: number
+          description: "Weekly capacity hours"
+          default: 40
+
+        - name: manager_id
+          type: string
+
+        - name: bio
+          type: text
+          description: "Professional biography"
+
+        - name: photo_url
+          type: url
+
+        - name: certifications
+          type: array
+          item_type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["email"]
+          unique: true
+          name: "idx_resource_email"
+        - fields: ["status"]
+          name: "idx_resource_status"
+        - fields: ["department"]
+          name: "idx_resource_department"
+
+    # ------------------------------------------------------------------------
+    # Skill Entity
+    # ------------------------------------------------------------------------
+    - name: Skill
+      display_name: "Skill"
+      description: "Capability or expertise area"
+      icon: "star"
+      color: "#F59E0B"
+
+      attributes:
+        - name: skill_name
+          type: string
+          required: true
+
+        - name: skill_category
+          type: enum
+          required: true
+          values:
+            - "Technical"
+            - "Industry"
+            - "Functional"
+            - "Methodology"
+            - "Tool"
+            - "Language"
+            - "Soft Skill"
+
+        - name: description
+          type: text
+
+        - name: parent_skill_id
+          type: string
+          description: "For skill hierarchies"
+
+        - name: market_demand
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+
+      indexes:
+        - fields: ["skill_name"]
+          name: "idx_skill_name"
+        - fields: ["skill_category"]
+          name: "idx_skill_category"
+
+    # ------------------------------------------------------------------------
+    # Time Entry Entity
+    # ------------------------------------------------------------------------
+    - name: Time
+      display_name: "Time Entry"
+      description: "Tracked time for billing"
+      icon: "clock"
+      color: "#10B981"
+
+      attributes:
+        - name: date
+          type: date
+          required: true
+
+        - name: hours
+          type: number
+          required: true
+          min: 0.25
+          max: 24
+
+        - name: description
+          type: text
+
+        - name: billable
+          type: boolean
+          default: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Submitted"
+            - "Approved"
+            - "Rejected"
+            - "Billed"
+          default: "Draft"
+
+        - name: bill_rate
+          type: money
+          description: "Billing rate for this entry"
+
+        - name: cost_rate
+          type: money
+          description: "Cost rate for this entry"
+
+        - name: billable_amount
+          type: money
+          computed: true
+          formula: "hours * bill_rate"
+
+        - name: cost_amount
+          type: money
+          computed: true
+          formula: "hours * cost_rate"
+
+        - name: task_name
+          type: string
+
+        - name: invoice_number
+          type: string
+
+        - name: rejection_reason
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["date"]
+          name: "idx_time_date"
+        - fields: ["status"]
+          name: "idx_time_status"
+
+    # ------------------------------------------------------------------------
+    # Deliverable Entity
+    # ------------------------------------------------------------------------
+    - name: Deliverable
+      display_name: "Deliverable"
+      description: "Project output or milestone"
+      icon: "package"
+      color: "#EC4899"
+
+      attributes:
+        - name: deliverable_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: deliverable_type
+          type: enum
+          values:
+            - "Document"
+            - "Presentation"
+            - "Report"
+            - "Model"
+            - "Software"
+            - "Training"
+            - "Workshop"
+            - "Other"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Not Started"
+            - "In Progress"
+            - "In Review"
+            - "Delivered"
+            - "Accepted"
+          default: "Not Started"
+
+        - name: due_date
+          type: date
+
+        - name: delivered_date
+          type: date
+
+        - name: accepted_date
+          type: date
+
+        - name: estimated_hours
+          type: number
+
+        - name: actual_hours
+          type: number
+          computed: true
+
+        - name: milestone_amount
+          type: money
+          description: "Billable amount for milestone-based projects"
+
+        - name: file_url
+          type: url
+
+        - name: version
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_deliverable_status"
+        - fields: ["due_date"]
+          name: "idx_deliverable_due"
+
+    # ------------------------------------------------------------------------
+    # Billing Entity
+    # ------------------------------------------------------------------------
+    - name: Billing
+      display_name: "Invoice"
+      description: "Client invoice"
+      icon: "receipt"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: invoice_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Pending Approval"
+            - "Sent"
+            - "Partially Paid"
+            - "Paid"
+            - "Overdue"
+            - "Void"
+            - "Written Off"
+          default: "Draft"
+
+        - name: invoice_date
+          type: date
+          required: true
+
+        - name: due_date
+          type: date
+
+        - name: subtotal
+          type: money
+
+        - name: tax_amount
+          type: money
+
+        - name: total_amount
+          type: money
+          required: true
+
+        - name: paid_amount
+          type: money
+
+        - name: balance_due
+          type: money
+          computed: true
+          formula: "total_amount - paid_amount"
+
+        - name: currency
+          type: string
+          default: "USD"
+
+        - name: billing_period_start
+          type: date
+
+        - name: billing_period_end
+          type: date
+
+        - name: terms
+          type: string
+
+        - name: notes
+          type: text
+
+        - name: sent_date
+          type: date
+
+        - name: paid_date
+          type: date
+
+        - name: payment_method
+          type: string
+
+        - name: pdf_url
+          type: url
+
+      indexes:
+        - fields: ["invoice_number"]
+          unique: true
+          name: "idx_invoice_number"
+        - fields: ["status"]
+          name: "idx_invoice_status"
+        - fields: ["due_date"]
+          name: "idx_invoice_due"
+
+    # ------------------------------------------------------------------------
+    # Proposal Entity
+    # ------------------------------------------------------------------------
+    - name: Proposal
+      display_name: "Proposal"
+      description: "Business proposal or SOW"
+      icon: "file-text"
+      color: "#6366F1"
+
+      attributes:
+        - name: proposal_name
+          type: string
+          required: true
+
+        - name: proposal_number
+          type: string
+          indexed: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Internal Review"
+            - "Sent"
+            - "Under Consideration"
+            - "Won"
+            - "Lost"
+            - "No Decision"
+          default: "Draft"
+
+        - name: proposal_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: decision_date
+          type: date
+
+        - name: proposed_value
+          type: money
+
+        - name: final_value
+          type: money
+          description: "Actual contract value if won"
+
+        - name: probability
+          type: number
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        - name: win_reason
+          type: string
+
+        - name: loss_reason
+          type: string
+
+        - name: competitors
+          type: array
+          item_type: string
+
+        - name: executive_summary
+          type: text
+
+        - name: scope_description
+          type: text
+
+        - name: document_url
+          type: url
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_proposal_status"
+        - fields: ["proposal_date"]
+          name: "idx_proposal_date"
+
+    # ------------------------------------------------------------------------
+    # Engagement Entity
+    # ------------------------------------------------------------------------
+    - name: Engagement
+      display_name: "Engagement"
+      description: "Overall client engagement or account"
+      icon: "handshake"
+      color: "#0D9488"
+
+      attributes:
+        - name: engagement_name
+          type: string
+          required: true
+
+        - name: engagement_type
+          type: enum
+          values:
+            - "New Business"
+            - "Expansion"
+            - "Renewal"
+            - "Strategic"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "On Hold"
+            - "Completed"
+            - "Cancelled"
+          default: "Active"
+
+        - name: start_date
+          type: date
+
+        - name: end_date
+          type: date
+
+        - name: total_value
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_engagement_status"
+
+    # ------------------------------------------------------------------------
+    # Expertise Entity
+    # ------------------------------------------------------------------------
+    - name: Expertise
+      display_name: "Expertise"
+      description: "Resource skill proficiency"
+      icon: "award"
+      color: "#F97316"
+
+      attributes:
+        - name: proficiency_level
+          type: enum
+          required: true
+          values:
+            - "Beginner"
+            - "Intermediate"
+            - "Advanced"
+            - "Expert"
+            - "Thought Leader"
+
+        - name: years_experience
+          type: number
+
+        - name: last_used_date
+          type: date
+
+        - name: certified
+          type: boolean
+          default: false
+
+        - name: certification_name
+          type: string
+
+        - name: certification_date
+          type: date
+
+        - name: notes
+          type: text
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Client-Project Relationships
+    - name: HAS_PROJECT
+      from: Client
+      to: Project
+      description: "Client has project"
+      cardinality: one_to_many
+
+    - name: HAS_ENGAGEMENT
+      from: Client
+      to: Engagement
+      description: "Client has engagement"
+      cardinality: one_to_many
+
+    - name: HAS_PROPOSAL
+      from: Client
+      to: Proposal
+      description: "Client has proposal"
+      cardinality: one_to_many
+
+    # Project Relationships
+    - name: WORKS_ON
+      from: Resource
+      to: Project
+      description: "Resource works on project"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+        - name: allocation_percentage
+          type: number
+        - name: bill_rate
+          type: money
+        - name: start_date
+          type: date
+        - name: end_date
+          type: date
+
+    - name: LEADS
+      from: Resource
+      to: Project
+      description: "Resource leads project"
+      cardinality: many_to_one
+
+    - name: HAS_DELIVERABLE
+      from: Project
+      to: Deliverable
+      description: "Project has deliverable"
+      cardinality: one_to_many
+
+    - name: PROJECT_IN_ENGAGEMENT
+      from: Project
+      to: Engagement
+      description: "Project is part of engagement"
+      cardinality: many_to_one
+
+    # Time and Billing Relationships
+    - name: LOGS_TIME
+      from: Resource
+      to: Time
+      description: "Resource logs time entry"
+      cardinality: one_to_many
+
+    - name: TIME_FOR_PROJECT
+      from: Time
+      to: Project
+      description: "Time entry for project"
+      cardinality: many_to_one
+
+    - name: TIME_FOR_DELIVERABLE
+      from: Time
+      to: Deliverable
+      description: "Time entry for deliverable"
+      cardinality: many_to_one
+
+    - name: INVOICE_FOR
+      from: Billing
+      to: Project
+      description: "Invoice for project"
+      cardinality: many_to_many
+
+    - name: BILLS_TO
+      from: Billing
+      to: Client
+      description: "Invoice billed to client"
+      cardinality: many_to_one
+
+    # Skills and Expertise Relationships
+    - name: HAS_EXPERTISE
+      from: Resource
+      to: Skill
+      description: "Resource has skill"
+      cardinality: many_to_many
+      attributes:
+        - name: proficiency_level
+          type: string
+        - name: years_experience
+          type: number
+        - name: certified
+          type: boolean
+
+    - name: REQUIRES_SKILL
+      from: Project
+      to: Skill
+      description: "Project requires skill"
+      cardinality: many_to_many
+      attributes:
+        - name: proficiency_required
+          type: string
+
+    # Deliverable Relationships
+    - name: ASSIGNED_TO
+      from: Deliverable
+      to: Resource
+      description: "Deliverable assigned to resource"
+      cardinality: many_to_one
+
+    - name: DELIVERS
+      from: Resource
+      to: Deliverable
+      description: "Resource delivers deliverable"
+      cardinality: many_to_many
+
+    # Proposal Relationships
+    - name: CREATES_PROJECT
+      from: Proposal
+      to: Project
+      description: "Won proposal creates project"
+      cardinality: one_to_many
+
+    # Resource Relationships
+    - name: REPORTS_TO
+      from: Resource
+      to: Resource
+      description: "Resource reports to manager"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "client_360"
+      description: "Complete client view with projects, revenue, and team"
+      cypher: |
+        MATCH (c:Client {id: $client_id})
+        OPTIONAL MATCH (c)-[:HAS_PROJECT]->(p:Project)
+        OPTIONAL MATCH (p)<-[:WORKS_ON]-(r:Resource)
+        OPTIONAL MATCH (c)<-[:BILLS_TO]-(i:Billing)
+        RETURN c, collect(DISTINCT p) as projects, collect(DISTINCT r) as team, sum(i.total_amount) as total_revenue
+
+    - name: "resource_availability"
+      description: "Find available resources with specific skills"
+      cypher: |
+        MATCH (r:Resource)-[e:HAS_EXPERTISE]->(s:Skill {skill_name: $skill_name})
+        WHERE r.status = 'Active' AND e.proficiency_level IN $proficiency_levels
+        OPTIONAL MATCH (r)-[w:WORKS_ON]->(p:Project)
+        WHERE p.status = 'Active'
+        WITH r, sum(w.allocation_percentage) as current_allocation
+        WHERE current_allocation < 100
+        RETURN r, (100 - current_allocation) as available_percentage
+        ORDER BY e.proficiency_level DESC
+
+    - name: "project_profitability"
+      description: "Calculate project profitability"
+      cypher: |
+        MATCH (p:Project {id: $project_id})
+        OPTIONAL MATCH (p)<-[:TIME_FOR_PROJECT]-(t:Time)
+        WITH p, sum(t.billable_amount) as revenue, sum(t.cost_amount) as cost
+        RETURN p, revenue, cost, (revenue - cost) as profit,
+               CASE WHEN revenue > 0 THEN ((revenue - cost) / revenue) * 100 ELSE 0 END as margin_percentage
+
+    - name: "pipeline_forecast"
+      description: "Revenue pipeline forecast"
+      cypher: |
+        MATCH (p:Proposal)
+        WHERE p.status IN ['Sent', 'Under Consideration']
+        RETURN p.proposal_name, p.proposed_value, p.probability,
+               (p.proposed_value * p.probability / 100) as weighted_value
+        ORDER BY p.expiration_date ASC
+
+    - name: "utilization_by_resource"
+      description: "Billable utilization by resource"
+      cypher: |
+        MATCH (r:Resource {status: 'Active'})-[:LOGS_TIME]->(t:Time)
+        WHERE t.date >= $start_date AND t.date <= $end_date
+        WITH r, sum(CASE WHEN t.billable THEN t.hours ELSE 0 END) as billable_hours,
+             sum(t.hours) as total_hours
+        RETURN r.full_name, r.department, billable_hours, total_hours,
+               (billable_hours / total_hours) * 100 as utilization
+        ORDER BY utilization DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

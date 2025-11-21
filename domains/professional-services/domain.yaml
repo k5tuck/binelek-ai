@@ -1,0 +1,251 @@
+# Professional Services Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: professional-services
+  name: "Professional Services"
+  version: "1.0.0"
+  description: |
+    Comprehensive knowledge graph platform for professional services firms. Manages client
+    relationships, project delivery, resource allocation, time and billing, proposals,
+    and expertise mapping. Supports consulting, legal, accounting, architecture, engineering,
+    and other knowledge-based service businesses.
+
+  icon: "briefcase"
+  color: "#0F766E"  # Teal
+
+  industry:
+    sector: "Professional Services"
+    subsectors:
+      - "Management Consulting"
+      - "IT Consulting & Systems Integration"
+      - "Accounting & Audit"
+      - "Legal Services"
+      - "Architecture"
+      - "Engineering Services"
+      - "Marketing & Advertising"
+      - "HR Consulting"
+      - "Strategy Consulting"
+
+    primary_use_cases:
+      - "Client relationship management"
+      - "Project planning and delivery"
+      - "Resource management and allocation"
+      - "Time tracking and billing"
+      - "Proposal and SOW management"
+      - "Expertise and skills mapping"
+      - "Utilization and profitability analysis"
+      - "Knowledge management"
+
+  target_customers:
+    - type: "Small Professional Firms"
+      size: "5-50 employees"
+      pain_points:
+        - "Spreadsheet-based project and time tracking"
+        - "Manual invoicing and collections"
+        - "No visibility into resource availability"
+        - "Difficulty finding expertise across team"
+
+    - type: "Mid-Market Firms"
+      size: "50-500 employees"
+      pain_points:
+        - "Multiple disconnected systems for CRM, PSA, and finance"
+        - "Complex multi-client, multi-project resource conflicts"
+        - "Limited profitability insights at project level"
+        - "Scaling knowledge capture and reuse"
+
+    - type: "Large Firms & Global Practices"
+      size: "500+ employees"
+      pain_points:
+        - "Cross-office collaboration and resource sharing"
+        - "Compliance with industry regulations (SOX, client confidentiality)"
+        - "Complex rate structures and billing rules"
+        - "M&A integration and systems consolidation"
+
+    - type: "Specialized Boutiques"
+      size: "Variable"
+      pain_points:
+        - "Client concentration risk"
+        - "Pipeline visibility and forecasting"
+        - "Differentiating expertise in the market"
+        - "Maintaining margins in competitive bids"
+
+  market_analysis:
+    market_size:
+      global_psa_software: "$12.4B (2023)"
+      projected_2030: "$28.7B"
+      cagr: "12.7%"
+
+    key_trends:
+      - "AI-powered resource matching and forecasting"
+      - "Skills-based talent management"
+      - "Real-time profitability analytics"
+      - "Outcome-based pricing models"
+      - "Remote and hybrid workforce management"
+      - "Integrated PSA and ERP solutions"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Salesforce PSA / FinancialForce"
+        - "Kantata (formerly Mavenlink + Kimble)"
+        - "Deltek"
+        - "BigTime"
+        - "Harvest + Forecast"
+
+      differentiation:
+        - "Graph-based relationship mapping (clients, projects, expertise)"
+        - "AI-driven resource optimization and skill matching"
+        - "Unified view from opportunity to revenue recognition"
+        - "Open API for custom billing rules and integrations"
+        - "Cross-domain analytics (connect to real estate, finance verticals)"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Firms evaluating platform"
+      included:
+        - "1 user"
+        - "5 clients max"
+        - "10k API calls/month"
+        - "Basic time tracking"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No invoicing"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$599/month + $50/user"
+      target: "Small firms (5-20 employees)"
+      included:
+        - "5 users included, then $50/user"
+        - "50 active projects"
+        - "100k API calls/month"
+        - "Time tracking and invoicing"
+        - "Basic resource management"
+        - "Email support"
+      overage_rates:
+        - "Projects: $5 per additional active project"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$1,999/month + $85/user"
+      target: "Mid-market firms (20-100 employees)"
+      included:
+        - "20 users included, then $85/user"
+        - "Unlimited projects"
+        - "1M API calls/month"
+        - "Advanced resource management"
+        - "Multi-currency billing"
+        - "Custom rate cards"
+        - "SAML SSO"
+        - "Audit logs"
+        - "Priority support (4hr response)"
+      overage_rates:
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $6,999+/month)"
+      target: "Large firms, global practices"
+      included:
+        - "Unlimited users"
+        - "Unlimited projects"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated success manager"
+        - "SLA guarantees (99.9% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (ERP, CRM)"
+        - "Revenue recognition compliance (ASC 606)"
+        - "Multi-entity support"
+
+  compliance_requirements:
+    regulations:
+      - name: "SOX (Sarbanes-Oxley)"
+        description: "Financial reporting controls for public companies and their auditors"
+        impact: "Audit trails, access controls, revenue recognition accuracy"
+
+      - name: "AICPA/PCAOB Standards"
+        description: "Auditing and ethics standards for accounting firms"
+        impact: "Client confidentiality, independence, documentation requirements"
+
+      - name: "Bar Association Rules"
+        description: "Attorney-client privilege and ethics rules for law firms"
+        impact: "Secure client data, conflict checking, billing transparency"
+
+      - name: "GDPR"
+        description: "Data privacy for EU clients and employees"
+        impact: "Consent tracking, data deletion, cross-border transfer compliance"
+
+      - name: "Client Confidentiality Agreements"
+        description: "Contractual obligations to protect client information"
+        impact: "Access controls by client, secure document storage, audit trails"
+
+      - name: "ASC 606 / IFRS 15"
+        description: "Revenue recognition standards for service contracts"
+        impact: "Performance obligation tracking, variable consideration, disclosure"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "CRM Systems"
+        providers: ["Salesforce", "HubSpot", "Microsoft Dynamics 365"]
+        use_case: "Sync opportunities, clients, and contacts"
+
+      - name: "ERP & Accounting"
+        providers: ["NetSuite", "Sage Intacct", "QuickBooks", "Xero"]
+        use_case: "GL sync, revenue recognition, AP/AR"
+
+      - name: "HRIS & Resource Management"
+        providers: ["Workday", "BambooHR", "ADP"]
+        use_case: "Employee data, skills, availability, PTO"
+
+      - name: "Collaboration & Document"
+        providers: ["Microsoft 365", "Google Workspace", "Box", "Dropbox"]
+        use_case: "Deliverable storage, email integration"
+
+      - name: "Payment Processing"
+        providers: ["Stripe", "Bill.com", "PayPal"]
+        use_case: "Client payments, automated collections"
+
+      - name: "Proposal & Contract"
+        providers: ["PandaDoc", "DocuSign", "Proposify"]
+        use_case: "Proposal generation, e-signatures, SOW tracking"
+
+      - name: "Time & Expense"
+        providers: ["Expensify", "Concur", "Harvest"]
+        use_case: "Expense capture, receipt scanning"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Billable utilization"
+        benchmark: "Increase from 65% to 75% with better resource matching"
+
+      - metric: "Project profitability visibility"
+        benchmark: "Real-time margin tracking vs. monthly post-mortem"
+
+      - metric: "Invoice-to-cash cycle"
+        benchmark: "Reduce from 60 days to 35 days with automated invoicing"
+
+      - metric: "Resource search time"
+        benchmark: "Find right expertise in 5 minutes vs. 2 hours of calls"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Professional Services domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/professional-services/SETUP.md"
+    api_reference: "docs/domains/professional-services/API.md"
+    migration_guide: "docs/domains/professional-services/MIGRATION.md"
+
+  contact:
+    domain_owner: "professional-services-team@binelek.com"
+    support: "support@binelek.com"
+
+  status: "Future"
+  planned_release: "2027"

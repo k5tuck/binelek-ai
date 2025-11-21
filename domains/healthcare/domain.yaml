@@ -1,0 +1,282 @@
+# Healthcare Domain Configuration
+# Healthcare and medical practice management
+
+domain:
+  id: healthcare
+  name: "Healthcare & Medical Practice Management"
+  version: "1.0.0"
+  description: |
+    Comprehensive healthcare knowledge graph platform for patient management, provider coordination,
+    appointment scheduling, medical records, and practice operations. HIPAA-compliant and designed
+    for clinics, hospitals, and health systems.
+
+  icon: "🏥"
+  color: "#EC4899"  # Pink
+
+  industry:
+    sector: "Healthcare"
+    subsectors:
+      - "Primary Care"
+      - "Specialty Care"
+      - "Hospital Systems"
+      - "Urgent Care"
+      - "Telehealth"
+      - "Home Health"
+
+    primary_use_cases:
+      - "Electronic Health Records (EHR) integration"
+      - "Patient relationship management"
+      - "Provider network mapping"
+      - "Referral tracking and coordination"
+      - "Care team collaboration"
+      - "Population health management"
+      - "Quality metrics and outcomes tracking"
+
+  target_customers:
+    - type: "Private Practices"
+      size: "1-10 providers"
+      pain_points:
+        - "Fragmented patient data across systems"
+        - "Difficult referral tracking"
+        - "Limited care coordination tools"
+        - "Manual appointment scheduling"
+
+    - type: "Multi-Specialty Clinics"
+      size: "10-50 providers"
+      pain_points:
+        - "Cross-specialty care coordination"
+        - "Shared patient tracking"
+        - "Complex provider scheduling"
+        - "Quality reporting requirements"
+
+    - type: "Hospital Systems"
+      size: "50+ providers, multiple facilities"
+      pain_points:
+        - "Provider network visibility"
+        - "Patient care transitions"
+        - "Readmission prevention"
+        - "Value-based care metrics"
+
+    - type: "Accountable Care Organizations (ACOs)"
+      size: "Enterprise"
+      pain_points:
+        - "Population health analytics"
+        - "Risk stratification"
+        - "Care gap identification"
+        - "Quality measure tracking"
+
+  market_analysis:
+    market_size:
+      global_healthcare_it: "$390B (2023)"
+      projected_2030: "$880B"
+      cagr: "14.2%"
+
+    key_trends:
+      - "Value-based care transition"
+      - "Interoperability (FHIR, HL7)"
+      - "AI-powered diagnostics"
+      - "Telehealth adoption"
+      - "Social determinants of health (SDOH) integration"
+      - "Patient engagement platforms"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Epic Systems (comprehensive EHR)"
+        - "Cerner/Oracle Health (hospital EHR)"
+        - "Athenahealth (cloud-based EHR)"
+        - "eClinicalWorks (ambulatory EHR)"
+
+      differentiation:
+        - "Graph-based relationship intelligence (provider networks, patient journeys)"
+        - "Interoperability-first design (FHIR native)"
+        - "Care coordination focus (not just documentation)"
+        - "Open API for custom integrations"
+        - "Multi-domain support (can extend to pharma, payers)"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Individual practitioners, small clinics evaluating platform"
+      included:
+        - "1 user"
+        - "100 patients max"
+        - "10k API calls/month"
+        - "De-identified test data only"
+        - "Community support"
+      limitations:
+        - "Not HIPAA-compliant (sandbox only)"
+        - "No PHI allowed"
+        - "Powered by Binelek branding"
+
+    - tier: "Clinic"
+      price: "$999/month + $75/user"
+      target: "Small to mid-size practices (5-20 providers)"
+      included:
+        - "10 users included, then $75/user"
+        - "5,000 patients"
+        - "500k API calls/month"
+        - "HIPAA compliance (BAA included)"
+        - "Basic analytics dashboard"
+        - "EHR integrations (FHIR)"
+        - "Email/phone support"
+      overage_rates:
+        - "Patients: $0.10 per 100 additional"
+        - "API calls: $0.15 per 1,000 additional"
+
+    - tier: "Hospital"
+      price: "$4,999/month + $100/user"
+      target: "Hospitals, multi-specialty groups (20-100 providers)"
+      included:
+        - "50 users included, then $100/user"
+        - "50,000 patients"
+        - "5M API calls/month"
+        - "HIPAA compliance + BAA"
+        - "HITRUST certification"
+        - "Advanced analytics and BI"
+        - "SAML SSO"
+        - "Audit logs (7-year retention)"
+        - "Priority support (2hr response)"
+        - "Custom branding"
+      overage_rates:
+        - "Patients: $0.10 per 100 additional"
+        - "API calls: $0.15 per 1,000 additional"
+
+    - tier: "Health System"
+      price: "Custom pricing (typically $20,000+/month)"
+      target: "Multi-facility health systems, ACOs, large networks"
+      included:
+        - "Unlimited users"
+        - "Unlimited patients"
+        - "Unlimited API calls"
+        - "Full HIPAA + HITRUST + SOC 2"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.99% uptime)"
+        - "On-premise deployment option"
+        - "HL7 v2/v3 + FHIR integrations"
+        - "Custom workflows"
+        - "Advanced security (encryption at rest/transit)"
+
+  compliance_requirements:
+    regulations:
+      - name: "HIPAA (Health Insurance Portability and Accountability Act)"
+        description: "Protects patient health information (PHI)"
+        impact: |
+          - All patient data must be encrypted at rest and in transit
+          - Access logs required for all PHI access
+          - Business Associate Agreement (BAA) required
+          - Breach notification procedures
+          - Patient right to access/export their data
+
+      - name: "HITECH Act"
+        description: "Promotes EHR adoption and meaningful use"
+        impact: |
+          - Audit controls and access tracking
+          - Data integrity monitoring
+          - Stronger HIPAA enforcement
+
+      - name: "21st Century Cures Act"
+        description: "Prohibits information blocking"
+        impact: |
+          - Must support FHIR API access
+          - Patients must be able to export their data
+          - No blocking of health information exchange
+
+      - name: "GDPR (for EU patients)"
+        description: "Data privacy for EU citizens"
+        impact: "Right to erasure, data portability, consent tracking"
+
+      - name: "State-specific regulations"
+        description: "Varies by state (e.g., California CMIA)"
+        impact: "Additional privacy requirements beyond HIPAA"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "EHR Systems"
+        providers: ["Epic (FHIR)", "Cerner (FHIR)", "Athenahealth", "eClinicalWorks"]
+        use_case: "Bidirectional patient data sync, appointment scheduling"
+        standard: "FHIR R4"
+
+      - name: "Practice Management Systems"
+        providers: ["Kareo", "AdvancedMD", "DrChrono"]
+        use_case: "Scheduling, billing integration"
+
+      - name: "Lab Information Systems (LIS)"
+        providers: ["LabCorp", "Quest Diagnostics", "Cerner PathNet"]
+        use_case: "Lab order management, results retrieval"
+        standard: "HL7 v2.5"
+
+      - name: "Pharmacy Systems"
+        providers: ["Surescripts", "CVS Health", "Walgreens"]
+        use_case: "E-prescribing, medication history"
+        standard: "NCPDP SCRIPT"
+
+      - name: "Imaging/PACS"
+        providers: ["GE PACS", "Philips IntelliSpace", "Merge Healthcare"]
+        use_case: "Radiology order management, image viewing"
+        standard: "DICOM"
+
+      - name: "Health Information Exchanges (HIE)"
+        providers: ["CommonWell", "Carequality", "State HIEs"]
+        use_case: "Patient record exchange across organizations"
+        standard: "FHIR, CCD/CCDA"
+
+      - name: "Telehealth Platforms"
+        providers: ["Zoom for Healthcare", "Doxy.me", "Teladoc"]
+        use_case: "Virtual visit integration"
+
+      - name: "Patient Engagement"
+        providers: ["MyChart", "Luma Health", "Klara"]
+        use_case: "Patient communication, appointment reminders"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "Patients under management"
+        benchmark: "Average customer manages 8,000 patients"
+
+      - metric: "Referral completion rate"
+        benchmark: "Graph-based tracking increases completion from 45% to 78%"
+
+      - metric: "Care gap closure"
+        benchmark: "Identify and close 35% more quality gaps vs. traditional systems"
+
+      - metric: "Provider collaboration efficiency"
+        benchmark: "Reduce care coordination time by 40%"
+
+      - metric: "Patient satisfaction (Net Promoter Score)"
+        benchmark: "Improve NPS by 20 points through better care coordination"
+
+  data_standards:
+    clinical_terminologies:
+      - "SNOMED CT (diagnoses, procedures)"
+      - "LOINC (lab tests, observations)"
+      - "RxNorm (medications)"
+      - "ICD-10-CM (billing diagnoses)"
+      - "CPT/HCPCS (procedure codes)"
+
+    interoperability_standards:
+      - "FHIR R4 (primary API)"
+      - "HL7 v2.x (legacy integrations)"
+      - "CCD/CCDA (document exchange)"
+      - "DICOM (imaging)"
+      - "X12 (claims, eligibility)"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  last_updated: "2024-01-15"
+  version_history:
+    - version: "1.0.0"
+      date: "2024-01-15"
+      changes: "Initial Healthcare domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/healthcare/SETUP.md"
+    hipaa_compliance: "docs/domains/healthcare/HIPAA_COMPLIANCE.md"
+    fhir_mapping: "docs/domains/healthcare/FHIR_MAPPING.md"
+    api_reference: "docs/domains/healthcare/API.md"
+
+  contact:
+    domain_owner: "healthcare-team@binelek.com"
+    hipaa_officer: "privacy@binelek.com"
+    support: "support@binelek.com"

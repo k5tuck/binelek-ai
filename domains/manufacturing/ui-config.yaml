@@ -1,0 +1,770 @@
+# Manufacturing & Industrial UI Configuration
+# Frontend presentation layer for manufacturing domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for manufacturing operations and quality management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#F97316"      # Orange
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#10B981"       # Green
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/manufacturing-logo.svg"
+    favicon_url: "/assets/favicons/manufacturing.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "products"
+        label: "Products"
+        icon: "package"
+        route: "/products"
+        badge_query: "count_active_products"
+
+      - id: "work_orders"
+        label: "Work Orders"
+        icon: "file-text"
+        route: "/work-orders"
+        badge_query: "count_open_work_orders"
+
+      - id: "inventory"
+        label: "Inventory"
+        icon: "database"
+        route: "/inventory"
+        submenu:
+          - id: "parts"
+            label: "Parts"
+            route: "/inventory/parts"
+          - id: "materials"
+            label: "Materials"
+            route: "/inventory/materials"
+          - id: "locations"
+            label: "Locations"
+            route: "/inventory/locations"
+
+      - id: "suppliers"
+        label: "Suppliers"
+        icon: "truck"
+        route: "/suppliers"
+
+      - id: "quality"
+        label: "Quality"
+        icon: "clipboard-check"
+        route: "/quality"
+        badge_query: "count_open_defects"
+        submenu:
+          - id: "inspections"
+            label: "Inspections"
+            route: "/quality/inspections"
+          - id: "defects"
+            label: "Defects/NCRs"
+            route: "/quality/defects"
+          - id: "capa"
+            label: "CAPA"
+            route: "/quality/capa"
+
+      - id: "equipment"
+        label: "Equipment"
+        icon: "cog"
+        route: "/equipment"
+        badge_query: "count_maintenance_due"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Manufacturing Dashboard"
+      description: "Overview of production, quality, and equipment status"
+      layout: "grid"
+
+      widgets:
+        - id: "work_orders_in_progress"
+          type: "metric_card"
+          title: "WOs In Progress"
+          query: "count_wos_in_progress"
+          icon: "file-text"
+          color: "#F97316"
+          size: "small"
+
+        - id: "first_pass_yield"
+          type: "metric_card"
+          title: "First Pass Yield"
+          query: "current_fpy"
+          format: "percentage"
+          icon: "check-circle"
+          color: "#10B981"
+          size: "small"
+
+        - id: "open_defects"
+          type: "metric_card"
+          title: "Open Defects"
+          query: "count_open_defects"
+          icon: "alert-circle"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "equipment_oee"
+          type: "metric_card"
+          title: "OEE"
+          query: "overall_oee"
+          format: "percentage"
+          icon: "activity"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "production_schedule"
+          type: "entity_list"
+          title: "Today's Production Schedule"
+          entity_type: "WorkOrder"
+          query:
+            filter:
+              status: ["Released", "In Progress"]
+              due_date: "today"
+            sort:
+              field: "priority"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - work_order_number
+            - product_name
+            - quantity_ordered
+            - quantity_complete
+            - priority
+          size: "medium"
+
+        - id: "recent_defects"
+          type: "entity_list"
+          title: "Recent Defects"
+          entity_type: "Defect"
+          query:
+            filter:
+              status: ["Open", "Under Investigation"]
+            sort:
+              field: "detected_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - defect_number
+            - product_name
+            - defect_type
+            - severity
+            - status
+          size: "medium"
+
+        - id: "production_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Production Output (Last 30 Days)"
+          query: "daily_production_output"
+          x_axis: "date"
+          y_axis: "quantity"
+          size: "large"
+
+        - id: "defects_by_type"
+          type: "chart"
+          chart_type: "pie"
+          title: "Defects by Type"
+          query: "defect_distribution_by_type"
+          size: "medium"
+
+        - id: "maintenance_due"
+          type: "entity_list"
+          title: "Equipment Maintenance Due"
+          entity_type: "Equipment"
+          query:
+            filter:
+              next_maintenance_date_range: "next_7_days"
+            sort:
+              field: "next_maintenance_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - equipment_id
+            - equipment_name
+            - next_maintenance_date
+            - location
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Quality Dashboard
+    # ----------------------------------------------------------------------
+    - id: "quality"
+      name: "Quality Dashboard"
+      description: "Quality metrics and trends"
+      layout: "grid"
+
+      widgets:
+        - id: "fpy_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "First Pass Yield Trend"
+          query: "weekly_fpy_trend"
+
+        - id: "defects_pareto"
+          type: "chart"
+          chart_type: "bar"
+          title: "Top Defect Codes (Pareto)"
+          query: "defects_pareto"
+
+        - id: "supplier_quality"
+          type: "leaderboard"
+          title: "Supplier Quality Ratings"
+          query: "supplier_quality_ratings"
+          metric: "quality_rating"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Product List
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "part_number"
+              label: "Part #"
+              sortable: true
+              width: "140px"
+              render: "link"
+
+            - field: "product_name"
+              label: "Name"
+              sortable: true
+
+            - field: "product_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Prototype": "warning"
+                "Obsolete": "danger"
+
+            - field: "revision"
+              label: "Rev"
+              width: "80px"
+
+            - field: "product_family"
+              label: "Family"
+              filterable: true
+
+            - field: "standard_cost"
+              label: "Std Cost"
+              format: "currency"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "product_type"
+          type: "select"
+          multiple: true
+
+        - field: "product_family"
+          type: "select"
+          multiple: true
+
+      actions:
+        - id: "add_product"
+          label: "New Product"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Work Order List
+    # ----------------------------------------------------------------------
+    - entity_type: "WorkOrder"
+      id: "work_order_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "work_order_number"
+              label: "WO #"
+              sortable: true
+              render: "link"
+
+            - field: "product_name"
+              label: "Product"
+
+            - field: "order_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "In Progress": "primary"
+                "Complete": "success"
+                "On Hold": "warning"
+                "Cancelled": "danger"
+
+            - field: "priority"
+              label: "Priority"
+              render: "badge"
+
+            - field: "quantity_ordered"
+              label: "Qty Ordered"
+
+            - field: "quantity_complete"
+              label: "Qty Complete"
+
+            - field: "due_date"
+              label: "Due Date"
+              format: "date"
+              sortable: true
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Planned"
+            - "Released"
+            - "In Progress"
+            - "Complete"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "priority"
+          type: "select"
+          multiple: true
+
+        - field: "due_date"
+          type: "date_range"
+
+    # ----------------------------------------------------------------------
+    # Defect List
+    # ----------------------------------------------------------------------
+    - entity_type: "Defect"
+      id: "defect_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "defect_number"
+              label: "NCR #"
+              render: "link"
+
+            - field: "product_name"
+              label: "Product"
+
+            - field: "defect_type"
+              label: "Type"
+              filterable: true
+
+            - field: "severity"
+              label: "Severity"
+              render: "badge"
+              color_map:
+                "Critical": "danger"
+                "Major": "warning"
+                "Minor": "info"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "detected_date"
+              label: "Detected"
+              format: "date"
+
+            - field: "quantity_affected"
+              label: "Qty"
+
+      filters:
+        - field: "severity"
+          type: "select"
+          multiple: true
+
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "defect_type"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Supplier List
+    # ----------------------------------------------------------------------
+    - entity_type: "Supplier"
+      id: "supplier_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "supplier_code"
+              label: "Code"
+              render: "link"
+
+            - field: "supplier_name"
+              label: "Name"
+              sortable: true
+
+            - field: "supplier_type"
+              label: "Type"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "quality_rating"
+              label: "Quality"
+              format: "number"
+
+            - field: "delivery_rating"
+              label: "Delivery"
+              format: "number"
+
+            - field: "risk_level"
+              label: "Risk"
+              render: "badge"
+              color_map:
+                "Critical": "danger"
+                "High": "warning"
+                "Medium": "info"
+                "Low": "success"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "risk_level"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Product Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "part_number"
+        subtitle_field: "product_name"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "product_details"
+              title: "Product Details"
+              layout: "two_column"
+              fields:
+                - field: "product_type"
+                - field: "status"
+                  render: "badge"
+                - field: "revision"
+                - field: "product_family"
+                - field: "unit_of_measure"
+                - field: "lead_time_days"
+
+            - id: "cost"
+              title: "Costing"
+              layout: "two_column"
+              fields:
+                - field: "standard_cost"
+                  format: "currency"
+                - field: "material_cost"
+                  format: "currency"
+                - field: "labor_cost"
+                  format: "currency"
+                - field: "overhead_cost"
+                  format: "currency"
+
+        - id: "bom"
+          label: "Bill of Materials"
+          icon: "list-tree"
+
+          sections:
+            - id: "bom_components"
+              title: "Components"
+              type: "relationship_list"
+              relationship: "COMPOSED_OF"
+              direction: "outgoing"
+              display_fields:
+                - part_number
+                - part_name
+                - quantity
+                - unit_of_measure
+
+        - id: "where_used"
+          label: "Where Used"
+          icon: "git-branch"
+
+          sections:
+            - id: "parent_products"
+              title: "Used In"
+              type: "relationship_list"
+              relationship: "COMPOSED_OF"
+              direction: "incoming"
+              display_fields:
+                - part_number
+                - product_name
+                - quantity
+
+        - id: "suppliers"
+          label: "Suppliers"
+          icon: "truck"
+
+          sections:
+            - id: "approved_suppliers"
+              title: "Approved Suppliers"
+              type: "relationship_list"
+              relationship: "SUPPLIED_BY"
+              direction: "outgoing"
+              display_fields:
+                - supplier_name
+                - supplier_part_number
+                - unit_price
+                - lead_time_days
+                - preferred
+
+        - id: "quality"
+          label: "Quality"
+          icon: "clipboard-check"
+
+          sections:
+            - id: "quality_records"
+              title: "Quality Records"
+              type: "relationship_list"
+              relationship: "HAS_QUALITY_RECORD"
+              direction: "outgoing"
+              display_fields:
+                - record_number
+                - record_type
+                - status
+                - inspection_date
+
+            - id: "defect_history"
+              title: "Defect History"
+              type: "relationship_list"
+              relationship: "HAS_DEFECT"
+              direction: "outgoing"
+              display_fields:
+                - defect_number
+                - defect_type
+                - severity
+                - detected_date
+
+        - id: "work_orders"
+          label: "Work Orders"
+          icon: "file-text"
+
+          sections:
+            - id: "production_history"
+              title: "Production History"
+              type: "relationship_list"
+              relationship: "MANUFACTURED_BY"
+              direction: "outgoing"
+              display_fields:
+                - work_order_number
+                - quantity_ordered
+                - quantity_complete
+                - status
+                - due_date
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Product Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Product"
+      id: "product_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "part_number"
+              required: true
+
+            - field: "product_name"
+              required: true
+
+            - field: "description"
+              widget: "textarea"
+
+            - field: "product_type"
+              required: true
+
+            - field: "status"
+
+        - id: "details"
+          title: "Product Details"
+          fields:
+            - field: "product_family"
+
+            - field: "unit_of_measure"
+              required: true
+
+            - field: "weight"
+
+            - field: "lead_time_days"
+
+        - id: "costing"
+          title: "Costing"
+          fields:
+            - field: "standard_cost"
+
+            - field: "material_cost"
+
+            - field: "labor_cost"
+
+    # ----------------------------------------------------------------------
+    # Work Order Form
+    # ----------------------------------------------------------------------
+    - entity_type: "WorkOrder"
+      id: "work_order_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "order_info"
+          title: "Work Order Information"
+          fields:
+            - field: "product"
+              required: true
+              widget: "product_search"
+
+            - field: "order_type"
+              required: true
+
+            - field: "quantity_ordered"
+              required: true
+
+            - field: "priority"
+
+            - field: "due_date"
+              required: true
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search products, work orders, suppliers..."
+      entity_types:
+        - "Product"
+        - "WorkOrder"
+        - "Supplier"
+        - "Equipment"
+
+    entity_search:
+      Product:
+        searchable_fields:
+          - "part_number"
+          - "product_name"
+          - "description"
+        boost_fields:
+          - field: "part_number"
+            boost: 2.0
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "production_report"
+      name: "Production Report"
+      description: "Production output and efficiency"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_output
+            - on_time_delivery
+            - scrap_rate
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Output by Product"
+
+    - id: "supplier_scorecard"
+      name: "Supplier Scorecard"
+      description: "Supplier performance metrics"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

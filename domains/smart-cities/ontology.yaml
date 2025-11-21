@@ -1,0 +1,1260 @@
+ontology:
+  namespace: "smartcities"
+  version: "1.0.0"
+  description: "Smart city ontology covering infrastructure, IoT, energy, traffic, and urban planning"
+
+  # ==========================================
+  # CORE INFRASTRUCTURE ENTITIES
+  # ==========================================
+  entities:
+    # ------ INFRASTRUCTURE ASSETS ------
+    - name: InfrastructureAsset
+      label: "Infrastructure Asset"
+      icon: "building"
+      color: "#3B82F6"
+      description: "Physical infrastructure asset (building, road, bridge, park, etc.)"
+      is_abstract: true  # Base class for specific asset types
+
+      attributes:
+        - name: assetId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Asset ID"
+          help_text: "Unique identifier for the asset"
+
+        - name: name
+          type: string
+          required: true
+          indexed: true
+          display_name: "Asset Name"
+
+        - name: assetType
+          type: enum
+          values:
+            - "Building"
+            - "Road"
+            - "Bridge"
+            - "Park"
+            - "Tunnel"
+            - "Water Treatment Plant"
+            - "Waste Facility"
+            - "Transit Station"
+            - "Emergency Facility"
+            - "School"
+            - "Hospital"
+            - "Other"
+          required: true
+          facet: true
+          display_name: "Asset Type"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: boundary
+          type: geo_shape
+          display_name: "Asset Boundary"
+          help_text: "GeoJSON polygon defining asset boundaries"
+
+        - name: address
+          type: string
+          display_name: "Address"
+
+        - name: district
+          type: string
+          indexed: true
+          facet: true
+          display_name: "District/Neighborhood"
+
+        - name: ward
+          type: string
+          indexed: true
+          facet: true
+          display_name: "Ward/Zone"
+
+        - name: constructionYear
+          type: integer
+          min: 1800
+          max: 2100
+          display_name: "Year Built"
+
+        - name: lastInspectionDate
+          type: date
+          display_name: "Last Inspection"
+
+        - name: nextInspectionDate
+          type: date
+          display_name: "Next Inspection"
+
+        - name: condition
+          type: enum
+          values: ["Excellent", "Good", "Fair", "Poor", "Critical"]
+          default: "Good"
+          display_name: "Condition"
+          facet: true
+
+        - name: status
+          type: enum
+          values: ["Operational", "Under Maintenance", "Under Construction", "Decommissioned"]
+          default: "Operational"
+          required: true
+          display_name: "Status"
+          facet: true
+
+        - name: maintenanceCost
+          type: currency
+          currency: "USD"
+          display_name: "Annual Maintenance Cost"
+
+        - name: replacementCost
+          type: currency
+          currency: "USD"
+          display_name: "Replacement Cost"
+
+        - name: estimatedLifespan
+          type: integer
+          unit: "years"
+          display_name: "Estimated Lifespan"
+
+        - name: owner
+          type: enum
+          values: ["Municipal", "State", "Federal", "Private", "Public-Private Partnership"]
+          default: "Municipal"
+          display_name: "Ownership"
+
+        - name: managingDepartment
+          type: string
+          display_name: "Managing Department"
+
+        - name: notes
+          type: text
+          display_name: "Notes"
+
+      display:
+        title_field: "name"
+        subtitle_fields: ["assetType", "district"]
+        summary_fields: ["assetType", "condition", "status", "location"]
+        list_columns: ["name", "assetType", "district", "condition", "status", "lastInspectionDate"]
+        detail_sections:
+          - name: "Basic Information"
+            fields: ["name", "assetId", "assetType", "address", "district", "ward"]
+          - name: "Location"
+            fields: ["location", "boundary"]
+          - name: "Status & Condition"
+            fields: ["status", "condition", "lastInspectionDate", "nextInspectionDate"]
+          - name: "Construction & Lifecycle"
+            fields: ["constructionYear", "estimatedLifespan"]
+          - name: "Financial"
+            fields: ["maintenanceCost", "replacementCost"]
+          - name: "Management"
+            fields: ["owner", "managingDepartment", "notes"]
+
+      search:
+        full_text_fields: ["name", "address", "notes"]
+        facets: ["assetType", "district", "ward", "condition", "status", "owner"]
+        sortable_fields: ["name", "constructionYear", "lastInspectionDate", "maintenanceCost"]
+        default_sort: "name"
+
+    # ------ IOT DEVICES ------
+    - name: IoTDevice
+      label: "IoT Device"
+      icon: "cpu"
+      color: "#8B5CF6"
+      description: "Internet of Things sensor or device"
+
+      attributes:
+        - name: deviceId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Device ID"
+
+        - name: deviceName
+          type: string
+          required: true
+          display_name: "Device Name"
+
+        - name: deviceType
+          type: enum
+          values:
+            - "Environmental Sensor"
+            - "Traffic Camera"
+            - "Smart Meter"
+            - "Smart Light"
+            - "Parking Sensor"
+            - "Waste Level Sensor"
+            - "Water Quality Sensor"
+            - "Air Quality Sensor"
+            - "Noise Monitor"
+            - "Weather Station"
+            - "Seismic Sensor"
+            - "Flood Sensor"
+            - "Emergency Alert System"
+            - "Other"
+          required: true
+          facet: true
+          display_name: "Device Type"
+
+        - name: manufacturer
+          type: string
+          display_name: "Manufacturer"
+
+        - name: model
+          type: string
+          display_name: "Model"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: installationDate
+          type: date
+          display_name: "Installation Date"
+
+        - name: lastMaintenanceDate
+          type: date
+          display_name: "Last Maintenance"
+
+        - name: nextMaintenanceDate
+          type: date
+          display_name: "Next Maintenance"
+
+        - name: status
+          type: enum
+          values: ["Online", "Offline", "Maintenance", "Faulty", "Decommissioned"]
+          default: "Online"
+          required: true
+          display_name: "Status"
+          facet: true
+
+        - name: batteryLevel
+          type: number
+          min: 0
+          max: 100
+          unit: "%"
+          display_name: "Battery Level"
+
+        - name: signalStrength
+          type: number
+          min: -100
+          max: 0
+          unit: "dBm"
+          display_name: "Signal Strength"
+
+        - name: firmwareVersion
+          type: string
+          display_name: "Firmware Version"
+
+        - name: ipAddress
+          type: string
+          pattern: "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+          display_name: "IP Address"
+
+        - name: macAddress
+          type: string
+          display_name: "MAC Address"
+
+        - name: dataFrequency
+          type: enum
+          values: ["Real-time", "1 minute", "5 minutes", "15 minutes", "1 hour", "Daily"]
+          default: "15 minutes"
+          display_name: "Data Reporting Frequency"
+
+        - name: lastDataReceived
+          type: datetime
+          display_name: "Last Data Received"
+
+        - name: alertsEnabled
+          type: boolean
+          default: true
+          display_name: "Alerts Enabled"
+
+        - name: thresholds
+          type: json
+          display_name: "Alert Thresholds"
+          help_text: "JSON object with alert threshold configurations"
+
+      display:
+        title_field: "deviceName"
+        subtitle_fields: ["deviceType", "status"]
+        summary_fields: ["deviceType", "status", "batteryLevel", "lastDataReceived"]
+        list_columns: ["deviceName", "deviceType", "status", "batteryLevel", "lastDataReceived"]
+        detail_sections:
+          - name: "Device Information"
+            fields: ["deviceName", "deviceId", "deviceType", "manufacturer", "model"]
+          - name: "Location"
+            fields: ["location"]
+          - name: "Status & Health"
+            fields: ["status", "batteryLevel", "signalStrength", "lastDataReceived"]
+          - name: "Connectivity"
+            fields: ["ipAddress", "macAddress", "firmwareVersion"]
+          - name: "Configuration"
+            fields: ["dataFrequency", "alertsEnabled", "thresholds"]
+          - name: "Maintenance"
+            fields: ["installationDate", "lastMaintenanceDate", "nextMaintenanceDate"]
+
+      search:
+        full_text_fields: ["deviceName", "deviceId"]
+        facets: ["deviceType", "status", "manufacturer"]
+        sortable_fields: ["deviceName", "lastDataReceived", "batteryLevel"]
+        default_sort: "deviceName"
+
+    # ------ ENERGY SYSTEMS ------
+    - name: EnergyAsset
+      label: "Energy Asset"
+      icon: "zap"
+      color: "#F59E0B"
+      description: "Energy generation, storage, or distribution asset"
+
+      attributes:
+        - name: assetId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Asset ID"
+
+        - name: name
+          type: string
+          required: true
+          display_name: "Asset Name"
+
+        - name: energyType
+          type: enum
+          values:
+            - "Solar Farm"
+            - "Wind Farm"
+            - "Hydroelectric"
+            - "Natural Gas Plant"
+            - "Nuclear Plant"
+            - "Battery Storage"
+            - "Substation"
+            - "Transmission Line"
+            - "Distribution Line"
+            - "Transformer"
+            - "EV Charging Station"
+            - "Microgrid"
+          required: true
+          facet: true
+          display_name: "Energy Type"
+
+        - name: capacity
+          type: number
+          min: 0
+          unit: "MW"
+          display_name: "Capacity (MW)"
+
+        - name: currentOutput
+          type: number
+          min: 0
+          unit: "MW"
+          display_name: "Current Output (MW)"
+
+        - name: efficiency
+          type: number
+          min: 0
+          max: 100
+          unit: "%"
+          display_name: "Efficiency"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: serviceArea
+          type: geo_shape
+          display_name: "Service Area"
+
+        - name: operationalStatus
+          type: enum
+          values: ["Operational", "Generating", "Idle", "Maintenance", "Offline"]
+          default: "Operational"
+          required: true
+          display_name: "Status"
+          facet: true
+
+        - name: commissionedDate
+          type: date
+          display_name: "Commissioned Date"
+
+        - name: lastMaintenanceDate
+          type: date
+          display_name: "Last Maintenance"
+
+        - name: nextMaintenanceDate
+          type: date
+          display_name: "Next Maintenance"
+
+        - name: carbonEmissions
+          type: number
+          min: 0
+          unit: "tons CO2/year"
+          display_name: "Carbon Emissions"
+
+        - name: renewableSource
+          type: boolean
+          default: false
+          display_name: "Renewable Source"
+
+        - name: costPerMWh
+          type: currency
+          currency: "USD"
+          display_name: "Cost per MWh"
+
+        - name: uptime
+          type: number
+          min: 0
+          max: 100
+          unit: "%"
+          display_name: "Uptime Percentage"
+
+        - name: owner
+          type: enum
+          values: ["Municipal Utility", "Private Utility", "Independent Producer", "Cooperative"]
+          display_name: "Ownership"
+
+      display:
+        title_field: "name"
+        subtitle_fields: ["energyType", "capacity"]
+        summary_fields: ["energyType", "capacity", "currentOutput", "operationalStatus"]
+        list_columns: ["name", "energyType", "capacity", "currentOutput", "operationalStatus", "efficiency"]
+        detail_sections:
+          - name: "Asset Information"
+            fields: ["name", "assetId", "energyType", "owner"]
+          - name: "Location & Coverage"
+            fields: ["location", "serviceArea"]
+          - name: "Capacity & Performance"
+            fields: ["capacity", "currentOutput", "efficiency", "uptime"]
+          - name: "Status & Maintenance"
+            fields: ["operationalStatus", "lastMaintenanceDate", "nextMaintenanceDate"]
+          - name: "Environmental Impact"
+            fields: ["renewableSource", "carbonEmissions"]
+          - name: "Economics"
+            fields: ["costPerMWh"]
+
+      search:
+        full_text_fields: ["name"]
+        facets: ["energyType", "operationalStatus", "renewableSource", "owner"]
+        sortable_fields: ["name", "capacity", "currentOutput", "efficiency"]
+        default_sort: "name"
+
+    # ------ TRAFFIC MANAGEMENT ------
+    - name: TrafficAsset
+      label: "Traffic Asset"
+      icon: "traffic-cone"
+      color: "#EF4444"
+      description: "Traffic management infrastructure (signals, cameras, sensors)"
+
+      attributes:
+        - name: assetId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Asset ID"
+
+        - name: name
+          type: string
+          required: true
+          display_name: "Asset Name"
+
+        - name: assetType
+          type: enum
+          values:
+            - "Traffic Signal"
+            - "Traffic Camera"
+            - "Speed Camera"
+            - "License Plate Reader"
+            - "Vehicle Counter"
+            - "Pedestrian Signal"
+            - "Variable Message Sign"
+            - "Traffic Sensor"
+            - "Parking Sensor"
+          required: true
+          facet: true
+          display_name: "Asset Type"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: intersection
+          type: string
+          indexed: true
+          display_name: "Intersection/Location Name"
+
+        - name: direction
+          type: enum
+          values: ["North", "South", "East", "West", "Northeast", "Northwest", "Southeast", "Southwest"]
+          display_name: "Direction Facing"
+
+        - name: roadName
+          type: string
+          indexed: true
+          display_name: "Road Name"
+
+        - name: status
+          type: enum
+          values: ["Operational", "Flashing", "Offline", "Maintenance", "Faulty"]
+          default: "Operational"
+          required: true
+          display_name: "Status"
+          facet: true
+
+        - name: installationDate
+          type: date
+          display_name: "Installation Date"
+
+        - name: lastMaintenanceDate
+          type: date
+          display_name: "Last Maintenance"
+
+        - name: signalTiming
+          type: json
+          display_name: "Signal Timing Configuration"
+          help_text: "JSON object with signal phase timings"
+          conditional:
+            when: "assetType"
+            equals: ["Traffic Signal", "Pedestrian Signal"]
+
+        - name: videoFeedUrl
+          type: url
+          display_name: "Live Video Feed URL"
+          conditional:
+            when: "assetType"
+            equals: ["Traffic Camera", "Speed Camera"]
+
+        - name: recordingEnabled
+          type: boolean
+          default: true
+          display_name: "Recording Enabled"
+          conditional:
+            when: "assetType"
+            equals: ["Traffic Camera", "Speed Camera", "License Plate Reader"]
+
+        - name: currentTrafficFlow
+          type: enum
+          values: ["Free Flow", "Light", "Moderate", "Heavy", "Congested", "Stopped"]
+          display_name: "Current Traffic Flow"
+
+        - name: averageDailyTraffic
+          type: integer
+          min: 0
+          display_name: "Average Daily Traffic (vehicles)"
+
+        - name: peakHourVolume
+          type: integer
+          min: 0
+          display_name: "Peak Hour Volume (vehicles)"
+
+        - name: accidentProne
+          type: boolean
+          default: false
+          display_name: "Accident Prone Location"
+
+        - name: lastIncidentDate
+          type: date
+          display_name: "Last Incident Date"
+
+      display:
+        title_field: "name"
+        subtitle_fields: ["assetType", "intersection"]
+        summary_fields: ["assetType", "status", "currentTrafficFlow", "intersection"]
+        list_columns: ["name", "assetType", "intersection", "status", "currentTrafficFlow"]
+        detail_sections:
+          - name: "Asset Information"
+            fields: ["name", "assetId", "assetType"]
+          - name: "Location"
+            fields: ["location", "intersection", "roadName", "direction"]
+          - name: "Status & Operation"
+            fields: ["status", "currentTrafficFlow", "signalTiming"]
+          - name: "Video & Monitoring"
+            fields: ["videoFeedUrl", "recordingEnabled"]
+          - name: "Traffic Analytics"
+            fields: ["averageDailyTraffic", "peakHourVolume", "accidentProne", "lastIncidentDate"]
+          - name: "Maintenance"
+            fields: ["installationDate", "lastMaintenanceDate"]
+
+      search:
+        full_text_fields: ["name", "intersection", "roadName"]
+        facets: ["assetType", "status", "currentTrafficFlow", "accidentProne"]
+        sortable_fields: ["name", "averageDailyTraffic", "lastMaintenanceDate"]
+        default_sort: "name"
+
+    # ------ ZONING & PLANNING ------
+    - name: Zone
+      label: "Zoning District"
+      icon: "map"
+      color: "#10B981"
+      description: "Land use zoning district or planning area"
+
+      attributes:
+        - name: zoneId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Zone ID"
+
+        - name: name
+          type: string
+          required: true
+          display_name: "Zone Name"
+
+        - name: zoneType
+          type: enum
+          values:
+            - "Residential - Single Family"
+            - "Residential - Multi-Family"
+            - "Commercial"
+            - "Industrial"
+            - "Mixed-Use"
+            - "Agricultural"
+            - "Parks & Recreation"
+            - "Institutional"
+            - "Historic District"
+            - "Transit-Oriented Development"
+          required: true
+          facet: true
+          display_name: "Zone Type"
+
+        - name: boundary
+          type: geo_shape
+          required: true
+          display_name: "Zone Boundary"
+          help_text: "GeoJSON polygon defining zone boundaries"
+
+        - name: area
+          type: number
+          min: 0
+          unit: "sq km"
+          display_name: "Area"
+
+        - name: maxBuildingHeight
+          type: number
+          min: 0
+          unit: "meters"
+          display_name: "Max Building Height"
+
+        - name: maxFloorAreaRatio
+          type: number
+          min: 0
+          display_name: "Max Floor Area Ratio (FAR)"
+
+        - name: maxDensity
+          type: number
+          min: 0
+          unit: "units/hectare"
+          display_name: "Max Density"
+
+        - name: minLotSize
+          type: number
+          min: 0
+          unit: "sq meters"
+          display_name: "Minimum Lot Size"
+
+        - name: allowedUses
+          type: array
+          items:
+            type: string
+          display_name: "Allowed Land Uses"
+
+        - name: prohibitedUses
+          type: array
+          items:
+            type: string
+          display_name: "Prohibited Land Uses"
+
+        - name: parkingRequirements
+          type: text
+          display_name: "Parking Requirements"
+
+        - name: ordinanceReference
+          type: string
+          display_name: "Ordinance Reference"
+
+        - name: effectiveDate
+          type: date
+          display_name: "Effective Date"
+
+        - name: lastReviewDate
+          type: date
+          display_name: "Last Review Date"
+
+        - name: nextReviewDate
+          type: date
+          display_name: "Next Review Date"
+
+        - name: specialConditions
+          type: text
+          display_name: "Special Conditions"
+
+      display:
+        title_field: "name"
+        subtitle_fields: ["zoneType", "area"]
+        summary_fields: ["zoneType", "area", "maxBuildingHeight", "maxDensity"]
+        list_columns: ["name", "zoneType", "area", "maxBuildingHeight", "effectiveDate"]
+        detail_sections:
+          - name: "Zone Information"
+            fields: ["name", "zoneId", "zoneType", "ordinanceReference"]
+          - name: "Boundary"
+            fields: ["boundary", "area"]
+          - name: "Development Regulations"
+            fields: ["maxBuildingHeight", "maxFloorAreaRatio", "maxDensity", "minLotSize"]
+          - name: "Land Use"
+            fields: ["allowedUses", "prohibitedUses", "parkingRequirements"]
+          - name: "Review & Updates"
+            fields: ["effectiveDate", "lastReviewDate", "nextReviewDate"]
+          - name: "Special Conditions"
+            fields: ["specialConditions"]
+
+      search:
+        full_text_fields: ["name", "allowedUses", "specialConditions"]
+        facets: ["zoneType"]
+        sortable_fields: ["name", "area", "effectiveDate"]
+        default_sort: "name"
+
+    # ------ DEVELOPMENT PROJECTS ------
+    - name: DevelopmentProject
+      label: "Development Project"
+      icon: "hammer"
+      color: "#F97316"
+      description: "City development or construction project"
+
+      attributes:
+        - name: projectId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Project ID"
+
+        - name: projectName
+          type: string
+          required: true
+          display_name: "Project Name"
+
+        - name: projectType
+          type: enum
+          values:
+            - "New Construction"
+            - "Renovation"
+            - "Infrastructure Upgrade"
+            - "Park Development"
+            - "Road Construction"
+            - "Transit Project"
+            - "Utility Installation"
+            - "Demolition"
+          required: true
+          facet: true
+          display_name: "Project Type"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "Project Location"
+
+        - name: projectArea
+          type: geo_shape
+          display_name: "Project Area Boundary"
+
+        - name: status
+          type: enum
+          values:
+            - "Planning"
+            - "Permitting"
+            - "Approved"
+            - "In Progress"
+            - "On Hold"
+            - "Completed"
+            - "Cancelled"
+          default: "Planning"
+          required: true
+          facet: true
+          display_name: "Status"
+
+        - name: startDate
+          type: date
+          display_name: "Start Date"
+
+        - name: expectedCompletionDate
+          type: date
+          display_name: "Expected Completion"
+
+        - name: actualCompletionDate
+          type: date
+          display_name: "Actual Completion"
+
+        - name: budget
+          type: currency
+          currency: "USD"
+          display_name: "Project Budget"
+
+        - name: spentToDate
+          type: currency
+          currency: "USD"
+          display_name: "Spent to Date"
+
+        - name: fundingSource
+          type: enum
+          values: ["Municipal Budget", "State Grant", "Federal Grant", "Bonds", "Private", "Public-Private"]
+          display_name: "Funding Source"
+
+        - name: developer
+          type: string
+          display_name: "Developer/Contractor"
+
+        - name: projectManager
+          type: string
+          display_name: "Project Manager"
+
+        - name: permitNumber
+          type: string
+          display_name: "Permit Number"
+
+        - name: description
+          type: text
+          display_name: "Project Description"
+
+        - name: publicCommentPeriod
+          type: boolean
+          default: false
+          display_name: "Public Comment Period Active"
+
+        - name: environmentalImpactAssessment
+          type: boolean
+          default: false
+          display_name: "Environmental Impact Assessment Required"
+
+      display:
+        title_field: "projectName"
+        subtitle_fields: ["projectType", "status"]
+        summary_fields: ["projectType", "status", "budget", "expectedCompletionDate"]
+        list_columns: ["projectName", "projectType", "status", "budget", "expectedCompletionDate"]
+        detail_sections:
+          - name: "Project Information"
+            fields: ["projectName", "projectId", "projectType", "description"]
+          - name: "Location"
+            fields: ["location", "projectArea"]
+          - name: "Status & Timeline"
+            fields: ["status", "startDate", "expectedCompletionDate", "actualCompletionDate"]
+          - name: "Budget & Funding"
+            fields: ["budget", "spentToDate", "fundingSource"]
+          - name: "Management"
+            fields: ["developer", "projectManager", "permitNumber"]
+          - name: "Compliance"
+            fields: ["publicCommentPeriod", "environmentalImpactAssessment"]
+
+      search:
+        full_text_fields: ["projectName", "description", "developer"]
+        facets: ["projectType", "status", "fundingSource"]
+        sortable_fields: ["projectName", "startDate", "budget"]
+        default_sort: "startDate"
+        default_sort_order: "desc"
+
+    # ------ ENVIRONMENTAL MONITORING ------
+    - name: EnvironmentalReading
+      label: "Environmental Reading"
+      icon: "cloud"
+      color: "#06B6D4"
+      description: "Environmental sensor reading (air quality, noise, etc.)"
+
+      attributes:
+        - name: readingId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Reading ID"
+
+        - name: readingType
+          type: enum
+          values:
+            - "Air Quality Index"
+            - "PM2.5"
+            - "PM10"
+            - "Ozone"
+            - "Carbon Monoxide"
+            - "Nitrogen Dioxide"
+            - "Noise Level"
+            - "Temperature"
+            - "Humidity"
+            - "Water Quality"
+            - "Soil Quality"
+          required: true
+          facet: true
+          display_name: "Reading Type"
+
+        - name: value
+          type: number
+          required: true
+          display_name: "Value"
+
+        - name: unit
+          type: string
+          required: true
+          display_name: "Unit of Measure"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: timestamp
+          type: datetime
+          required: true
+          indexed: true
+          display_name: "Timestamp"
+
+        - name: qualityLevel
+          type: enum
+          values: ["Excellent", "Good", "Moderate", "Poor", "Very Poor", "Hazardous"]
+          display_name: "Quality Level"
+
+        - name: exceedsThreshold
+          type: boolean
+          default: false
+          display_name: "Exceeds Safe Threshold"
+
+        - name: threshold
+          type: number
+          display_name: "Safe Threshold Value"
+
+        - name: trend
+          type: enum
+          values: ["Improving", "Stable", "Worsening"]
+          display_name: "Trend"
+
+      display:
+        title_field: "readingType"
+        subtitle_fields: ["value", "unit"]
+        summary_fields: ["readingType", "value", "unit", "qualityLevel", "timestamp"]
+        list_columns: ["readingType", "value", "unit", "qualityLevel", "timestamp", "location"]
+        detail_sections:
+          - name: "Reading Information"
+            fields: ["readingId", "readingType", "value", "unit"]
+          - name: "Location & Time"
+            fields: ["location", "timestamp"]
+          - name: "Assessment"
+            fields: ["qualityLevel", "exceedsThreshold", "threshold", "trend"]
+
+      search:
+        full_text_fields: []
+        facets: ["readingType", "qualityLevel", "exceedsThreshold"]
+        sortable_fields: ["timestamp", "value"]
+        default_sort: "timestamp"
+        default_sort_order: "desc"
+
+    # ------ PUBLIC SERVICES ------
+    - name: PublicService
+      label: "Public Service Facility"
+      icon: "heart-handshake"
+      color: "#EC4899"
+      description: "Public service facility (fire station, police, hospital, etc.)"
+
+      attributes:
+        - name: facilityId
+          type: string
+          required: true
+          unique: true
+          indexed: true
+          display_name: "Facility ID"
+
+        - name: name
+          type: string
+          required: true
+          display_name: "Facility Name"
+
+        - name: serviceType
+          type: enum
+          values:
+            - "Fire Station"
+            - "Police Station"
+            - "Hospital"
+            - "Clinic"
+            - "Emergency Medical Services"
+            - "Library"
+            - "Community Center"
+            - "School"
+            - "Social Services"
+          required: true
+          facet: true
+          display_name: "Service Type"
+
+        - name: location
+          type: geo_point
+          required: true
+          indexed: true
+          display_name: "GPS Location"
+
+        - name: address
+          type: string
+          display_name: "Address"
+
+        - name: serviceArea
+          type: geo_shape
+          display_name: "Service Coverage Area"
+
+        - name: capacity
+          type: integer
+          min: 0
+          display_name: "Capacity"
+
+        - name: currentOccupancy
+          type: integer
+          min: 0
+          display_name: "Current Occupancy"
+
+        - name: operatingHours
+          type: text
+          display_name: "Operating Hours"
+
+        - name: emergencyContact
+          type: phone
+          display_name: "Emergency Contact"
+
+        - name: status
+          type: enum
+          values: ["Operational", "Limited Service", "Closed", "Emergency Only"]
+          default: "Operational"
+          required: true
+          display_name: "Status"
+          facet: true
+
+        - name: lastInspectionDate
+          type: date
+          display_name: "Last Inspection"
+
+        - name: nextInspectionDate
+          type: date
+          display_name: "Next Inspection"
+
+        - name: averageResponseTime
+          type: number
+          unit: "minutes"
+          display_name: "Average Response Time"
+          conditional:
+            when: "serviceType"
+            equals: ["Fire Station", "Police Station", "Emergency Medical Services"]
+
+      display:
+        title_field: "name"
+        subtitle_fields: ["serviceType", "address"]
+        summary_fields: ["serviceType", "status", "capacity", "location"]
+        list_columns: ["name", "serviceType", "address", "status", "capacity"]
+        detail_sections:
+          - name: "Facility Information"
+            fields: ["name", "facilityId", "serviceType"]
+          - name: "Location"
+            fields: ["location", "address", "serviceArea"]
+          - name: "Operations"
+            fields: ["status", "operatingHours", "emergencyContact"]
+          - name: "Capacity"
+            fields: ["capacity", "currentOccupancy"]
+          - name: "Performance"
+            fields: ["averageResponseTime"]
+          - name: "Maintenance"
+            fields: ["lastInspectionDate", "nextInspectionDate"]
+
+      search:
+        full_text_fields: ["name", "address"]
+        facets: ["serviceType", "status"]
+        sortable_fields: ["name", "capacity", "averageResponseTime"]
+        default_sort: "name"
+
+  # ==========================================
+  # RELATIONSHIPS
+  # ==========================================
+  relationships:
+    - name: LOCATED_IN_ZONE
+      from: InfrastructureAsset
+      to: Zone
+      cardinality: "many_to_one"
+      required: false
+      display:
+        label: "Located In Zone"
+        inverse_label: "Contains Assets"
+
+    - name: MONITORED_BY
+      from: InfrastructureAsset
+      to: IoTDevice
+      cardinality: "one_to_many"
+      required: false
+      display:
+        label: "Monitored By"
+        inverse_label: "Monitors"
+
+    - name: SERVES_ZONE
+      from: EnergyAsset
+      to: Zone
+      cardinality: "many_to_many"
+      required: false
+      display:
+        label: "Serves Zone"
+        inverse_label: "Served By"
+
+    - name: CONNECTED_TO
+      from: EnergyAsset
+      to: EnergyAsset
+      cardinality: "many_to_many"
+      required: false
+      attributes:
+        - name: connectionType
+          type: enum
+          values: ["Feeds", "Receives", "Bidirectional"]
+          display_name: "Connection Type"
+        - name: capacity
+          type: number
+          unit: "MW"
+          display_name: "Connection Capacity"
+      display:
+        label: "Connected To"
+        inverse_label: "Connected From"
+
+    - name: MANAGES_INTERSECTION
+      from: TrafficAsset
+      to: TrafficAsset
+      cardinality: "many_to_many"
+      required: false
+      display:
+        label: "Coordinates With"
+        inverse_label: "Coordinates With"
+
+    - name: PART_OF_PROJECT
+      from: InfrastructureAsset
+      to: DevelopmentProject
+      cardinality: "many_to_one"
+      required: false
+      display:
+        label: "Part of Project"
+        inverse_label: "Includes Asset"
+
+    - name: IN_ZONE
+      from: DevelopmentProject
+      to: Zone
+      cardinality: "many_to_one"
+      required: false
+      display:
+        label: "In Zone"
+        inverse_label: "Contains Projects"
+
+    - name: RECORDED_BY
+      from: EnvironmentalReading
+      to: IoTDevice
+      cardinality: "many_to_one"
+      required: true
+      display:
+        label: "Recorded By"
+        inverse_label: "Records"
+
+    - name: SERVES_AREA
+      from: PublicService
+      to: Zone
+      cardinality: "many_to_many"
+      required: false
+      display:
+        label: "Serves Area"
+        inverse_label: "Served By"
+
+    - name: NEAREST_FACILITY
+      from: InfrastructureAsset
+      to: PublicService
+      cardinality: "many_to_one"
+      required: false
+      attributes:
+        - name: distance
+          type: number
+          unit: "km"
+          display_name: "Distance"
+        - name: responseTime
+          type: number
+          unit: "minutes"
+          display_name: "Response Time"
+      display:
+        label: "Nearest Facility"
+        inverse_label: "Services"
+
+    - name: WITHIN_DISTRICT
+      from: Zone
+      to: Zone
+      cardinality: "many_to_one"
+      required: false
+      display:
+        label: "Within District"
+        inverse_label: "Contains Zones"
+
+  # ==========================================
+  # TIME SERIES DATA TYPES
+  # ==========================================
+  timeseries:
+    - entity: IoTDevice
+      metrics:
+        - name: batteryLevel
+          interval: "1 hour"
+          retention: "90 days"
+        - name: signalStrength
+          interval: "1 hour"
+          retention: "30 days"
+
+    - entity: EnergyAsset
+      metrics:
+        - name: currentOutput
+          interval: "5 minutes"
+          retention: "1 year"
+        - name: efficiency
+          interval: "15 minutes"
+          retention: "1 year"
+
+    - entity: TrafficAsset
+      metrics:
+        - name: vehicleCount
+          interval: "1 minute"
+          retention: "90 days"
+        - name: averageSpeed
+          interval: "1 minute"
+          retention: "90 days"
+
+    - entity: EnvironmentalReading
+      metrics:
+        - name: value
+          interval: "variable"
+          retention: "5 years"
+
+  # ==========================================
+  # GEOSPATIAL INDEXES
+  # ==========================================
+  spatial_indexes:
+    - entity: InfrastructureAsset
+      field: location
+      type: "2dsphere"
+    - entity: IoTDevice
+      field: location
+      type: "2dsphere"
+    - entity: EnergyAsset
+      field: location
+      type: "2dsphere"
+    - entity: TrafficAsset
+      field: location
+      type: "2dsphere"
+    - entity: Zone
+      field: boundary
+      type: "2dsphere"
+    - entity: DevelopmentProject
+      field: location
+      type: "2dsphere"
+    - entity: PublicService
+      field: location
+      type: "2dsphere"

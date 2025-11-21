@@ -1,0 +1,894 @@
+# Agriculture & Food Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Agriculture & food domain ontology covering farms, crops, equipment, and supply chain"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Farm Entity
+    # ------------------------------------------------------------------------
+    - name: Farm
+      display_name: "Farm"
+      description: "Agricultural operation (crop, livestock, or mixed)"
+      icon: "🏡"
+      color: "#22C55E"
+
+      attributes:
+        # Core Identification
+        - name: farm_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: farm_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: farm_type
+          type: enum
+          required: true
+          values:
+            - "Crop Production"
+            - "Livestock"
+            - "Dairy"
+            - "Mixed"
+            - "Organic"
+            - "Specialty"
+            - "Vertical Farm"
+            - "Greenhouse"
+
+        # Location
+        - name: address
+          type: address
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: county
+          type: string
+          indexed: true
+
+        - name: state
+          type: string
+          indexed: true
+
+        # Size & Capacity
+        - name: total_acres
+          type: number
+          required: true
+          min: 0
+
+        - name: tillable_acres
+          type: number
+          min: 0
+
+        - name: irrigated_acres
+          type: number
+          min: 0
+
+        # Operations
+        - name: primary_crops
+          type: array
+          item_type: string
+
+        - name: growing_zone
+          type: string
+          description: "USDA Plant Hardiness Zone"
+
+        - name: avg_annual_rainfall
+          type: number
+          unit: "inches"
+
+        - name: soil_type
+          type: string
+
+        # Certifications
+        - name: organic_certified
+          type: boolean
+          default: false
+
+        - name: gap_certified
+          type: boolean
+          default: false
+
+        - name: certifications
+          type: array
+          item_type: string
+
+        # Contact
+        - name: owner_name
+          type: string
+
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+      indexes:
+        - fields: ["farm_type", "state"]
+          name: "idx_farm_type_state"
+        - fields: ["location"]
+          name: "idx_farm_location"
+          type: "spatial"
+
+    # ------------------------------------------------------------------------
+    # Crop Entity
+    # ------------------------------------------------------------------------
+    - name: Crop
+      display_name: "Crop"
+      description: "Crop planted in a field"
+      icon: "🌱"
+      color: "#84CC16"
+
+      attributes:
+        - name: crop_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: variety
+          type: string
+
+        - name: crop_type
+          type: enum
+          required: true
+          values:
+            - "Grain"
+            - "Oilseed"
+            - "Vegetable"
+            - "Fruit"
+            - "Forage"
+            - "Fiber"
+            - "Specialty"
+            - "Cover Crop"
+
+        - name: planting_date
+          type: date
+
+        - name: expected_harvest_date
+          type: date
+
+        - name: actual_harvest_date
+          type: date
+
+        - name: status
+          type: enum
+          values:
+            - "Planned"
+            - "Planted"
+            - "Growing"
+            - "Mature"
+            - "Harvested"
+            - "Failed"
+          default: "Planned"
+
+        - name: planted_acres
+          type: number
+          min: 0
+
+        - name: seed_rate
+          type: number
+          description: "Seeds per acre"
+
+        - name: row_spacing
+          type: number
+          unit: "inches"
+
+        - name: expected_yield
+          type: number
+          description: "Expected yield per acre"
+
+        - name: actual_yield
+          type: number
+          description: "Actual yield per acre"
+
+        - name: yield_unit
+          type: string
+          default: "bushels"
+
+        - name: crop_year
+          type: number
+
+        - name: market_price
+          type: money
+          description: "Price per unit at harvest"
+
+        - name: organic
+          type: boolean
+          default: false
+
+        - name: gmo
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["crop_type", "status"]
+          name: "idx_crop_type_status"
+        - fields: ["crop_year"]
+          name: "idx_crop_year"
+
+    # ------------------------------------------------------------------------
+    # Field Entity
+    # ------------------------------------------------------------------------
+    - name: Field
+      display_name: "Field"
+      description: "Agricultural field or plot"
+      icon: "🗺️"
+      color: "#A3E635"
+
+      attributes:
+        - name: field_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: field_id
+          type: string
+          indexed: true
+          unique_per_tenant: true
+
+        - name: acres
+          type: number
+          required: true
+          min: 0
+
+        - name: location
+          type: geopoint
+
+        - name: boundary
+          type: polygon
+          description: "Field boundary"
+
+        - name: soil_type
+          type: string
+
+        - name: soil_ph
+          type: number
+          min: 0
+          max: 14
+
+        - name: organic_matter
+          type: number
+          unit: "percentage"
+
+        - name: drainage
+          type: enum
+          values: ["Excellent", "Good", "Moderate", "Poor"]
+
+        - name: irrigation_type
+          type: enum
+          values: ["None", "Center Pivot", "Drip", "Flood", "Sprinkler"]
+
+        - name: tillage_practice
+          type: enum
+          values: ["Conventional", "Reduced", "No-Till", "Strip-Till"]
+
+        - name: fsa_farm_number
+          type: string
+          description: "FSA Farm Number"
+
+        - name: fsa_tract_number
+          type: string
+          description: "FSA Tract Number"
+
+        - name: clu_number
+          type: string
+          description: "Common Land Unit"
+
+        - name: last_soil_test_date
+          type: date
+
+      indexes:
+        - fields: ["field_name"]
+          name: "idx_field_name"
+
+    # ------------------------------------------------------------------------
+    # Equipment Entity
+    # ------------------------------------------------------------------------
+    - name: Equipment
+      display_name: "Equipment"
+      description: "Farm equipment or machinery"
+      icon: "🚜"
+      color: "#F59E0B"
+
+      attributes:
+        - name: equipment_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: equipment_type
+          type: enum
+          required: true
+          values:
+            - "Tractor"
+            - "Combine"
+            - "Planter"
+            - "Sprayer"
+            - "Tillage"
+            - "Harvester"
+            - "Irrigation"
+            - "Grain Handling"
+            - "Livestock"
+            - "Other"
+
+        - name: make
+          type: string
+
+        - name: model
+          type: string
+
+        - name: year
+          type: number
+
+        - name: serial_number
+          type: string
+          unique_per_tenant: true
+
+        - name: purchase_date
+          type: date
+
+        - name: purchase_price
+          type: money
+
+        - name: current_value
+          type: money
+
+        - name: hours
+          type: number
+          description: "Operating hours"
+
+        - name: status
+          type: enum
+          values: ["Available", "In Use", "Maintenance", "Out of Service"]
+          default: "Available"
+
+        - name: last_service_date
+          type: date
+
+        - name: next_service_date
+          type: date
+
+        - name: gps_enabled
+          type: boolean
+          default: false
+
+        - name: telematics_id
+          type: string
+
+      indexes:
+        - fields: ["equipment_type", "status"]
+          name: "idx_equipment_type_status"
+
+    # ------------------------------------------------------------------------
+    # Input Entity
+    # ------------------------------------------------------------------------
+    - name: Input
+      display_name: "Input"
+      description: "Agricultural input (seed, fertilizer, pesticide)"
+      icon: "🧪"
+      color: "#3B82F6"
+
+      attributes:
+        - name: input_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: input_type
+          type: enum
+          required: true
+          values:
+            - "Seed"
+            - "Fertilizer"
+            - "Herbicide"
+            - "Insecticide"
+            - "Fungicide"
+            - "Adjuvant"
+            - "Growth Regulator"
+            - "Inoculant"
+            - "Other"
+
+        - name: manufacturer
+          type: string
+
+        - name: product_name
+          type: string
+
+        - name: epa_registration
+          type: string
+          description: "EPA Registration Number (for pesticides)"
+
+        - name: active_ingredient
+          type: string
+
+        - name: unit_of_measure
+          type: string
+
+        - name: unit_cost
+          type: money
+
+        - name: application_rate
+          type: number
+          description: "Rate per acre"
+
+        - name: rate_unit
+          type: string
+
+        - name: restricted_use
+          type: boolean
+          default: false
+
+        - name: rei
+          type: number
+          description: "Restricted Entry Interval (hours)"
+
+        - name: phi
+          type: number
+          description: "Pre-Harvest Interval (days)"
+
+        - name: organic_approved
+          type: boolean
+          default: false
+
+        - name: inventory_quantity
+          type: number
+
+        - name: storage_location
+          type: string
+
+      indexes:
+        - fields: ["input_type"]
+          name: "idx_input_type"
+
+    # ------------------------------------------------------------------------
+    # Harvest Entity
+    # ------------------------------------------------------------------------
+    - name: Harvest
+      display_name: "Harvest"
+      description: "Harvest record for a crop"
+      icon: "🌾"
+      color: "#EAB308"
+
+      attributes:
+        - name: harvest_date
+          type: date
+          required: true
+
+        - name: quantity
+          type: number
+          required: true
+
+        - name: unit
+          type: string
+          default: "bushels"
+
+        - name: moisture
+          type: number
+          unit: "percentage"
+
+        - name: test_weight
+          type: number
+          description: "Test weight (lbs/bushel)"
+
+        - name: quality_grade
+          type: string
+
+        - name: storage_location
+          type: string
+
+        - name: bin_number
+          type: string
+
+        - name: destination
+          type: enum
+          values: ["On-Farm Storage", "Elevator", "Direct Sale", "Processing"]
+
+        - name: price_per_unit
+          type: money
+
+        - name: total_value
+          type: money
+          computed: true
+
+        - name: drying_required
+          type: boolean
+          default: false
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["harvest_date"]
+          name: "idx_harvest_date"
+
+    # ------------------------------------------------------------------------
+    # Processing Entity
+    # ------------------------------------------------------------------------
+    - name: Processing
+      display_name: "Processing"
+      description: "Food processing operation"
+      icon: "🏭"
+      color: "#6366F1"
+
+      attributes:
+        - name: batch_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: process_type
+          type: enum
+          required: true
+          values:
+            - "Cleaning"
+            - "Sorting"
+            - "Packaging"
+            - "Freezing"
+            - "Canning"
+            - "Drying"
+            - "Milling"
+            - "Pressing"
+            - "Fermentation"
+
+        - name: start_time
+          type: datetime
+
+        - name: end_time
+          type: datetime
+
+        - name: input_quantity
+          type: number
+
+        - name: output_quantity
+          type: number
+
+        - name: yield_percentage
+          type: number
+          computed: true
+          unit: "percentage"
+
+        - name: quality_check_passed
+          type: boolean
+
+        - name: temperature
+          type: number
+          unit: "fahrenheit"
+
+        - name: lot_code
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["batch_number"]
+          name: "idx_batch_number"
+
+    # ------------------------------------------------------------------------
+    # Distribution Entity
+    # ------------------------------------------------------------------------
+    - name: Distribution
+      display_name: "Distribution"
+      description: "Product distribution or shipment"
+      icon: "🚚"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: shipment_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: destination
+          type: string
+          required: true
+
+        - name: destination_type
+          type: enum
+          values:
+            - "Distributor"
+            - "Retailer"
+            - "Restaurant"
+            - "Direct Consumer"
+            - "Processor"
+            - "Export"
+
+        - name: ship_date
+          type: date
+          required: true
+
+        - name: delivery_date
+          type: date
+
+        - name: quantity
+          type: number
+
+        - name: unit
+          type: string
+
+        - name: carrier
+          type: string
+
+        - name: tracking_number
+          type: string
+
+        - name: temperature_controlled
+          type: boolean
+          default: false
+
+        - name: temperature_log
+          type: array
+          item_type: number
+
+        - name: status
+          type: enum
+          values: ["Pending", "In Transit", "Delivered", "Returned"]
+          default: "Pending"
+
+        - name: invoice_number
+          type: string
+
+        - name: total_value
+          type: money
+
+      indexes:
+        - fields: ["ship_date"]
+          name: "idx_ship_date"
+
+    # ------------------------------------------------------------------------
+    # Certification Entity
+    # ------------------------------------------------------------------------
+    - name: Certification
+      display_name: "Certification"
+      description: "Farm or product certification"
+      icon: "📜"
+      color: "#14B8A6"
+
+      attributes:
+        - name: certification_type
+          type: enum
+          required: true
+          values:
+            - "USDA Organic"
+            - "Non-GMO Project"
+            - "GAP"
+            - "GHP"
+            - "Fair Trade"
+            - "Rainforest Alliance"
+            - "Animal Welfare Approved"
+            - "Food Safety"
+            - "Other"
+
+        - name: certifying_body
+          type: string
+          required: true
+
+        - name: certificate_number
+          type: string
+          indexed: true
+
+        - name: status
+          type: enum
+          values: ["Active", "Pending", "Suspended", "Expired", "Revoked"]
+          default: "Active"
+
+        - name: issue_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: scope
+          type: text
+          description: "Products or operations covered"
+
+        - name: last_audit_date
+          type: date
+
+        - name: next_audit_date
+          type: date
+
+        - name: document_url
+          type: url
+
+      indexes:
+        - fields: ["certification_type", "status"]
+          name: "idx_certification_type_status"
+        - fields: ["expiration_date"]
+          name: "idx_cert_expiration"
+
+    # ------------------------------------------------------------------------
+    # Weather Entity
+    # ------------------------------------------------------------------------
+    - name: Weather
+      display_name: "Weather"
+      description: "Weather observation or forecast"
+      icon: "🌤️"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: observation_date
+          type: datetime
+          required: true
+          indexed: true
+
+        - name: observation_type
+          type: enum
+          values: ["Actual", "Forecast"]
+
+        - name: temperature_high
+          type: number
+          unit: "fahrenheit"
+
+        - name: temperature_low
+          type: number
+          unit: "fahrenheit"
+
+        - name: precipitation
+          type: number
+          unit: "inches"
+
+        - name: humidity
+          type: number
+          unit: "percentage"
+
+        - name: wind_speed
+          type: number
+          unit: "mph"
+
+        - name: wind_direction
+          type: string
+
+        - name: solar_radiation
+          type: number
+
+        - name: growing_degree_days
+          type: number
+
+        - name: evapotranspiration
+          type: number
+
+        - name: soil_temperature
+          type: number
+          unit: "fahrenheit"
+
+        - name: soil_moisture
+          type: number
+          unit: "percentage"
+
+      indexes:
+        - fields: ["observation_date"]
+          name: "idx_weather_date"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Farm Relationships
+    - name: HAS_FIELD
+      from: Farm
+      to: Field
+      description: "Farm contains field"
+      cardinality: one_to_many
+
+    - name: OWNS_EQUIPMENT
+      from: Farm
+      to: Equipment
+      description: "Farm owns equipment"
+      cardinality: one_to_many
+
+    # Crop Relationships
+    - name: GROWS
+      from: Field
+      to: Crop
+      description: "Field grows crop"
+      cardinality: one_to_many
+
+    - name: INPUT_APPLIED
+      from: Input
+      to: Crop
+      description: "Input applied to crop"
+      cardinality: many_to_many
+      attributes:
+        - name: application_date
+          type: date
+        - name: rate
+          type: number
+        - name: method
+          type: string
+
+    # Harvest Relationships
+    - name: HARVESTED_FROM
+      from: Harvest
+      to: Crop
+      description: "Harvest from crop"
+      cardinality: many_to_one
+
+    # Processing Relationships
+    - name: PROCESSES
+      from: Processing
+      to: Harvest
+      description: "Processing uses harvest"
+      cardinality: many_to_many
+
+    - name: DISTRIBUTES_TO
+      from: Processing
+      to: Distribution
+      description: "Processing output distributed"
+      cardinality: one_to_many
+
+    # Certification Relationships
+    - name: CERTIFIED_BY
+      from: Farm
+      to: Certification
+      description: "Farm has certification"
+      cardinality: one_to_many
+
+    # Weather Relationships
+    - name: WEATHER_FOR
+      from: Weather
+      to: Field
+      description: "Weather observation for field"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "field_history"
+      description: "Get crop history for a field"
+      cypher: |
+        MATCH (f:Field {id: $field_id})-[:GROWS]->(c:Crop)
+        RETURN c
+        ORDER BY c.crop_year DESC
+
+    - name: "input_costs"
+      description: "Calculate input costs for a crop"
+      cypher: |
+        MATCH (i:Input)-[r:INPUT_APPLIED]->(c:Crop {id: $crop_id})
+        RETURN sum(i.unit_cost * r.rate * c.planted_acres) AS total_input_cost
+
+    - name: "traceability"
+      description: "Trace product from field to distribution"
+      cypher: |
+        MATCH (f:Field)-[:GROWS]->(c:Crop)<-[:HARVESTED_FROM]-(h:Harvest)
+        MATCH (h)<-[:PROCESSES]-(p:Processing)-[:DISTRIBUTES_TO]->(d:Distribution)
+        WHERE d.shipment_id = $shipment_id
+        RETURN f, c, h, p, d
+
+    - name: "certification_status"
+      description: "Get all certifications for a farm"
+      cypher: |
+        MATCH (farm:Farm {id: $farm_id})-[:CERTIFIED_BY]->(cert:Certification)
+        RETURN cert
+        ORDER BY cert.expiration_date ASC
+
+    - name: "yield_analysis"
+      description: "Analyze yields by crop type"
+      cypher: |
+        MATCH (f:Field)-[:GROWS]->(c:Crop)
+        WHERE c.crop_year = $year AND c.status = 'Harvested'
+        RETURN c.crop_type, avg(c.actual_yield) AS avg_yield,
+               sum(c.planted_acres) AS total_acres
+        ORDER BY avg_yield DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  last_updated: "2024-01-15"

@@ -1,0 +1,505 @@
+ontology:
+  entities:
+    - name: Product
+      description: "Physical or digital product for sale"
+      label: "Product"
+      attributes:
+        - name: name
+          type: string
+          required: true
+          validators:
+            - type: NotEmpty
+            - type: MaxLength
+              value: 200
+
+        - name: description
+          type: string
+          required: false
+          validators:
+            - type: MaxLength
+              value: 5000
+
+        - name: sku
+          type: string
+          required: true
+          validators:
+            - type: NotEmpty
+            - type: Regex
+              pattern: "^[A-Z0-9-]+$"
+              message: "SKU must contain only uppercase letters, numbers, and hyphens"
+
+        - name: price
+          type: decimal
+          required: true
+          validators:
+            - type: GreaterThan
+              value: 0
+
+        - name: compareAtPrice
+          type: decimal
+          required: false
+          validators:
+            - type: GreaterThan
+              value: 0
+
+        - name: costPrice
+          type: decimal
+          required: false
+
+        - name: stockQuantity
+          type: integer
+          required: true
+          validators:
+            - type: GreaterThanOrEqual
+              value: 0
+
+        - name: lowStockThreshold
+          type: integer
+          required: false
+          default: 10
+
+        - name: weight
+          type: decimal
+          required: false
+          description: "Weight in pounds"
+
+        - name: dimensions
+          type: object
+          required: false
+          description: "Length x Width x Height in inches"
+
+        - name: images
+          type: array
+          item_type: string
+          required: false
+          description: "Array of image URLs"
+
+        - name: tags
+          type: array
+          item_type: string
+          required: false
+
+        - name: active
+          type: boolean
+          required: true
+          default: true
+
+        - name: featured
+          type: boolean
+          required: false
+          default: false
+
+    - name: ProductVariant
+      description: "Variant of a product (size, color, etc.)"
+      label: "Product Variant"
+      attributes:
+        - name: sku
+          type: string
+          required: true
+
+        - name: option1Name
+          type: string
+          required: false
+          description: "e.g., 'Size'"
+
+        - name: option1Value
+          type: string
+          required: false
+          description: "e.g., 'Large'"
+
+        - name: option2Name
+          type: string
+          required: false
+          description: "e.g., 'Color'"
+
+        - name: option2Value
+          type: string
+          required: false
+          description: "e.g., 'Red'"
+
+        - name: price
+          type: decimal
+          required: true
+
+        - name: stockQuantity
+          type: integer
+          required: true
+
+        - name: barcode
+          type: string
+          required: false
+
+    - name: Category
+      description: "Product category for organization"
+      label: "Category"
+      attributes:
+        - name: name
+          type: string
+          required: true
+
+        - name: slug
+          type: string
+          required: true
+          validators:
+            - type: Regex
+              pattern: "^[a-z0-9-]+$"
+
+        - name: description
+          type: string
+          required: false
+
+        - name: imageUrl
+          type: string
+          required: false
+
+        - name: displayOrder
+          type: integer
+          required: false
+
+    - name: Customer
+      description: "Customer account"
+      label: "Customer"
+      attributes:
+        - name: email
+          type: string
+          required: true
+          validators:
+            - type: Email
+
+        - name: firstName
+          type: string
+          required: true
+
+        - name: lastName
+          type: string
+          required: true
+
+        - name: phone
+          type: string
+          required: false
+
+        - name: taxExempt
+          type: boolean
+          required: false
+          default: false
+
+        - name: tags
+          type: array
+          item_type: string
+          required: false
+
+        - name: totalSpent
+          type: decimal
+          required: false
+          default: 0
+
+        - name: totalOrders
+          type: integer
+          required: false
+          default: 0
+
+        - name: acceptsMarketing
+          type: boolean
+          required: false
+          default: false
+
+    - name: Address
+      description: "Shipping or billing address"
+      label: "Address"
+      attributes:
+        - name: firstName
+          type: string
+          required: true
+
+        - name: lastName
+          type: string
+          required: true
+
+        - name: company
+          type: string
+          required: false
+
+        - name: address1
+          type: string
+          required: true
+
+        - name: address2
+          type: string
+          required: false
+
+        - name: city
+          type: string
+          required: true
+
+        - name: province
+          type: string
+          required: false
+          description: "State or province"
+
+        - name: zip
+          type: string
+          required: true
+
+        - name: country
+          type: string
+          required: true
+
+        - name: phone
+          type: string
+          required: false
+
+        - name: isDefault
+          type: boolean
+          required: false
+          default: false
+
+    - name: Order
+      description: "Customer order"
+      label: "Order"
+      attributes:
+        - name: orderNumber
+          type: string
+          required: true
+
+        - name: status
+          type: enum
+          values: ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"]
+          required: true
+          default: "pending"
+
+        - name: financialStatus
+          type: enum
+          values: ["pending", "authorized", "paid", "partially_refunded", "refunded", "voided"]
+          required: true
+          default: "pending"
+
+        - name: fulfillmentStatus
+          type: enum
+          values: ["unfulfilled", "partially_fulfilled", "fulfilled", "returned"]
+          required: false
+
+        - name: subtotalPrice
+          type: decimal
+          required: true
+
+        - name: totalTax
+          type: decimal
+          required: false
+          default: 0
+
+        - name: totalShipping
+          type: decimal
+          required: false
+          default: 0
+
+        - name: totalDiscount
+          type: decimal
+          required: false
+          default: 0
+
+        - name: totalPrice
+          type: decimal
+          required: true
+
+        - name: currency
+          type: string
+          required: true
+          default: "USD"
+
+        - name: note
+          type: string
+          required: false
+
+        - name: tags
+          type: array
+          item_type: string
+          required: false
+
+        - name: orderDate
+          type: datetime
+          required: true
+
+        - name: shippedDate
+          type: datetime
+          required: false
+
+        - name: deliveredDate
+          type: datetime
+          required: false
+
+    - name: OrderLineItem
+      description: "Individual item in an order"
+      label: "Order Line Item"
+      attributes:
+        - name: quantity
+          type: integer
+          required: true
+          validators:
+            - type: GreaterThan
+              value: 0
+
+        - name: pricePerUnit
+          type: decimal
+          required: true
+
+        - name: totalPrice
+          type: decimal
+          required: true
+
+        - name: taxAmount
+          type: decimal
+          required: false
+          default: 0
+
+        - name: discountAmount
+          type: decimal
+          required: false
+          default: 0
+
+    - name: DiscountCode
+      description: "Promotional discount code"
+      label: "Discount Code"
+      attributes:
+        - name: code
+          type: string
+          required: true
+          validators:
+            - type: Regex
+              pattern: "^[A-Z0-9]+$"
+
+        - name: type
+          type: enum
+          values: ["percentage", "fixed_amount", "free_shipping"]
+          required: true
+
+        - name: value
+          type: decimal
+          required: true
+          description: "Percentage (0-100) or fixed amount"
+
+        - name: minimumPurchase
+          type: decimal
+          required: false
+
+        - name: usageLimit
+          type: integer
+          required: false
+          description: "Max number of times code can be used"
+
+        - name: usageCount
+          type: integer
+          required: false
+          default: 0
+
+        - name: active
+          type: boolean
+          required: true
+          default: true
+
+        - name: startsAt
+          type: datetime
+          required: false
+
+        - name: endsAt
+          type: datetime
+          required: false
+
+  relationships:
+    - name: HAS_VARIANT
+      from: Product
+      to: ProductVariant
+      type: one-to-many
+      description: "Product has multiple variants"
+
+    - name: IN_CATEGORY
+      from: Product
+      to: Category
+      type: many-to-many
+      description: "Product belongs to categories"
+
+    - name: PARENT_CATEGORY
+      from: Category
+      to: Category
+      type: many-to-one
+      description: "Category hierarchy"
+
+    - name: PLACED_BY
+      from: Order
+      to: Customer
+      type: many-to-one
+      description: "Order placed by customer"
+
+    - name: HAS_ADDRESS
+      from: Customer
+      to: Address
+      type: one-to-many
+      description: "Customer has multiple addresses"
+
+    - name: SHIPS_TO
+      from: Order
+      to: Address
+      type: many-to-one
+      description: "Order ships to address"
+
+    - name: BILLS_TO
+      from: Order
+      to: Address
+      type: many-to-one
+      description: "Order bills to address"
+
+    - name: CONTAINS_ITEM
+      from: Order
+      to: OrderLineItem
+      type: one-to-many
+      description: "Order contains line items"
+
+    - name: LINE_ITEM_PRODUCT
+      from: OrderLineItem
+      to: Product
+      type: many-to-one
+      description: "Line item references product"
+
+    - name: LINE_ITEM_VARIANT
+      from: OrderLineItem
+      to: ProductVariant
+      type: many-to-one
+      description: "Line item references variant"
+
+    - name: USES_DISCOUNT
+      from: Order
+      to: DiscountCode
+      type: many-to-one
+      description: "Order uses discount code"
+
+  indexes:
+    - entity: Product
+      type: btree
+      fields: [sku]
+      unique: true
+
+    - entity: Product
+      type: btree
+      fields: [active, featured]
+
+    - entity: Customer
+      type: btree
+      fields: [email]
+      unique: true
+
+    - entity: Order
+      type: btree
+      fields: [orderNumber]
+      unique: true
+
+    - entity: Order
+      type: btree
+      fields: [orderDate]
+
+    - entity: Order
+      type: btree
+      fields: [status]
+
+    - entity: DiscountCode
+      type: btree
+      fields: [code]
+      unique: true

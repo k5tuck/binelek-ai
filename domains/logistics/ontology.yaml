@@ -1,0 +1,936 @@
+# Logistics Ontology Definition
+# Supply chain entities, relationships, and logistics data models
+
+ontology:
+  version: "1.0.0"
+  description: "Logistics domain ontology covering shipments, warehouses, vehicles, and supply chain operations"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Shipment Entity
+    # ------------------------------------------------------------------------
+    - name: Shipment
+      display_name: "Shipment"
+      description: "Package or freight shipment being transported"
+      icon: "📦"
+      color: "#6366F1"
+
+      attributes:
+        - name: tracking_number
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: shipment_type
+          type: enum
+          required: true
+          values:
+            - "Parcel"
+            - "LTL (Less Than Truckload)"
+            - "FTL (Full Truckload)"
+            - "Intermodal"
+            - "Air Freight"
+            - "Ocean Freight"
+            - "Last Mile"
+
+        - name: shipment_status
+          type: enum
+          required: true
+          values:
+            - "Created"
+            - "Picked Up"
+            - "In Transit"
+            - "Out for Delivery"
+            - "Delivered"
+            - "Exception"
+            - "Returned"
+            - "Cancelled"
+          default: "Created"
+
+        - name: service_level
+          type: enum
+          required: true
+          values:
+            - "Same Day"
+            - "Next Day"
+            - "2-Day"
+            - "Ground"
+            - "Standard"
+            - "Economy"
+
+        - name: carrier
+          type: string
+          required: true
+          indexed: true
+          description: "Carrier name (e.g., FedEx, UPS, USPS)"
+
+        - name: carrier_service
+          type: string
+          description: "Specific carrier service (e.g., FedEx Ground, UPS Next Day Air)"
+
+        # Origin & Destination
+        - name: origin_address
+          type: address
+          required: true
+
+        - name: origin_location
+          type: geopoint
+          indexed: true
+
+        - name: destination_address
+          type: address
+          required: true
+
+        - name: destination_location
+          type: geopoint
+          indexed: true
+
+        # Dates & Times
+        - name: created_date
+          type: datetime
+          required: true
+
+        - name: pickup_date
+          type: datetime
+
+        - name: estimated_delivery_date
+          type: datetime
+
+        - name: actual_delivery_date
+          type: datetime
+
+        - name: delivered_on_time
+          type: boolean
+          computed: true
+
+        # Package Details
+        - name: weight
+          type: number
+          required: true
+          unit: "lbs"
+
+        - name: length
+          type: number
+          unit: "inches"
+
+        - name: width
+          type: number
+          unit: "inches"
+
+        - name: height
+          type: number
+          unit: "inches"
+
+        - name: dimensional_weight
+          type: number
+          computed: true
+          unit: "lbs"
+
+        - name: package_count
+          type: number
+          default: 1
+
+        # Financial
+        - name: declared_value
+          type: money
+
+        - name: freight_cost
+          type: money
+
+        - name: fuel_surcharge
+          type: money
+
+        - name: total_cost
+          type: money
+          computed: true
+
+        - name: billed_to_customer
+          type: money
+
+        # Special Handling
+        - name: is_hazmat
+          type: boolean
+          default: false
+
+        - name: requires_signature
+          type: boolean
+          default: false
+
+        - name: is_fragile
+          type: boolean
+          default: false
+
+        - name: temperature_controlled
+          type: boolean
+          default: false
+
+        - name: temperature_range
+          type: string
+          description: "e.g., '2-8°C', '15-25°C'"
+
+        # Delivery Proof
+        - name: signature_name
+          type: string
+
+        - name: signature_image_url
+          type: url
+
+        - name: delivery_photo_url
+          type: url
+
+        # Tracking Events
+        - name: last_scan_location
+          type: string
+
+        - name: last_scan_time
+          type: datetime
+
+        - name: exception_reason
+          type: text
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["tracking_number"]
+          unique: true
+          name: "idx_tracking_number"
+        - fields: ["shipment_status"]
+          name: "idx_shipment_status"
+        - fields: ["carrier"]
+          name: "idx_carrier"
+        - fields: ["estimated_delivery_date"]
+          name: "idx_est_delivery"
+
+    # ------------------------------------------------------------------------
+    # Warehouse Entity
+    # ------------------------------------------------------------------------
+    - name: Warehouse
+      display_name: "Warehouse"
+      description: "Warehouse or fulfillment center facility"
+      icon: "🏭"
+      color: "#10B981"
+
+      attributes:
+        - name: warehouse_name
+          type: string
+          required: true
+
+        - name: warehouse_code
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: warehouse_type
+          type: enum
+          required: true
+          values:
+            - "Fulfillment Center"
+            - "Distribution Center"
+            - "Cross-Dock"
+            - "Cold Storage"
+            - "Bonded Warehouse"
+            - "Returns Center"
+
+        - name: address
+          type: address
+          required: true
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: total_sqft
+          type: number
+          unit: "sqft"
+
+        - name: usable_sqft
+          type: number
+          unit: "sqft"
+
+        - name: warehouse_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "Under Construction"
+            - "Closed"
+          default: "Active"
+
+        - name: operating_hours
+          type: text
+          description: "e.g., 'Mon-Fri 8am-6pm, Sat 9am-2pm'"
+
+        - name: capacity_utilization
+          type: number
+          unit: "percentage"
+          description: "Percentage of capacity currently in use"
+
+        - name: max_pallet_capacity
+          type: number
+
+        - name: current_pallet_count
+          type: number
+
+        - name: certifications
+          type: array
+          item_type: string
+          description: "e.g., 'ISO 9001', 'FDA Registered', 'Organic Certified'"
+
+        - name: climate_controlled
+          type: boolean
+          default: false
+
+        - name: hazmat_capable
+          type: boolean
+          default: false
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["warehouse_code"]
+          unique: true
+          name: "idx_warehouse_code"
+        - fields: ["warehouse_status"]
+          name: "idx_warehouse_status"
+
+    # ------------------------------------------------------------------------
+    # Product Entity (SKU/Inventory Item)
+    # ------------------------------------------------------------------------
+    - name: Product
+      display_name: "Product"
+      description: "Product or SKU in inventory"
+      icon: "📦"
+      color: "#F59E0B"
+
+      attributes:
+        - name: sku
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: product_name
+          type: string
+          required: true
+
+        - name: description
+          type: text
+
+        - name: category
+          type: string
+          indexed: true
+
+        - name: barcode
+          type: string
+          indexed: true
+          description: "UPC, EAN, or other barcode"
+
+        - name: weight
+          type: number
+          unit: "lbs"
+
+        - name: length
+          type: number
+          unit: "inches"
+
+        - name: width
+          type: number
+          unit: "inches"
+
+        - name: height
+          type: number
+          unit: "inches"
+
+        - name: cost
+          type: money
+
+        - name: price
+          type: money
+
+        - name: is_hazmat
+          type: boolean
+          default: false
+
+        - name: requires_cold_storage
+          type: boolean
+          default: false
+
+        - name: is_fragile
+          type: boolean
+          default: false
+
+        - name: shelf_life_days
+          type: number
+
+        - name: image_url
+          type: url
+
+        - name: product_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Discontinued"
+            - "Out of Stock"
+            - "Backordered"
+          default: "Active"
+
+      indexes:
+        - fields: ["sku"]
+          unique: true
+          name: "idx_product_sku"
+        - fields: ["barcode"]
+          name: "idx_product_barcode"
+        - fields: ["category"]
+          name: "idx_product_category"
+
+    # ------------------------------------------------------------------------
+    # InventoryLevel Entity
+    # ------------------------------------------------------------------------
+    - name: InventoryLevel
+      display_name: "Inventory Level"
+      description: "Inventory quantity at a specific warehouse"
+      icon: "📊"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: quantity_on_hand
+          type: number
+          required: true
+          default: 0
+
+        - name: quantity_reserved
+          type: number
+          default: 0
+          description: "Reserved for pending orders"
+
+        - name: quantity_available
+          type: number
+          computed: true
+          formula: "quantity_on_hand - quantity_reserved"
+
+        - name: reorder_point
+          type: number
+          description: "Trigger level for reordering"
+
+        - name: reorder_quantity
+          type: number
+
+        - name: max_stock_level
+          type: number
+
+        - name: last_counted_date
+          type: date
+          description: "Last physical inventory count"
+
+        - name: location_in_warehouse
+          type: string
+          description: "e.g., 'Aisle 3, Bin 12'"
+
+      indexes:
+        - fields: ["quantity_available"]
+          name: "idx_qty_available"
+
+    # ------------------------------------------------------------------------
+    # Vehicle Entity
+    # ------------------------------------------------------------------------
+    - name: Vehicle
+      display_name: "Vehicle"
+      description: "Delivery vehicle or fleet asset"
+      icon: "🚚"
+      color: "#EC4899"
+
+      attributes:
+        - name: vehicle_number
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: vehicle_type
+          type: enum
+          required: true
+          values:
+            - "Van"
+            - "Box Truck"
+            - "Semi-Truck"
+            - "Refrigerated Truck"
+            - "Flatbed"
+            - "Cargo Bike"
+            - "Drone"
+
+        - name: make
+          type: string
+
+        - name: model
+          type: string
+
+        - name: year
+          type: number
+
+        - name: vin
+          type: string
+          description: "Vehicle Identification Number"
+
+        - name: license_plate
+          type: string
+          indexed: true
+
+        - name: vehicle_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "In Service"
+            - "Out of Service"
+            - "Retired"
+          default: "Active"
+
+        - name: capacity_weight
+          type: number
+          unit: "lbs"
+
+        - name: capacity_volume
+          type: number
+          unit: "cubic_feet"
+
+        - name: fuel_type
+          type: enum
+          values: ["Gasoline", "Diesel", "Electric", "Hybrid", "CNG"]
+
+        - name: mpg
+          type: number
+          description: "Miles per gallon"
+
+        - name: odometer
+          type: number
+          unit: "miles"
+
+        - name: last_service_date
+          type: date
+
+        - name: next_service_due
+          type: date
+
+        - name: gps_device_id
+          type: string
+          description: "Telematics device ID"
+
+        - name: current_location
+          type: geopoint
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["vehicle_number"]
+          unique: true
+          name: "idx_vehicle_number"
+        - fields: ["license_plate"]
+          name: "idx_license_plate"
+        - fields: ["vehicle_status"]
+          name: "idx_vehicle_status"
+
+    # ------------------------------------------------------------------------
+    # Driver Entity
+    # ------------------------------------------------------------------------
+    - name: Driver
+      display_name: "Driver"
+      description: "Delivery driver or operator"
+      icon: "👨‍✈️"
+      color: "#14B8A6"
+
+      attributes:
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+
+        - name: employee_id
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: drivers_license_number
+          type: string
+          required: true
+
+        - name: drivers_license_state
+          type: string
+
+        - name: license_expiration_date
+          type: date
+          required: true
+
+        - name: cdl_class
+          type: enum
+          values: ["None", "Class A", "Class B", "Class C"]
+          description: "Commercial Driver's License class"
+
+        - name: driver_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "On Leave"
+            - "Terminated"
+          default: "Active"
+
+        - name: hire_date
+          type: date
+
+        - name: termination_date
+          type: date
+
+        - name: safety_rating
+          type: number
+          min: 0
+          max: 100
+          description: "Safety score (0-100)"
+
+        - name: accident_count
+          type: number
+          default: 0
+
+        - name: last_accident_date
+          type: date
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["employee_id"]
+          unique: true
+          name: "idx_driver_employee_id"
+        - fields: ["driver_status"]
+          name: "idx_driver_status"
+
+    # ------------------------------------------------------------------------
+    # Route Entity
+    # ------------------------------------------------------------------------
+    - name: Route
+      display_name: "Delivery Route"
+      description: "Planned delivery route with multiple stops"
+      icon: "🗺️"
+      color: "#3B82F6"
+
+      attributes:
+        - name: route_number
+          type: string
+          required: true
+          unique_per_tenant: true
+          indexed: true
+
+        - name: route_date
+          type: date
+          required: true
+
+        - name: route_status
+          type: enum
+          required: true
+          values:
+            - "Planned"
+            - "In Progress"
+            - "Completed"
+            - "Cancelled"
+          default: "Planned"
+
+        - name: planned_start_time
+          type: datetime
+
+        - name: actual_start_time
+          type: datetime
+
+        - name: planned_end_time
+          type: datetime
+
+        - name: actual_end_time
+          type: datetime
+
+        - name: total_stops
+          type: number
+
+        - name: completed_stops
+          type: number
+          default: 0
+
+        - name: planned_distance_miles
+          type: number
+          unit: "miles"
+
+        - name: actual_distance_miles
+          type: number
+          unit: "miles"
+
+        - name: estimated_fuel_cost
+          type: money
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["route_number"]
+          unique: true
+          name: "idx_route_number"
+        - fields: ["route_date"]
+          name: "idx_route_date"
+        - fields: ["route_status"]
+          name: "idx_route_status"
+
+    # ------------------------------------------------------------------------
+    # Customer Entity
+    # ------------------------------------------------------------------------
+    - name: Customer
+      display_name: "Customer"
+      description: "Shipping customer or consignee"
+      icon: "🏢"
+      color: "#F43F5E"
+
+      attributes:
+        - name: customer_name
+          type: string
+          required: true
+
+        - name: customer_type
+          type: enum
+          required: true
+          values:
+            - "Business"
+            - "Residential"
+            - "Government"
+
+        - name: account_number
+          type: string
+          unique_per_tenant: true
+          indexed: true
+
+        - name: email
+          type: email
+          indexed: true
+
+        - name: phone
+          type: phone
+
+        - name: billing_address
+          type: address
+
+        - name: shipping_address
+          type: address
+
+        - name: customer_status
+          type: enum
+          required: true
+          values:
+            - "Active"
+            - "Inactive"
+            - "On Hold"
+          default: "Active"
+
+        - name: credit_limit
+          type: money
+
+        - name: current_balance
+          type: money
+
+        - name: payment_terms
+          type: enum
+          values: ["Prepaid", "Net 15", "Net 30", "Net 60", "COD"]
+          default: "Net 30"
+
+        - name: preferred_carrier
+          type: string
+
+        - name: notes
+          type: text
+
+      indexes:
+        - fields: ["account_number"]
+          unique: true
+          name: "idx_customer_account"
+        - fields: ["customer_status"]
+          name: "idx_customer_status"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Shipment Relationships
+    - name: SHIPPED_FROM
+      from: Shipment
+      to: Warehouse
+      description: "Shipment originated from warehouse"
+      cardinality: many_to_one
+
+    - name: SHIPPED_TO
+      from: Shipment
+      to: Customer
+      description: "Shipment sent to customer"
+      cardinality: many_to_one
+
+    - name: CONTAINS_PRODUCT
+      from: Shipment
+      to: Product
+      description: "Shipment contains product"
+      cardinality: many_to_many
+      attributes:
+        - name: quantity
+          type: number
+          required: true
+
+    # Inventory Relationships
+    - name: STORED_AT
+      from: Product
+      to: Warehouse
+      description: "Product inventory at warehouse"
+      cardinality: many_to_many
+      # This relationship links to InventoryLevel entity
+
+    - name: INVENTORY_LEVEL
+      from: InventoryLevel
+      to: Product
+      description: "Inventory level for product"
+      cardinality: many_to_one
+
+    - name: AT_WAREHOUSE
+      from: InventoryLevel
+      to: Warehouse
+      description: "Inventory level at warehouse"
+      cardinality: many_to_one
+
+    # Vehicle & Driver Relationships
+    - name: ASSIGNED_TO_VEHICLE
+      from: Driver
+      to: Vehicle
+      description: "Driver assigned to vehicle"
+      cardinality: many_to_one
+      attributes:
+        - name: assignment_start_date
+          type: date
+
+    # Route Relationships
+    - name: ASSIGNED_TO_ROUTE
+      from: Driver
+      to: Route
+      description: "Driver assigned to route"
+      cardinality: many_to_one
+
+    - name: USES_VEHICLE
+      from: Route
+      to: Vehicle
+      description: "Route uses vehicle"
+      cardinality: many_to_one
+
+    - name: ON_ROUTE
+      from: Shipment
+      to: Route
+      description: "Shipment is on delivery route"
+      cardinality: many_to_one
+      attributes:
+        - name: stop_sequence
+          type: number
+          description: "Order of delivery stop on route"
+
+  # ============================================================================
+  # COMMON QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "shipments_in_transit"
+      description: "All shipments currently in transit"
+      cypher: |
+        MATCH (s:Shipment)
+        WHERE s.shipment_status IN ['Picked Up', 'In Transit', 'Out for Delivery']
+        RETURN s
+        ORDER BY s.estimated_delivery_date ASC
+
+    - name: "warehouse_inventory"
+      description: "Current inventory levels at a warehouse"
+      cypher: |
+        MATCH (w:Warehouse {id: $warehouse_id})<-[:AT_WAREHOUSE]-(inv:InventoryLevel)-[:INVENTORY_LEVEL]->(p:Product)
+        WHERE p.product_status = 'Active'
+        RETURN p, inv.quantity_on_hand, inv.quantity_available
+        ORDER BY p.product_name ASC
+
+    - name: "low_stock_alerts"
+      description: "Products below reorder point at any warehouse"
+      cypher: |
+        MATCH (inv:InventoryLevel)-[:INVENTORY_LEVEL]->(p:Product)
+        MATCH (inv)-[:AT_WAREHOUSE]->(w:Warehouse)
+        WHERE inv.quantity_available <= inv.reorder_point
+          AND p.product_status = 'Active'
+        RETURN p, w, inv.quantity_available, inv.reorder_point
+        ORDER BY inv.quantity_available ASC
+
+    - name: "driver_route_history"
+      description: "All routes completed by a driver"
+      cypher: |
+        MATCH (driver:Driver {id: $driver_id})-[:ASSIGNED_TO_ROUTE]->(route:Route)
+        WHERE route.route_status = 'Completed'
+        RETURN route
+        ORDER BY route.route_date DESC
+
+    - name: "customer_shipment_history"
+      description: "All shipments for a customer"
+      cypher: |
+        MATCH (customer:Customer {id: $customer_id})<-[:SHIPPED_TO]-(shipment:Shipment)
+        RETURN shipment
+        ORDER BY shipment.created_date DESC
+
+    - name: "route_optimization"
+      description: "Find optimal warehouse for multi-shipment delivery route"
+      cypher: |
+        MATCH (s:Shipment)
+        WHERE s.shipment_status = 'Created'
+          AND s.destination_location IS NOT NULL
+        MATCH (w:Warehouse {warehouse_status: 'Active'})
+        WITH w, collect(s) AS shipments,
+             avg(point.distance(w.location, s.destination_location)) AS avg_distance
+        RETURN w, shipments, avg_distance
+        ORDER BY avg_distance ASC
+        LIMIT 1
+
+    - name: "vehicle_utilization"
+      description: "Vehicle utilization and performance metrics"
+      cypher: |
+        MATCH (v:Vehicle {vehicle_status: 'Active'})<-[:USES_VEHICLE]-(r:Route)
+        WHERE r.route_date >= date() - duration({days: 30})
+        WITH v, count(r) AS routes_count,
+             avg(r.actual_distance_miles) AS avg_distance,
+             sum(r.completed_stops) AS total_deliveries
+        RETURN v, routes_count, avg_distance, total_deliveries
+        ORDER BY routes_count DESC
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  industry_standards:
+    - "EDI 210 (Freight Invoice)"
+    - "EDI 214 (Shipment Status)"
+    - "EDI 940 (Warehouse Shipping Order)"

@@ -1,0 +1,829 @@
+# Insurance UI Configuration
+# Frontend presentation layer for insurance domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for insurance policy and claims management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#0EA5E9"      # Sky Blue
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/insurance-logo.svg"
+    favicon_url: "/assets/favicons/insurance.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "layout-dashboard"
+        route: "/dashboard"
+
+      - id: "policies"
+        label: "Policies"
+        icon: "shield"
+        route: "/policies"
+        badge_query: "count_active_policies"
+
+      - id: "claims"
+        label: "Claims"
+        icon: "file-warning"
+        route: "/claims"
+        badge_query: "count_open_claims"
+
+      - id: "underwriting"
+        label: "Underwriting"
+        icon: "clipboard-check"
+        route: "/underwriting"
+        badge_query: "count_pending_submissions"
+
+      - id: "agents"
+        label: "Agents"
+        icon: "users"
+        route: "/agents"
+
+      - id: "billing"
+        label: "Billing"
+        icon: "credit-card"
+        route: "/billing"
+        submenu:
+          - id: "invoices"
+            label: "Invoices"
+            route: "/billing/invoices"
+          - id: "payments"
+            label: "Payments"
+            route: "/billing/payments"
+          - id: "commissions"
+            label: "Commissions"
+            route: "/billing/commissions"
+
+      - id: "fraud"
+        label: "Fraud Detection"
+        icon: "alert-triangle"
+        route: "/fraud"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "bar-chart-2"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "settings"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Insurance Dashboard"
+      description: "Overview of policies, claims, and performance"
+      layout: "grid"
+
+      widgets:
+        - id: "active_policies"
+          type: "metric_card"
+          title: "Active Policies"
+          query: "count_active_policies"
+          icon: "shield"
+          color: "#0EA5E9"
+          size: "small"
+
+        - id: "open_claims"
+          type: "metric_card"
+          title: "Open Claims"
+          query: "count_open_claims"
+          icon: "file-warning"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "written_premium"
+          type: "metric_card"
+          title: "Written Premium (MTD)"
+          query: "sum_mtd_premium"
+          format: "currency"
+          icon: "dollar-sign"
+          color: "#10B981"
+          size: "small"
+
+        - id: "loss_ratio"
+          type: "metric_card"
+          title: "Loss Ratio"
+          query: "current_loss_ratio"
+          format: "percentage"
+          icon: "percent"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "recent_claims"
+          type: "entity_list"
+          title: "Recent Claims"
+          entity_type: "Claim"
+          query:
+            filter:
+              status: ["FNOL", "Under Investigation", "Under Review"]
+            sort:
+              field: "reported_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - claim_number
+            - claim_type
+            - loss_date
+            - reserve_amount
+            - status
+          size: "medium"
+
+        - id: "pending_renewals"
+          type: "entity_list"
+          title: "Upcoming Renewals"
+          entity_type: "Policy"
+          query:
+            filter:
+              status: "Active"
+              expiration_date_range: "next_30_days"
+            sort:
+              field: "expiration_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - policy_number
+            - insured_name
+            - expiration_date
+            - written_premium
+          size: "medium"
+
+        - id: "premium_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Written Premium (Last 12 Months)"
+          query: "monthly_written_premium"
+          x_axis: "month"
+          y_axis: "premium"
+          size: "large"
+
+        - id: "claims_by_type"
+          type: "chart"
+          chart_type: "pie"
+          title: "Claims by Type"
+          query: "claims_distribution_by_type"
+          size: "medium"
+
+        - id: "fraud_alerts"
+          type: "entity_list"
+          title: "Fraud Alerts"
+          entity_type: "FraudIndicator"
+          query:
+            filter:
+              severity: ["High", "Critical"]
+              verified: false
+            sort:
+              field: "detected_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - indicator_type
+            - description
+            - severity
+            - claim_number
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Claims Dashboard
+    # ----------------------------------------------------------------------
+    - id: "claims"
+      name: "Claims Dashboard"
+      description: "Claims processing and performance metrics"
+      layout: "grid"
+
+      widgets:
+        - id: "fnol_count"
+          type: "metric_card"
+          title: "FNOL Today"
+          query: "count_fnol_today"
+
+        - id: "avg_cycle_time"
+          type: "metric_card"
+          title: "Avg Cycle Time"
+          query: "avg_claim_cycle_time"
+          format: "days"
+
+        - id: "pending_payments"
+          type: "metric_card"
+          title: "Pending Payments"
+          query: "sum_pending_payments"
+          format: "currency"
+
+        - id: "siu_referrals"
+          type: "metric_card"
+          title: "SIU Referrals"
+          query: "count_siu_referrals"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Policy List
+    # ----------------------------------------------------------------------
+    - entity_type: "Policy"
+      id: "policy_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "policy_number"
+              label: "Policy #"
+              sortable: true
+              width: "140px"
+              render: "link"
+
+            - field: "policy_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Quote": "secondary"
+                "Cancelled": "danger"
+                "Expired": "warning"
+
+            - field: "insured_name"
+              label: "Insured"
+              sortable: true
+
+            - field: "effective_date"
+              label: "Effective"
+              sortable: true
+              format: "date"
+
+            - field: "expiration_date"
+              label: "Expiration"
+              sortable: true
+              format: "date"
+
+            - field: "written_premium"
+              label: "Premium"
+              sortable: true
+              format: "currency"
+
+            - field: "agent_name"
+              label: "Agent"
+              sortable: true
+
+            - field: "state"
+              label: "State"
+              filterable: true
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+
+        - field: "policy_type"
+          type: "select"
+          label: "Policy Type"
+          multiple: true
+
+        - field: "state"
+          type: "select"
+          label: "State"
+          multiple: true
+
+        - field: "effective_date"
+          type: "date_range"
+          label: "Effective Date"
+
+        - field: "written_premium"
+          type: "range"
+          label: "Premium Range"
+
+      actions:
+        - id: "new_quote"
+          label: "New Quote"
+          icon: "plus"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "download"
+          type: "export"
+          formats: ["CSV", "Excel"]
+
+    # ----------------------------------------------------------------------
+    # Claim List
+    # ----------------------------------------------------------------------
+    - entity_type: "Claim"
+      id: "claim_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "claim_number"
+              label: "Claim #"
+              sortable: true
+              render: "link"
+
+            - field: "claim_type"
+              label: "Type"
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "FNOL": "info"
+                "Under Investigation": "warning"
+                "Approved": "success"
+                "Denied": "danger"
+                "Closed - Paid": "success"
+
+            - field: "policy_number"
+              label: "Policy"
+
+            - field: "claimant_name"
+              label: "Claimant"
+
+            - field: "loss_date"
+              label: "Loss Date"
+              sortable: true
+              format: "date"
+
+            - field: "reserve_amount"
+              label: "Reserve"
+              format: "currency"
+
+            - field: "paid_amount"
+              label: "Paid"
+              format: "currency"
+
+            - field: "siu_referral"
+              label: "SIU"
+              render: "boolean"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "FNOL"
+            - "Under Investigation"
+            - "Under Review"
+            - "Approved"
+            - "Closed - Paid"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "claim_type"
+          type: "select"
+          multiple: true
+
+        - field: "loss_date"
+          type: "date_range"
+          label: "Loss Date"
+
+        - field: "siu_referral"
+          type: "boolean"
+          label: "SIU Referral"
+
+      actions:
+        - id: "new_claim"
+          label: "New Claim (FNOL)"
+          icon: "plus"
+          type: "create"
+
+    # ----------------------------------------------------------------------
+    # Agent List
+    # ----------------------------------------------------------------------
+    - entity_type: "Agent"
+      id: "agent_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "agent_code"
+              label: "Code"
+              render: "link"
+
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+
+            - field: "agent_type"
+              label: "Type"
+              filterable: true
+
+            - field: "email"
+              label: "Email"
+
+            - field: "agency_name"
+              label: "Agency"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "active_policies"
+              label: "Policies"
+              sortable: true
+
+            - field: "total_premium"
+              label: "Premium"
+              format: "currency"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "agent_type"
+          type: "select"
+          multiple: true
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Policy Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Policy"
+      id: "policy_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "policy_number"
+        subtitle_field: "policy_type"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "policy_details"
+              title: "Policy Details"
+              layout: "two_column"
+              fields:
+                - field: "policy_type"
+                  label: "Policy Type"
+                - field: "status"
+                  label: "Status"
+                  render: "badge"
+                - field: "effective_date"
+                  label: "Effective Date"
+                  format: "date"
+                - field: "expiration_date"
+                  label: "Expiration Date"
+                  format: "date"
+                - field: "state"
+                  label: "State"
+                - field: "underwriting_tier"
+                  label: "Underwriting Tier"
+
+            - id: "premium"
+              title: "Premium Information"
+              layout: "two_column"
+              fields:
+                - field: "written_premium"
+                  label: "Written Premium"
+                  format: "currency"
+                - field: "payment_plan"
+                  label: "Payment Plan"
+                - field: "payment_status"
+                  label: "Payment Status"
+
+        - id: "coverages"
+          label: "Coverages"
+          icon: "shield-check"
+
+          sections:
+            - id: "coverage_list"
+              title: "Coverage Details"
+              type: "relationship_list"
+              relationship: "HAS_COVERAGE"
+              direction: "outgoing"
+              display_fields:
+                - coverage_name
+                - limit
+                - deductible
+                - premium
+
+        - id: "insureds"
+          label: "Insureds"
+          icon: "users"
+
+          sections:
+            - id: "insured_list"
+              title: "Named Insureds"
+              type: "relationship_list"
+              relationship: "COVERS"
+              direction: "outgoing"
+              display_fields:
+                - display_name
+                - insured_type
+                - email
+                - phone
+
+        - id: "claims"
+          label: "Claims"
+          icon: "file-warning"
+
+          sections:
+            - id: "policy_claims"
+              title: "Claims History"
+              type: "relationship_list"
+              relationship: "FILED_AGAINST"
+              direction: "incoming"
+              display_fields:
+                - claim_number
+                - claim_type
+                - loss_date
+                - status
+                - incurred_amount
+
+        - id: "billing"
+          label: "Billing"
+          icon: "credit-card"
+
+          sections:
+            - id: "premium_transactions"
+              title: "Premium Transactions"
+              type: "relationship_list"
+              relationship: "HAS_PREMIUM"
+              direction: "outgoing"
+              display_fields:
+                - transaction_type
+                - transaction_date
+                - amount
+                - status
+
+        - id: "underwriting"
+          label: "Underwriting"
+          icon: "clipboard-check"
+
+          sections:
+            - id: "risk_assessments"
+              title: "Risk Assessments"
+              type: "relationship_list"
+              relationship: "HAS_ASSESSMENT"
+              direction: "outgoing"
+              display_fields:
+                - assessment_type
+                - assessment_date
+                - risk_tier
+                - recommendation
+
+    # ----------------------------------------------------------------------
+    # Claim Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Claim"
+      id: "claim_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "claim_number"
+        subtitle_field: "claim_type"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "info"
+
+          sections:
+            - id: "claim_details"
+              title: "Claim Details"
+              layout: "two_column"
+              fields:
+                - claim_type
+                - status
+                - loss_date
+                - reported_date
+                - loss_state
+
+            - id: "financial"
+              title: "Financial Summary"
+              layout: "two_column"
+              fields:
+                - reserve_amount
+                - paid_amount
+                - incurred_amount
+                - deductible_amount
+
+            - id: "loss_description"
+              title: "Loss Description"
+              fields:
+                - field: "loss_description"
+                  render: "text"
+
+        - id: "claimants"
+          label: "Claimants"
+          icon: "users"
+
+          sections:
+            - id: "claimant_list"
+              title: "Claimants"
+              type: "relationship_list"
+              relationship: "FILED_BY"
+              direction: "incoming"
+              display_fields:
+                - display_name
+                - claimant_type
+                - injury_type
+                - represented_by_attorney
+
+        - id: "payments"
+          label: "Payments"
+          icon: "banknote"
+
+          sections:
+            - id: "payout_list"
+              title: "Payments"
+              type: "relationship_list"
+              relationship: "PAYS_OUT"
+              direction: "outgoing"
+              display_fields:
+                - payment_number
+                - payment_date
+                - amount
+                - payee_name
+                - status
+
+        - id: "fraud"
+          label: "Fraud Analysis"
+          icon: "alert-triangle"
+
+          sections:
+            - id: "fraud_score"
+              title: "Fraud Assessment"
+              fields:
+                - field: "fraud_score"
+                  render: "gauge"
+                - field: "siu_referral"
+                  render: "boolean"
+
+            - id: "fraud_indicators"
+              title: "Fraud Indicators"
+              type: "relationship_list"
+              relationship: "INDICATES_FRAUD"
+              direction: "incoming"
+              display_fields:
+                - indicator_type
+                - description
+                - severity
+                - verified
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # FNOL Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Claim"
+      id: "fnol_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "policy_info"
+          title: "Policy Information"
+          fields:
+            - field: "policy_number"
+              required: true
+              widget: "policy_search"
+
+        - id: "loss_info"
+          title: "Loss Information"
+          fields:
+            - field: "claim_type"
+              required: true
+
+            - field: "loss_date"
+              required: true
+
+            - field: "loss_location"
+              widget: "address"
+
+            - field: "loss_description"
+              required: true
+              widget: "textarea"
+
+        - id: "claimant_info"
+          title: "Claimant Information"
+          fields:
+            - field: "claimant_name"
+              required: true
+
+            - field: "claimant_phone"
+
+            - field: "claimant_email"
+
+  # ==========================================================================
+  # SEARCH CONFIGURATION
+  # ==========================================================================
+
+  search:
+    global_search:
+      enabled: true
+      placeholder: "Search policies, claims, agents..."
+      entity_types:
+        - "Policy"
+        - "Claim"
+        - "Agent"
+        - "Claimant"
+
+    entity_search:
+      Policy:
+        searchable_fields:
+          - "policy_number"
+          - "insured_name"
+        boost_fields:
+          - field: "policy_number"
+            boost: 2.0
+
+      Claim:
+        searchable_fields:
+          - "claim_number"
+          - "loss_description"
+        boost_fields:
+          - field: "claim_number"
+            boost: 2.0
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "loss_ratio_report"
+      name: "Loss Ratio Report"
+      description: "Premium vs losses by line of business"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+        - field: "line_of_business"
+          type: "select"
+          multiple: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - earned_premium
+            - incurred_losses
+            - loss_ratio
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Loss Ratio by Line"
+
+    - id: "agent_production"
+      name: "Agent Production Report"
+      description: "Premium production by agent"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

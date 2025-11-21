@@ -1,0 +1,972 @@
+# Real Estate UI Configuration
+# Frontend presentation layer for real estate domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for real estate property management and transactions"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#10B981"      # Green
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#F59E0B"       # Amber
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/real-estate-logo.svg"
+    favicon_url: "/assets/favicons/real-estate.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "properties"
+        label: "Properties"
+        icon: "🏢"
+        route: "/properties"
+        badge_query: "count_active_listings"
+
+      - id: "listings"
+        label: "Listings"
+        icon: "📋"
+        route: "/listings"
+
+      - id: "transactions"
+        label: "Transactions"
+        icon: "💰"
+        route: "/transactions"
+        badge_query: "count_pending_transactions"
+
+      - id: "clients"
+        label: "Clients"
+        icon: "👥"
+        route: "/clients"
+        submenu:
+          - id: "buyers"
+            label: "Buyers"
+            route: "/clients/buyers"
+          - id: "sellers"
+            label: "Sellers"
+            route: "/clients/sellers"
+          - id: "tenants"
+            label: "Tenants"
+            route: "/clients/tenants"
+
+      - id: "agents"
+        label: "Agents & Teams"
+        icon: "👤"
+        route: "/agents"
+
+      - id: "calendar"
+        label: "Calendar"
+        icon: "📅"
+        route: "/calendar"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Real Estate Dashboard"
+      description: "Overview of properties, transactions, and performance"
+      layout: "grid"
+
+      widgets:
+        - id: "active_listings_count"
+          type: "metric_card"
+          title: "Active Listings"
+          query: "count_active_listings"
+          icon: "📋"
+          color: "#10B981"
+          size: "small"
+
+        - id: "pending_transactions_count"
+          type: "metric_card"
+          title: "Pending Deals"
+          query: "count_pending_transactions"
+          icon: "💰"
+          color: "#F59E0B"
+          size: "small"
+
+        - id: "total_commission_pipeline"
+          type: "metric_card"
+          title: "Commission Pipeline"
+          query: "sum_pending_commissions"
+          format: "currency"
+          icon: "💵"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "avg_days_on_market"
+          type: "metric_card"
+          title: "Avg Days on Market"
+          query: "average_days_on_market"
+          icon: "📅"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "recent_listings"
+          type: "entity_list"
+          title: "Recent Listings"
+          entity_type: "Property"
+          query:
+            filter:
+              status: "Active"
+            sort:
+              field: "listed_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - address
+            - property_type
+            - list_price
+            - bedrooms
+            - bathrooms
+            - days_on_market
+          size: "medium"
+
+        - id: "upcoming_closings"
+          type: "entity_list"
+          title: "Upcoming Closings"
+          entity_type: "Transaction"
+          query:
+            filter:
+              status: ["Under Contract", "In Escrow"]
+            sort:
+              field: "closing_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - property_address
+            - buyer_name
+            - closing_date
+            - purchase_price
+            - status
+          size: "medium"
+
+        - id: "sales_chart"
+          type: "chart"
+          chart_type: "line"
+          title: "Sales Volume (Last 12 Months)"
+          query: "monthly_sales_volume"
+          x_axis: "month"
+          y_axis: "total_sales"
+          size: "large"
+
+        - id: "property_type_distribution"
+          type: "chart"
+          chart_type: "pie"
+          title: "Properties by Type"
+          query: "property_type_distribution"
+          size: "medium"
+
+        - id: "top_agents"
+          type: "leaderboard"
+          title: "Top Agents (This Quarter)"
+          query: "top_agents_by_volume"
+          metric: "total_sales"
+          limit: 10
+          size: "medium"
+
+        - id: "map_view"
+          type: "map"
+          title: "Active Listings Map"
+          query:
+            entity_type: "Property"
+            filter:
+              status: "Active"
+          marker_color_by: "property_type"
+          marker_size_by: "list_price"
+          size: "large"
+
+    # ----------------------------------------------------------------------
+    # Agent Dashboard
+    # ----------------------------------------------------------------------
+    - id: "agent"
+      name: "Agent Performance Dashboard"
+      description: "Individual agent metrics and pipeline"
+      layout: "grid"
+
+      filters:
+        - field: "agent_id"
+          type: "current_user"
+
+      widgets:
+        - id: "my_active_listings"
+          type: "metric_card"
+          title: "My Active Listings"
+          query: "count_my_listings"
+
+        - id: "my_pending_deals"
+          type: "metric_card"
+          title: "My Pending Deals"
+          query: "count_my_transactions"
+
+        - id: "my_commission_pipeline"
+          type: "metric_card"
+          title: "My Commission Pipeline"
+          query: "sum_my_commissions"
+          format: "currency"
+
+        - id: "ytd_closed_volume"
+          type: "metric_card"
+          title: "YTD Closed Volume"
+          query: "ytd_closed_volume"
+          format: "currency"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Property List
+    # ----------------------------------------------------------------------
+    - entity_type: "Property"
+      id: "property_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "address"
+              label: "Address"
+              sortable: true
+              width: "250px"
+              render: "link"
+
+            - field: "property_type"
+              label: "Type"
+              sortable: true
+              filterable: true
+
+            - field: "status"
+              label: "Status"
+              sortable: true
+              filterable: true
+              render: "badge"
+              color_map:
+                "Active": "success"
+                "Pending": "warning"
+                "Sold": "info"
+                "Off Market": "secondary"
+
+            - field: "list_price"
+              label: "Price"
+              sortable: true
+              format: "currency"
+
+            - field: "bedrooms"
+              label: "Beds"
+              sortable: true
+              width: "80px"
+
+            - field: "bathrooms"
+              label: "Baths"
+              sortable: true
+              width: "80px"
+
+            - field: "square_feet"
+              label: "Sq Ft"
+              sortable: true
+              format: "number"
+
+            - field: "days_on_market"
+              label: "DOM"
+              sortable: true
+              width: "80px"
+
+            - field: "listed_date"
+              label: "Listed"
+              sortable: true
+              format: "date"
+
+        - type: "grid"
+          card_template:
+            image_field: "photos[0]"
+            title_field: "address"
+            subtitle_field: "property_type"
+            price_field: "list_price"
+            metadata_fields:
+              - bedrooms
+              - bathrooms
+              - square_feet
+            badge_field: "status"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "property_type"
+          popup_fields:
+            - address
+            - list_price
+            - property_type
+            - bedrooms
+            - bathrooms
+
+      filters:
+        - field: "status"
+          type: "select"
+          label: "Status"
+          multiple: true
+          options:
+            - "Active"
+            - "Pending"
+            - "Sold"
+            - "Off Market"
+
+        - field: "property_type"
+          type: "select"
+          label: "Property Type"
+          multiple: true
+
+        - field: "list_price"
+          type: "range"
+          label: "Price Range"
+          min: 0
+          max: 10000000
+          step: 50000
+
+        - field: "bedrooms"
+          type: "select"
+          label: "Bedrooms"
+          options: ["1", "2", "3", "4", "5+"]
+
+        - field: "bathrooms"
+          type: "select"
+          label: "Bathrooms"
+          options: ["1", "2", "3", "4+"]
+
+        - field: "zip_code"
+          type: "text"
+          label: "Zip Code"
+
+      actions:
+        - id: "add_property"
+          label: "Add Property"
+          icon: "➕"
+          type: "create"
+
+        - id: "export"
+          label: "Export"
+          icon: "📥"
+          type: "export"
+          formats: ["CSV", "Excel", "PDF"]
+
+    # ----------------------------------------------------------------------
+    # Transaction List
+    # ----------------------------------------------------------------------
+    - entity_type: "Transaction"
+      id: "transaction_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "property_address"
+              label: "Property"
+
+            - field: "transaction_type"
+              label: "Type"
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "buyer_name"
+              label: "Buyer"
+
+            - field: "seller_name"
+              label: "Seller"
+
+            - field: "purchase_price"
+              label: "Price"
+              format: "currency"
+
+            - field: "commission_amount"
+              label: "Commission"
+              format: "currency"
+
+            - field: "closing_date"
+              label: "Closing Date"
+              format: "date"
+
+        - type: "kanban"
+          group_by: "status"
+          columns:
+            - "Pending"
+            - "Under Contract"
+            - "In Escrow"
+            - "Closed"
+            - "Failed"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "closing_date"
+          type: "date_range"
+          label: "Closing Date"
+
+    # ----------------------------------------------------------------------
+    # Person/Client List
+    # ----------------------------------------------------------------------
+    - entity_type: "Person"
+      id: "client_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "full_name"
+              label: "Name"
+              sortable: true
+
+            - field: "person_type"
+              label: "Type"
+              render: "tags"
+
+            - field: "email"
+              label: "Email"
+
+            - field: "phone"
+              label: "Phone"
+              format: "phone"
+
+            - field: "budget_max"
+              label: "Budget"
+              format: "currency"
+
+            - field: "preferred_locations"
+              label: "Preferred Areas"
+              render: "tags"
+
+      filters:
+        - field: "person_type"
+          type: "select"
+          multiple: true
+          label: "Client Type"
+
+        - field: "budget_max"
+          type: "range"
+          label: "Budget Range"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Property Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Property"
+      id: "property_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "address"
+        subtitle_field: "property_type"
+        badge_field: "status"
+        image_field: "photos[0]"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "key_details"
+              title: "Key Details"
+              layout: "two_column"
+              fields:
+                - field: "property_type"
+                  label: "Property Type"
+
+                - field: "status"
+                  label: "Status"
+                  render: "badge"
+
+                - field: "list_price"
+                  label: "List Price"
+                  format: "currency"
+
+                - field: "bedrooms"
+                  label: "Bedrooms"
+
+                - field: "bathrooms"
+                  label: "Bathrooms"
+
+                - field: "square_feet"
+                  label: "Square Feet"
+                  format: "number"
+
+                - field: "lot_size"
+                  label: "Lot Size"
+                  format: "number"
+
+                - field: "year_built"
+                  label: "Year Built"
+
+            - id: "location"
+              title: "Location"
+              layout: "full_width"
+              fields:
+                - field: "address"
+                  label: "Address"
+
+                - field: "zip_code"
+                  label: "Zip Code"
+
+                - field: "neighborhood"
+                  label: "Neighborhood"
+
+                - field: "school_district"
+                  label: "School District"
+
+                - field: "location"
+                  label: "Map"
+                  render: "map"
+
+            - id: "description"
+              title: "Description"
+              layout: "full_width"
+              fields:
+                - field: "description"
+                  label: "Property Description"
+                  render: "markdown"
+
+            - id: "features"
+              title: "Features & Amenities"
+              layout: "two_column"
+              fields:
+                - field: "parking_spaces"
+                  label: "Parking Spaces"
+
+                - field: "garage_type"
+                  label: "Garage Type"
+
+                - field: "pool"
+                  label: "Pool"
+                  render: "yes_no"
+
+                - field: "fireplace"
+                  label: "Fireplace"
+                  render: "yes_no"
+
+                - field: "amenities"
+                  label: "Amenities"
+                  render: "tags"
+
+        - id: "media"
+          label: "Photos & Media"
+          icon: "📷"
+
+          sections:
+            - id: "photos"
+              title: "Photos"
+              fields:
+                - field: "photos"
+                  render: "image_gallery"
+
+            - id: "virtual_tour"
+              title: "Virtual Tour"
+              fields:
+                - field: "virtual_tour_url"
+                  render: "iframe"
+
+            - id: "video"
+              title: "Video"
+              fields:
+                - field: "video_url"
+                  render: "video_player"
+
+        - id: "financial"
+          label: "Financial"
+          icon: "💰"
+
+          sections:
+            - id: "pricing"
+              title: "Pricing"
+              layout: "two_column"
+              fields:
+                - field: "list_price"
+                  label: "Current List Price"
+                  format: "currency"
+
+                - field: "original_list_price"
+                  label: "Original List Price"
+                  format: "currency"
+
+                - field: "sold_price"
+                  label: "Sold Price"
+                  format: "currency"
+
+                - field: "price_per_sqft"
+                  label: "Price per Sq Ft"
+                  format: "currency"
+
+            - id: "expenses"
+              title: "Expenses"
+              layout: "two_column"
+              fields:
+                - field: "property_tax"
+                  label: "Annual Property Tax"
+                  format: "currency"
+
+                - field: "hoa_fee"
+                  label: "Monthly HOA Fee"
+                  format: "currency"
+
+            - id: "investment"
+              title: "Investment Metrics"
+              layout: "two_column"
+              fields:
+                - field: "rental_income"
+                  label: "Monthly Rental Income"
+                  format: "currency"
+
+                - field: "cap_rate"
+                  label: "Cap Rate"
+                  format: "percentage"
+
+                - field: "occupancy_rate"
+                  label: "Occupancy Rate"
+                  format: "percentage"
+
+        - id: "relationships"
+          label: "Relationships"
+          icon: "🔗"
+
+          sections:
+            - id: "ownership"
+              title: "Ownership"
+              type: "relationship_list"
+              relationship: "OWNS"
+              direction: "incoming"
+              display_fields:
+                - full_name
+                - ownership_percentage
+                - acquisition_date
+
+            - id: "listing_agent"
+              title: "Listing Agent"
+              type: "relationship_list"
+              relationship: "LISTED_BY"
+              direction: "outgoing"
+              display_fields:
+                - full_name
+                - email
+                - phone
+
+            - id: "property_manager"
+              title: "Property Management"
+              type: "relationship_list"
+              relationship: "MANAGED_BY"
+              direction: "outgoing"
+              display_fields:
+                - company_name
+                - phone
+                - email
+
+            - id: "transactions"
+              title: "Transaction History"
+              type: "relationship_list"
+              relationship: "TRANSACTED"
+              direction: "incoming"
+              display_fields:
+                - transaction_type
+                - purchase_price
+                - closing_date
+                - status
+
+            - id: "leases"
+              title: "Leases"
+              type: "relationship_list"
+              relationship: "HAS_LEASE"
+              direction: "outgoing"
+              display_fields:
+                - lease_type
+                - monthly_rent
+                - lease_start_date
+                - lease_end_date
+
+        - id: "activity"
+          label: "Activity"
+          icon: "📊"
+
+          sections:
+            - id: "timeline"
+              title: "Activity Timeline"
+              type: "timeline"
+              events:
+                - "property_created"
+                - "listing_created"
+                - "price_changed"
+                - "showing_scheduled"
+                - "offer_received"
+                - "status_changed"
+
+            - id: "showings"
+              title: "Showings"
+              type: "relationship_list"
+              relationship: "SHOWING_FOR"
+              direction: "incoming"
+              display_fields:
+                - showing_date
+                - status
+                - feedback
+                - interest_level
+
+    # ----------------------------------------------------------------------
+    # Transaction Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Transaction"
+      id: "transaction_detail"
+
+      layout: "tabs"
+
+      header:
+        title: "Transaction"
+        subtitle_field: "property_address"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - id: "transaction_details"
+              title: "Transaction Details"
+              layout: "two_column"
+              fields:
+                - transaction_type
+                - status
+                - purchase_price
+                - down_payment
+                - loan_amount
+                - commission_rate
+                - commission_amount
+
+            - id: "dates"
+              title: "Important Dates"
+              layout: "two_column"
+              fields:
+                - contract_date
+                - closing_date
+                - actual_closing_date
+
+            - id: "contingencies"
+              title: "Contingencies"
+              fields:
+                - field: "contingencies"
+                  render: "checklist"
+
+        - id: "parties"
+          label: "Parties"
+          sections:
+            - id: "buyers"
+              title: "Buyers"
+              type: "relationship_list"
+              relationship: "BUYER_IN"
+              direction: "incoming"
+
+            - id: "sellers"
+              title: "Sellers"
+              type: "relationship_list"
+              relationship: "SELLER_IN"
+              direction: "incoming"
+
+            - id: "agents"
+              title: "Agents"
+              type: "relationship_list"
+              relationship: "AGENT_FOR"
+              direction: "incoming"
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    # ----------------------------------------------------------------------
+    # Property Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Property"
+      id: "property_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "basic_info"
+          title: "Basic Information"
+          fields:
+            - field: "address"
+              required: true
+
+            - field: "property_type"
+              required: true
+
+            - field: "status"
+              required: true
+
+            - field: "location"
+              required: true
+              widget: "map_picker"
+
+        - id: "physical_details"
+          title: "Physical Details"
+          fields:
+            - field: "bedrooms"
+              width: "half"
+
+            - field: "bathrooms"
+              width: "half"
+
+            - field: "square_feet"
+              width: "half"
+
+            - field: "lot_size"
+              width: "half"
+
+            - field: "year_built"
+              width: "half"
+
+            - field: "stories"
+              width: "half"
+
+        - id: "pricing"
+          title: "Pricing"
+          fields:
+            - field: "list_price"
+              required: true
+
+            - field: "property_tax"
+
+            - field: "hoa_fee"
+
+        - id: "features"
+          title: "Features"
+          fields:
+            - field: "parking_spaces"
+
+            - field: "garage_type"
+
+            - field: "pool"
+              widget: "toggle"
+
+            - field: "fireplace"
+              widget: "toggle"
+
+            - field: "amenities"
+              widget: "tag_input"
+
+        - id: "description"
+          title: "Description & Media"
+          fields:
+            - field: "description"
+              widget: "rich_text_editor"
+
+            - field: "photos"
+              widget: "image_upload"
+              max_files: 50
+
+            - field: "virtual_tour_url"
+
+            - field: "video_url"
+
+    # ----------------------------------------------------------------------
+    # Transaction Form
+    # ----------------------------------------------------------------------
+    - entity_type: "Transaction"
+      id: "transaction_form"
+
+      layout: "standard"
+
+      sections:
+        - id: "transaction_info"
+          title: "Transaction Information"
+          fields:
+            - transaction_type
+            - status
+            - purchase_price
+            - down_payment
+            - loan_amount
+
+        - id: "commission"
+          title: "Commission"
+          fields:
+            - commission_rate
+            - commission_amount
+
+        - id: "dates"
+          title: "Dates"
+          fields:
+            - contract_date
+            - closing_date
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "sales_report"
+      name: "Sales Report"
+      description: "Summary of sales activity"
+      parameters:
+        - field: "date_range"
+          type: "date_range"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_sales
+            - total_volume
+            - average_sale_price
+            - average_days_on_market
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "Sales by Month"
+
+        - type: "table"
+          title: "Transaction Details"
+          columns:
+            - property_address
+            - sold_date
+            - sold_price
+            - agent_name
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"

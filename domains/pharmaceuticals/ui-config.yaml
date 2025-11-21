@@ -1,0 +1,820 @@
+# Pharmaceuticals & Life Sciences UI Configuration
+# Frontend presentation layer for pharmaceuticals domain
+
+ui:
+  version: "1.0.0"
+  description: "UI configuration for pharmaceuticals and life sciences management"
+
+  # ==========================================================================
+  # THEME & BRANDING
+  # ==========================================================================
+
+  theme:
+    primary_color: "#10B981"      # Green
+    secondary_color: "#3B82F6"    # Blue
+    accent_color: "#8B5CF6"       # Violet
+    success_color: "#10B981"
+    warning_color: "#F59E0B"
+    danger_color: "#EF4444"
+
+    logo_url: "/assets/logos/pharma-logo.svg"
+    favicon_url: "/assets/favicons/pharma.ico"
+
+    fonts:
+      heading: "Inter, sans-serif"
+      body: "Inter, sans-serif"
+      monospace: "JetBrains Mono, monospace"
+
+  # ==========================================================================
+  # NAVIGATION
+  # ==========================================================================
+
+  navigation:
+    main_menu:
+      - id: "dashboard"
+        label: "Dashboard"
+        icon: "📊"
+        route: "/dashboard"
+
+      - id: "portfolio"
+        label: "Drug Portfolio"
+        icon: "💊"
+        route: "/drugs"
+
+      - id: "trials"
+        label: "Clinical Trials"
+        icon: "🔬"
+        route: "/trials"
+        badge_query: "count_active_trials"
+
+      - id: "sites"
+        label: "Sites"
+        icon: "🏥"
+        route: "/sites"
+        submenu:
+          - id: "all_sites"
+            label: "All Sites"
+            route: "/sites"
+          - id: "investigators"
+            label: "Investigators"
+            route: "/sites/investigators"
+
+      - id: "patients"
+        label: "Subjects"
+        icon: "👤"
+        route: "/patients"
+
+      - id: "safety"
+        label: "Safety"
+        icon: "⚠️"
+        route: "/safety"
+        badge_query: "count_serious_aes"
+        submenu:
+          - id: "adverse_events"
+            label: "Adverse Events"
+            route: "/safety/adverse-events"
+          - id: "signals"
+            label: "Signal Detection"
+            route: "/safety/signals"
+
+      - id: "regulatory"
+        label: "Regulatory"
+        icon: "📋"
+        route: "/regulatory"
+        submenu:
+          - id: "approvals"
+            label: "Approvals"
+            route: "/regulatory/approvals"
+          - id: "submissions"
+            label: "Submissions"
+            route: "/regulatory/submissions"
+
+      - id: "manufacturing"
+        label: "Manufacturing"
+        icon: "🏭"
+        route: "/manufacturing"
+
+      - id: "reports"
+        label: "Reports"
+        icon: "📈"
+        route: "/reports"
+
+      - id: "settings"
+        label: "Settings"
+        icon: "⚙️"
+        route: "/settings"
+
+  # ==========================================================================
+  # DASHBOARDS
+  # ==========================================================================
+
+  dashboards:
+    # ----------------------------------------------------------------------
+    # Main Dashboard
+    # ----------------------------------------------------------------------
+    - id: "main"
+      name: "Clinical Operations Dashboard"
+      description: "Overview of drug development and clinical operations"
+      layout: "grid"
+
+      widgets:
+        - id: "active_trials"
+          type: "metric_card"
+          title: "Active Trials"
+          query: "count_active_trials"
+          icon: "🔬"
+          color: "#3B82F6"
+          size: "small"
+
+        - id: "total_enrollment"
+          type: "metric_card"
+          title: "Total Enrolled"
+          query: "sum_current_enrollment"
+          icon: "👥"
+          color: "#10B981"
+          size: "small"
+
+        - id: "active_sites"
+          type: "metric_card"
+          title: "Active Sites"
+          query: "count_active_sites"
+          icon: "🏥"
+          color: "#8B5CF6"
+          size: "small"
+
+        - id: "serious_aes"
+          type: "metric_card"
+          title: "Serious AEs (30d)"
+          query: "count_serious_aes_30d"
+          icon: "⚠️"
+          color: "#EF4444"
+          size: "small"
+
+        - id: "pipeline_overview"
+          type: "chart"
+          chart_type: "bar"
+          title: "Drug Pipeline by Phase"
+          query: "drugs_by_phase"
+          size: "medium"
+
+        - id: "enrollment_progress"
+          type: "entity_list"
+          title: "Trial Enrollment Progress"
+          entity_type: "Trial"
+          query:
+            filter:
+              status: ["Enrolling", "Active"]
+            sort:
+              field: "enrollment_percent"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - protocol_number
+            - short_title
+            - phase
+            - current_enrollment
+            - target_enrollment
+            - enrollment_percent
+          size: "medium"
+
+        - id: "recent_adverse_events"
+          type: "entity_list"
+          title: "Recent Serious AEs"
+          entity_type: "AdverseEvent"
+          query:
+            filter:
+              serious: true
+            sort:
+              field: "onset_date"
+              direction: "DESC"
+            limit: 5
+          columns:
+            - ae_term
+            - severity
+            - causality
+            - onset_date
+            - outcome
+          size: "medium"
+
+        - id: "site_enrollment_map"
+          type: "map"
+          title: "Site Enrollment"
+          query:
+            entity_type: "Site"
+            filter:
+              status: "Active"
+          marker_color_by: "performance_score"
+          marker_size_by: "current_enrollment"
+          size: "large"
+
+        - id: "enrollment_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "Monthly Enrollment Trend"
+          query: "monthly_enrollment"
+          x_axis: "month"
+          y_axis: "enrollment"
+          size: "large"
+
+        - id: "upcoming_milestones"
+          type: "entity_list"
+          title: "Upcoming Regulatory Milestones"
+          entity_type: "Approval"
+          query:
+            filter:
+              status: ["Submitted", "Under Review"]
+            sort:
+              field: "pdufa_date"
+              direction: "ASC"
+            limit: 5
+          columns:
+            - approval_type
+            - regulatory_authority
+            - pdufa_date
+            - status
+          size: "medium"
+
+    # ----------------------------------------------------------------------
+    # Safety Dashboard
+    # ----------------------------------------------------------------------
+    - id: "safety"
+      name: "Safety & Pharmacovigilance Dashboard"
+      description: "Adverse events and safety signal monitoring"
+      layout: "grid"
+
+      widgets:
+        - id: "ae_by_severity"
+          type: "chart"
+          chart_type: "pie"
+          title: "AEs by Severity"
+          query: "aes_by_severity"
+          size: "medium"
+
+        - id: "ae_trend"
+          type: "chart"
+          chart_type: "line"
+          title: "AE Reporting Trend"
+          query: "monthly_ae_count"
+          size: "large"
+
+        - id: "top_aes"
+          type: "chart"
+          chart_type: "bar"
+          title: "Top 10 Adverse Events"
+          query: "top_aes_by_count"
+          size: "medium"
+
+  # ==========================================================================
+  # ENTITY LIST VIEWS
+  # ==========================================================================
+
+  entity_lists:
+    # ----------------------------------------------------------------------
+    # Drug List
+    # ----------------------------------------------------------------------
+    - entity_type: "Drug"
+      id: "drug_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "name"
+              label: "Drug Name"
+              sortable: true
+              render: "link"
+
+            - field: "generic_name"
+              label: "Generic"
+              sortable: true
+
+            - field: "molecule_type"
+              label: "Type"
+              sortable: true
+
+            - field: "drug_class"
+              label: "Class"
+              sortable: true
+
+            - field: "development_phase"
+              label: "Phase"
+              sortable: true
+              render: "badge"
+              color_map:
+                "Discovery": "secondary"
+                "Preclinical": "info"
+                "Phase I": "warning"
+                "Phase II": "warning"
+                "Phase III": "primary"
+                "Approved": "success"
+
+            - field: "route_of_administration"
+              label: "Route"
+
+        - type: "kanban"
+          group_by: "development_phase"
+          columns:
+            - "Discovery"
+            - "Preclinical"
+            - "Phase I"
+            - "Phase II"
+            - "Phase III"
+            - "Approved"
+
+      filters:
+        - field: "development_phase"
+          type: "select"
+          multiple: true
+
+        - field: "molecule_type"
+          type: "select"
+          multiple: true
+
+        - field: "drug_class"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Trial List
+    # ----------------------------------------------------------------------
+    - entity_type: "Trial"
+      id: "trial_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "protocol_number"
+              label: "Protocol"
+              sortable: true
+              render: "link"
+
+            - field: "short_title"
+              label: "Title"
+              sortable: true
+
+            - field: "phase"
+              label: "Phase"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+              color_map:
+                "Enrolling": "success"
+                "Active": "info"
+                "Completed": "secondary"
+                "Terminated": "danger"
+
+            - field: "current_enrollment"
+              label: "Enrolled"
+              sortable: true
+
+            - field: "target_enrollment"
+              label: "Target"
+
+            - field: "enrollment_percent"
+              label: "Progress"
+              render: "progress_bar"
+
+            - field: "site_count"
+              label: "Sites"
+
+            - field: "nct_number"
+              label: "NCT#"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "phase"
+          type: "select"
+          multiple: true
+
+        - field: "sponsor"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Site List
+    # ----------------------------------------------------------------------
+    - entity_type: "Site"
+      id: "site_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "site_number"
+              label: "Site #"
+              sortable: true
+
+            - field: "name"
+              label: "Name"
+              sortable: true
+              render: "link"
+
+            - field: "site_type"
+              label: "Type"
+              sortable: true
+
+            - field: "status"
+              label: "Status"
+              render: "badge"
+
+            - field: "country"
+              label: "Country"
+              sortable: true
+
+            - field: "current_enrollment"
+              label: "Enrolled"
+              sortable: true
+
+            - field: "target_enrollment"
+              label: "Target"
+
+            - field: "enrollment_rate"
+              label: "Rate/Mo"
+              sortable: true
+
+            - field: "performance_score"
+              label: "Performance"
+              sortable: true
+              render: "progress_bar"
+
+        - type: "map"
+          location_field: "location"
+          marker_color_by: "status"
+          marker_size_by: "current_enrollment"
+
+      filters:
+        - field: "status"
+          type: "select"
+          multiple: true
+
+        - field: "country"
+          type: "select"
+          multiple: true
+
+        - field: "site_type"
+          type: "select"
+          multiple: true
+
+    # ----------------------------------------------------------------------
+    # Adverse Event List
+    # ----------------------------------------------------------------------
+    - entity_type: "AdverseEvent"
+      id: "ae_list"
+
+      views:
+        - type: "table"
+          default: true
+          columns:
+            - field: "ae_id"
+              label: "AE ID"
+              sortable: true
+              render: "link"
+
+            - field: "ae_term"
+              label: "Event Term"
+              sortable: true
+
+            - field: "meddra_pt"
+              label: "MedDRA PT"
+
+            - field: "severity"
+              label: "Severity"
+              sortable: true
+              render: "badge"
+              color_map:
+                "Mild": "info"
+                "Moderate": "warning"
+                "Severe": "danger"
+                "Life-Threatening": "danger"
+
+            - field: "serious"
+              label: "Serious"
+              render: "boolean"
+
+            - field: "causality"
+              label: "Causality"
+              sortable: true
+
+            - field: "onset_date"
+              label: "Onset"
+              format: "date"
+              sortable: true
+
+            - field: "outcome"
+              label: "Outcome"
+
+      filters:
+        - field: "serious"
+          type: "boolean"
+          label: "Serious Only"
+
+        - field: "severity"
+          type: "select"
+          multiple: true
+
+        - field: "causality"
+          type: "select"
+          multiple: true
+
+        - field: "onset_date"
+          type: "date_range"
+
+  # ==========================================================================
+  # ENTITY DETAIL VIEWS
+  # ==========================================================================
+
+  entity_details:
+    # ----------------------------------------------------------------------
+    # Drug Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Drug"
+      id: "drug_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "name"
+        subtitle_field: "generic_name"
+        badge_field: "development_phase"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          icon: "📋"
+
+          sections:
+            - id: "basic_info"
+              title: "Drug Information"
+              layout: "two_column"
+              fields:
+                - drug_id
+                - name
+                - generic_name
+                - molecule_type
+                - drug_class
+                - development_phase
+                - route_of_administration
+
+            - id: "chemistry"
+              title: "Chemistry"
+              layout: "two_column"
+              fields:
+                - active_ingredient
+                - molecular_weight
+                - cas_number
+                - formulation
+                - dosage_form
+
+            - id: "moa"
+              title: "Mechanism of Action"
+              layout: "full_width"
+              fields:
+                - field: "mechanism_of_action"
+                  render: "markdown"
+
+        - id: "trials"
+          label: "Clinical Trials"
+          icon: "🔬"
+
+          sections:
+            - id: "active_trials"
+              title: "Clinical Trials"
+              type: "relationship_list"
+              relationship: "TESTED_IN"
+              direction: "outgoing"
+              display_fields:
+                - protocol_number
+                - short_title
+                - phase
+                - status
+                - current_enrollment
+
+        - id: "indications"
+          label: "Indications"
+          icon: "🎯"
+
+          sections:
+            - id: "approved_indications"
+              title: "Indications"
+              type: "relationship_list"
+              relationship: "TREATS"
+              direction: "outgoing"
+              display_fields:
+                - name
+                - therapeutic_area
+                - approval_status
+
+        - id: "regulatory"
+          label: "Regulatory"
+          icon: "✅"
+
+          sections:
+            - id: "approvals"
+              title: "Regulatory Approvals"
+              type: "relationship_list"
+              relationship: "APPROVED_FOR"
+              direction: "outgoing"
+              display_fields:
+                - approval_type
+                - regulatory_authority
+                - approval_date
+                - status
+
+        - id: "manufacturing"
+          label: "Manufacturing"
+          icon: "🏭"
+
+          sections:
+            - id: "facilities"
+              title: "Manufacturing Sites"
+              type: "relationship_list"
+              relationship: "MANUFACTURED_AT"
+              direction: "outgoing"
+              display_fields:
+                - name
+                - facility_type
+                - status
+                - country
+
+    # ----------------------------------------------------------------------
+    # Trial Detail
+    # ----------------------------------------------------------------------
+    - entity_type: "Trial"
+      id: "trial_detail"
+
+      layout: "tabs"
+
+      header:
+        title_field: "protocol_number"
+        subtitle_field: "short_title"
+        badge_field: "status"
+
+      tabs:
+        - id: "overview"
+          label: "Overview"
+          sections:
+            - id: "study_info"
+              title: "Study Information"
+              layout: "two_column"
+              fields:
+                - protocol_number
+                - nct_number
+                - phase
+                - status
+                - study_type
+                - sponsor
+                - randomization
+                - blinding
+
+            - id: "enrollment"
+              title: "Enrollment"
+              layout: "two_column"
+              fields:
+                - target_enrollment
+                - current_enrollment
+                - enrollment_percent
+                - site_count
+
+            - id: "dates"
+              title: "Key Dates"
+              layout: "two_column"
+              fields:
+                - first_patient_first_visit
+                - last_patient_first_visit
+                - last_patient_last_visit
+                - primary_completion_date
+                - study_completion_date
+
+        - id: "sites"
+          label: "Sites"
+          sections:
+            - id: "trial_sites"
+              title: "Study Sites"
+              type: "relationship_list"
+              relationship: "CONDUCTED_AT"
+              direction: "outgoing"
+              display_fields:
+                - site_number
+                - name
+                - status
+                - current_enrollment
+                - enrollment_rate
+
+        - id: "safety"
+          label: "Safety"
+          sections:
+            - id: "adverse_events"
+              title: "Adverse Events"
+              type: "relationship_list"
+              relationship: "OCCURRED_IN"
+              direction: "incoming"
+              display_fields:
+                - ae_term
+                - severity
+                - serious
+                - causality
+                - onset_date
+
+  # ==========================================================================
+  # ENTITY FORMS
+  # ==========================================================================
+
+  entity_forms:
+    - entity_type: "AdverseEvent"
+      id: "ae_form"
+
+      layout: "wizard"
+
+      steps:
+        - id: "event_info"
+          title: "Event Information"
+          fields:
+            - ae_term
+            - meddra_pt
+            - meddra_soc
+            - severity
+            - serious
+            - seriousness_criteria
+
+        - id: "causality"
+          title: "Causality Assessment"
+          fields:
+            - causality
+            - expectedness
+            - action_taken
+
+        - id: "dates_outcome"
+          title: "Dates & Outcome"
+          fields:
+            - onset_date
+            - resolution_date
+            - outcome
+            - treatment_required
+
+        - id: "narrative"
+          title: "Narrative"
+          fields:
+            - field: "narrative"
+              widget: "rich_text_editor"
+
+  # ==========================================================================
+  # REPORTS
+  # ==========================================================================
+
+  reports:
+    - id: "enrollment_report"
+      name: "Enrollment Report"
+      description: "Trial enrollment metrics and trends"
+      parameters:
+        - field: "trial_id"
+          type: "select"
+          required: true
+
+      sections:
+        - type: "summary"
+          metrics:
+            - current_enrollment
+            - target_enrollment
+            - enrollment_rate
+            - screen_failure_rate
+
+        - type: "chart"
+          chart_type: "line"
+          title: "Enrollment Over Time"
+
+        - type: "table"
+          title: "Site Performance"
+
+    - id: "safety_report"
+      name: "Safety Report"
+      description: "Adverse event summary"
+      parameters:
+        - field: "trial_id"
+          type: "select"
+        - field: "date_range"
+          type: "date_range"
+
+      sections:
+        - type: "summary"
+          metrics:
+            - total_aes
+            - serious_aes
+            - related_aes
+
+        - type: "chart"
+          chart_type: "bar"
+          title: "AEs by System Organ Class"
+
+        - type: "table"
+          title: "Adverse Event Listing"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"

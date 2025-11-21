@@ -1,0 +1,1129 @@
+# Pharmaceuticals & Life Sciences Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Pharmaceuticals domain ontology covering drugs, trials, patients, sites, and regulatory compliance"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Drug Entity
+    # ------------------------------------------------------------------------
+    - name: Drug
+      display_name: "Drug/Compound"
+      description: "Pharmaceutical compound or drug product"
+      icon: "💊"
+      color: "#10B981"
+
+      attributes:
+        - name: drug_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: generic_name
+          type: string
+
+        - name: brand_names
+          type: array
+          item_type: string
+
+        - name: drug_class
+          type: string
+          indexed: true
+
+        - name: molecule_type
+          type: enum
+          required: true
+          values:
+            - "Small Molecule"
+            - "Biologic"
+            - "Gene Therapy"
+            - "Cell Therapy"
+            - "mRNA"
+            - "Antibody"
+            - "Vaccine"
+            - "Biosimilar"
+
+        - name: development_phase
+          type: enum
+          required: true
+          values:
+            - "Discovery"
+            - "Preclinical"
+            - "Phase I"
+            - "Phase II"
+            - "Phase III"
+            - "NDA/BLA Submitted"
+            - "Approved"
+            - "Post-Market"
+            - "Discontinued"
+          default: "Discovery"
+
+        - name: route_of_administration
+          type: enum
+          values:
+            - "Oral"
+            - "Intravenous"
+            - "Subcutaneous"
+            - "Intramuscular"
+            - "Topical"
+            - "Inhalation"
+            - "Transdermal"
+
+        - name: formulation
+          type: string
+
+        - name: dosage_form
+          type: string
+
+        - name: mechanism_of_action
+          type: text
+
+        - name: nda_number
+          type: string
+          description: "FDA NDA/BLA number"
+
+        - name: approval_date
+          type: date
+
+        - name: patent_expiration
+          type: date
+
+        - name: active_ingredient
+          type: string
+
+        - name: molecular_weight
+          type: number
+
+        - name: cas_number
+          type: string
+
+        - name: description
+          type: text
+
+      indexes:
+        - fields: ["development_phase"]
+          name: "idx_drug_phase"
+        - fields: ["molecule_type"]
+          name: "idx_drug_type"
+        - fields: ["drug_class"]
+          name: "idx_drug_class"
+
+    # ------------------------------------------------------------------------
+    # Trial Entity
+    # ------------------------------------------------------------------------
+    - name: Trial
+      display_name: "Clinical Trial"
+      description: "Clinical study or trial"
+      icon: "🔬"
+      color: "#3B82F6"
+
+      attributes:
+        - name: trial_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: protocol_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: title
+          type: string
+          required: true
+
+        - name: short_title
+          type: string
+
+        - name: phase
+          type: enum
+          required: true
+          values:
+            - "Phase I"
+            - "Phase I/II"
+            - "Phase II"
+            - "Phase II/III"
+            - "Phase III"
+            - "Phase IV"
+            - "Observational"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Planning"
+            - "Start-up"
+            - "Enrolling"
+            - "Active"
+            - "Closed to Enrollment"
+            - "Completed"
+            - "Terminated"
+            - "Suspended"
+          default: "Planning"
+
+        - name: study_type
+          type: enum
+          values:
+            - "Interventional"
+            - "Observational"
+            - "Expanded Access"
+
+        - name: randomization
+          type: enum
+          values: ["Randomized", "Non-Randomized", "N/A"]
+
+        - name: blinding
+          type: enum
+          values: ["Open Label", "Single Blind", "Double Blind", "Triple Blind"]
+
+        - name: sponsor
+          type: string
+          required: true
+
+        - name: nct_number
+          type: string
+          description: "ClinicalTrials.gov NCT number"
+          indexed: true
+
+        - name: eudract_number
+          type: string
+          description: "EU Clinical Trials Register number"
+
+        - name: target_enrollment
+          type: number
+          required: true
+
+        - name: current_enrollment
+          type: number
+          default: 0
+
+        - name: enrollment_percent
+          type: number
+          computed: true
+          formula: "(current_enrollment / target_enrollment) * 100"
+
+        - name: first_patient_first_visit
+          type: date
+          description: "FPFV date"
+
+        - name: last_patient_first_visit
+          type: date
+          description: "LPFV date"
+
+        - name: last_patient_last_visit
+          type: date
+          description: "LPLV date"
+
+        - name: primary_completion_date
+          type: date
+
+        - name: study_completion_date
+          type: date
+
+        - name: primary_endpoint
+          type: text
+
+        - name: secondary_endpoints
+          type: array
+          item_type: string
+
+        - name: inclusion_criteria
+          type: text
+
+        - name: exclusion_criteria
+          type: text
+
+        - name: countries
+          type: array
+          item_type: string
+
+        - name: site_count
+          type: number
+
+        - name: estimated_budget
+          type: money
+
+        - name: actual_spend
+          type: money
+
+      indexes:
+        - fields: ["protocol_number"]
+          unique: true
+          name: "idx_trial_protocol"
+        - fields: ["status"]
+          name: "idx_trial_status"
+        - fields: ["phase"]
+          name: "idx_trial_phase"
+        - fields: ["nct_number"]
+          name: "idx_trial_nct"
+
+    # ------------------------------------------------------------------------
+    # Patient Entity
+    # ------------------------------------------------------------------------
+    - name: Patient
+      display_name: "Patient/Subject"
+      description: "Clinical trial patient or subject"
+      icon: "👤"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: subject_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+          description: "Blinded subject identifier"
+
+        - name: screening_number
+          type: string
+          indexed: true
+
+        - name: randomization_number
+          type: string
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Screened"
+            - "Screen Failed"
+            - "Enrolled"
+            - "Randomized"
+            - "On Treatment"
+            - "Completed"
+            - "Withdrawn"
+            - "Lost to Follow-up"
+          default: "Screened"
+
+        - name: cohort
+          type: string
+
+        - name: arm
+          type: string
+          description: "Treatment arm"
+
+        - name: screening_date
+          type: date
+
+        - name: enrollment_date
+          type: date
+
+        - name: randomization_date
+          type: date
+
+        - name: completion_date
+          type: date
+
+        - name: withdrawal_date
+          type: date
+
+        - name: withdrawal_reason
+          type: string
+
+        - name: age
+          type: number
+
+        - name: gender
+          type: enum
+          values: ["Male", "Female", "Other", "Unknown"]
+
+        - name: ethnicity
+          type: string
+
+        - name: country
+          type: string
+
+        - name: consent_date
+          type: date
+          required: true
+
+        - name: consent_version
+          type: string
+
+        - name: protocol_deviations
+          type: number
+          default: 0
+
+        - name: adverse_events
+          type: number
+          default: 0
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_patient_status"
+        - fields: ["enrollment_date"]
+          name: "idx_patient_enrollment"
+
+    # ------------------------------------------------------------------------
+    # Site Entity
+    # ------------------------------------------------------------------------
+    - name: Site
+      display_name: "Study Site"
+      description: "Clinical trial investigational site"
+      icon: "🏥"
+      color: "#F59E0B"
+
+      attributes:
+        - name: site_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: site_number
+          type: string
+          required: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: site_type
+          type: enum
+          values:
+            - "Academic Medical Center"
+            - "Community Hospital"
+            - "Private Practice"
+            - "Research Center"
+            - "Veterans Administration"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Identified"
+            - "Selected"
+            - "In Start-up"
+            - "Active"
+            - "Closed"
+            - "Terminated"
+          default: "Identified"
+
+        - name: address
+          type: address
+          required: true
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: country
+          type: string
+          required: true
+
+        - name: primary_contact
+          type: string
+
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+        - name: irb_approval_date
+          type: date
+
+        - name: site_initiated_date
+          type: date
+
+        - name: first_patient_enrolled
+          type: date
+
+        - name: target_enrollment
+          type: number
+
+        - name: current_enrollment
+          type: number
+          default: 0
+
+        - name: screen_failure_rate
+          type: number
+          min: 0
+          max: 100
+
+        - name: enrollment_rate
+          type: number
+          description: "Patients per month"
+
+        - name: query_rate
+          type: number
+          description: "Queries per 100 pages"
+
+        - name: performance_score
+          type: number
+          min: 0
+          max: 100
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_site_status"
+        - fields: ["country"]
+          name: "idx_site_country"
+
+    # ------------------------------------------------------------------------
+    # Investigator Entity
+    # ------------------------------------------------------------------------
+    - name: Investigator
+      display_name: "Investigator"
+      description: "Principal investigator or study staff"
+      icon: "👨‍⚕️"
+      color: "#EC4899"
+
+      attributes:
+        - name: investigator_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: first_name
+          type: string
+          required: true
+
+        - name: last_name
+          type: string
+          required: true
+
+        - name: full_name
+          type: string
+          computed: true
+          formula: "first_name + ' ' + last_name"
+
+        - name: role
+          type: enum
+          required: true
+          values:
+            - "Principal Investigator"
+            - "Sub-Investigator"
+            - "Study Coordinator"
+            - "Research Nurse"
+            - "Pharmacist"
+
+        - name: email
+          type: email
+
+        - name: phone
+          type: phone
+
+        - name: specialty
+          type: string
+
+        - name: npi_number
+          type: string
+          description: "National Provider Identifier"
+
+        - name: medical_license
+          type: string
+
+        - name: license_state
+          type: string
+
+        - name: cv_date
+          type: date
+          description: "Date of current CV"
+
+        - name: gcp_training_date
+          type: date
+
+        - name: protocol_training_date
+          type: date
+
+        - name: delegation_log_signed
+          type: boolean
+          default: false
+
+        - name: total_studies
+          type: number
+          description: "Total studies as PI"
+
+        - name: total_patients
+          type: number
+          description: "Total patients enrolled"
+
+      indexes:
+        - fields: ["email"]
+          name: "idx_investigator_email"
+        - fields: ["role"]
+          name: "idx_investigator_role"
+
+    # ------------------------------------------------------------------------
+    # AdverseEvent Entity
+    # ------------------------------------------------------------------------
+    - name: AdverseEvent
+      display_name: "Adverse Event"
+      description: "Safety adverse event report"
+      icon: "⚠️"
+      color: "#EF4444"
+
+      attributes:
+        - name: ae_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: ae_term
+          type: string
+          required: true
+
+        - name: meddra_pt
+          type: string
+          description: "MedDRA Preferred Term"
+
+        - name: meddra_soc
+          type: string
+          description: "MedDRA System Organ Class"
+
+        - name: severity
+          type: enum
+          required: true
+          values:
+            - "Mild"
+            - "Moderate"
+            - "Severe"
+            - "Life-Threatening"
+            - "Death"
+
+        - name: serious
+          type: boolean
+          required: true
+          default: false
+
+        - name: seriousness_criteria
+          type: array
+          item_type: string
+          description: "Death, Life-threatening, Hospitalization, etc."
+
+        - name: causality
+          type: enum
+          values:
+            - "Not Related"
+            - "Unlikely"
+            - "Possibly Related"
+            - "Probably Related"
+            - "Definitely Related"
+
+        - name: expectedness
+          type: enum
+          values: ["Expected", "Unexpected"]
+
+        - name: onset_date
+          type: date
+          required: true
+
+        - name: resolution_date
+          type: date
+
+        - name: outcome
+          type: enum
+          values:
+            - "Recovered"
+            - "Recovering"
+            - "Not Recovered"
+            - "Fatal"
+            - "Unknown"
+
+        - name: action_taken
+          type: enum
+          values:
+            - "None"
+            - "Drug Interrupted"
+            - "Drug Withdrawn"
+            - "Dose Reduced"
+            - "Not Applicable"
+
+        - name: treatment_required
+          type: boolean
+          default: false
+
+        - name: reporter_date
+          type: date
+
+        - name: regulatory_reported
+          type: boolean
+          default: false
+
+        - name: narrative
+          type: text
+
+      indexes:
+        - fields: ["serious"]
+          name: "idx_ae_serious"
+        - fields: ["onset_date"]
+          name: "idx_ae_date"
+
+    # ------------------------------------------------------------------------
+    # Approval Entity
+    # ------------------------------------------------------------------------
+    - name: Approval
+      display_name: "Regulatory Approval"
+      description: "Regulatory approval or authorization"
+      icon: "✅"
+      color: "#14B8A6"
+
+      attributes:
+        - name: approval_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: approval_type
+          type: enum
+          required: true
+          values:
+            - "NDA"
+            - "BLA"
+            - "ANDA"
+            - "505(b)(2)"
+            - "EUA"
+            - "MAA"
+            - "CE Mark"
+
+        - name: regulatory_authority
+          type: enum
+          required: true
+          values:
+            - "FDA"
+            - "EMA"
+            - "PMDA"
+            - "Health Canada"
+            - "TGA"
+            - "NMPA"
+
+        - name: status
+          type: enum
+          values:
+            - "Submitted"
+            - "Under Review"
+            - "Complete Response"
+            - "Approved"
+            - "Withdrawn"
+            - "Refused"
+
+        - name: submission_date
+          type: date
+
+        - name: pdufa_date
+          type: date
+          description: "PDUFA action date"
+
+        - name: approval_date
+          type: date
+
+        - name: application_number
+          type: string
+
+        - name: indication
+          type: text
+
+        - name: approval_conditions
+          type: array
+          item_type: string
+
+        - name: post_marketing_commitments
+          type: array
+          item_type: string
+
+        - name: labeling_url
+          type: url
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_approval_status"
+        - fields: ["regulatory_authority"]
+          name: "idx_approval_authority"
+
+    # ------------------------------------------------------------------------
+    # Manufacturing Entity
+    # ------------------------------------------------------------------------
+    - name: Manufacturing
+      display_name: "Manufacturing Site"
+      description: "Drug manufacturing or CMO facility"
+      icon: "🏭"
+      color: "#6366F1"
+
+      attributes:
+        - name: facility_id
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: facility_type
+          type: enum
+          required: true
+          values:
+            - "API Manufacturing"
+            - "Drug Product"
+            - "Packaging"
+            - "Labeling"
+            - "Testing Lab"
+            - "Distribution"
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "Under Inspection", "Remediation"]
+          default: "Active"
+
+        - name: address
+          type: address
+          required: true
+
+        - name: country
+          type: string
+
+        - name: fei_number
+          type: string
+          description: "FDA Establishment Identifier"
+
+        - name: duns_number
+          type: string
+
+        - name: gmp_certification
+          type: boolean
+          default: false
+
+        - name: last_inspection_date
+          type: date
+
+        - name: inspection_outcome
+          type: enum
+          values: ["NAI", "VAI", "OAI"]
+          description: "No Action, Voluntary Action, Official Action Indicated"
+
+        - name: capacity_units_per_year
+          type: number
+
+        - name: lead_time_weeks
+          type: number
+
+        - name: quality_agreement_date
+          type: date
+
+      indexes:
+        - fields: ["facility_type"]
+          name: "idx_manufacturing_type"
+        - fields: ["status"]
+          name: "idx_manufacturing_status"
+
+    # ------------------------------------------------------------------------
+    # Compound Entity
+    # ------------------------------------------------------------------------
+    - name: Compound
+      display_name: "Chemical Compound"
+      description: "Chemical or biological compound in development"
+      icon: "🧪"
+      color: "#84CC16"
+
+      attributes:
+        - name: compound_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: internal_code
+          type: string
+
+        - name: compound_type
+          type: enum
+          values:
+            - "Small Molecule"
+            - "Peptide"
+            - "Protein"
+            - "Antibody"
+            - "Oligonucleotide"
+            - "Cell"
+            - "Gene"
+
+        - name: molecular_formula
+          type: string
+
+        - name: molecular_weight
+          type: number
+
+        - name: smiles
+          type: string
+          description: "SMILES notation"
+
+        - name: inchi_key
+          type: string
+
+        - name: target
+          type: string
+          description: "Biological target"
+
+        - name: mechanism
+          type: text
+
+        - name: discovery_date
+          type: date
+
+        - name: status
+          type: enum
+          values: ["Active", "Inactive", "Licensed Out", "Partnered"]
+
+      indexes:
+        - fields: ["compound_type"]
+          name: "idx_compound_type"
+
+    # ------------------------------------------------------------------------
+    # Indication Entity
+    # ------------------------------------------------------------------------
+    - name: Indication
+      display_name: "Indication"
+      description: "Therapeutic indication or disease area"
+      icon: "🎯"
+      color: "#F97316"
+
+      attributes:
+        - name: indication_id
+          type: string
+          required: true
+          indexed: true
+
+        - name: name
+          type: string
+          required: true
+
+        - name: icd10_code
+          type: string
+          indexed: true
+
+        - name: therapeutic_area
+          type: string
+          indexed: true
+
+        - name: orphan_status
+          type: boolean
+          default: false
+
+        - name: patient_population
+          type: number
+          description: "Estimated patient population"
+
+        - name: unmet_medical_need
+          type: enum
+          values: ["High", "Medium", "Low"]
+
+        - name: market_size
+          type: money
+
+        - name: description
+          type: text
+
+      indexes:
+        - fields: ["therapeutic_area"]
+          name: "idx_indication_area"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Drug-Trial Relationships
+    - name: TESTED_IN
+      from: Drug
+      to: Trial
+      description: "Drug tested in clinical trial"
+      cardinality: one_to_many
+
+    - name: TREATS
+      from: Drug
+      to: Indication
+      description: "Drug treats indication"
+      cardinality: many_to_many
+      attributes:
+        - name: approval_status
+          type: enum
+          values: ["Approved", "In Development", "Investigational"]
+        - name: line_of_therapy
+          type: string
+
+    # Trial-Site Relationships
+    - name: CONDUCTED_AT
+      from: Trial
+      to: Site
+      description: "Trial conducted at site"
+      cardinality: many_to_many
+      attributes:
+        - name: site_number
+          type: string
+        - name: target_enrollment
+          type: number
+        - name: status
+          type: enum
+          values: ["Selected", "Active", "Closed"]
+
+    # Patient Relationships
+    - name: ENROLLED_IN
+      from: Patient
+      to: Trial
+      description: "Patient enrolled in trial"
+      cardinality: many_to_one
+
+    - name: TREATED_AT
+      from: Patient
+      to: Site
+      description: "Patient treated at site"
+      cardinality: many_to_one
+
+    # Investigator Relationships
+    - name: INVESTIGATES
+      from: Investigator
+      to: Trial
+      description: "Investigator participates in trial"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: enum
+          values: ["Principal Investigator", "Sub-Investigator"]
+
+    - name: WORKS_AT
+      from: Investigator
+      to: Site
+      description: "Investigator works at site"
+      cardinality: many_to_many
+
+    # Adverse Event Relationships
+    - name: REPORTED_BY
+      from: AdverseEvent
+      to: Patient
+      description: "Adverse event reported by patient"
+      cardinality: many_to_one
+
+    - name: OCCURRED_IN
+      from: AdverseEvent
+      to: Trial
+      description: "Adverse event occurred in trial"
+      cardinality: many_to_one
+
+    # Approval Relationships
+    - name: APPROVED_FOR
+      from: Drug
+      to: Approval
+      description: "Drug received regulatory approval"
+      cardinality: one_to_many
+
+    # Manufacturing Relationships
+    - name: MANUFACTURED_AT
+      from: Drug
+      to: Manufacturing
+      description: "Drug manufactured at facility"
+      cardinality: many_to_many
+      attributes:
+        - name: manufacturing_step
+          type: enum
+          values: ["API", "Drug Product", "Packaging", "Testing"]
+        - name: primary
+          type: boolean
+
+    # Compound Relationships
+    - name: DERIVED_FROM
+      from: Drug
+      to: Compound
+      description: "Drug derived from compound"
+      cardinality: many_to_one
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "drug_development_timeline"
+      description: "Get complete development history for a drug"
+      cypher: |
+        MATCH (d:Drug {id: $drug_id})
+        OPTIONAL MATCH (d)-[:TESTED_IN]->(t:Trial)
+        OPTIONAL MATCH (d)-[:APPROVED_FOR]->(a:Approval)
+        OPTIONAL MATCH (d)-[:TREATS]->(i:Indication)
+        RETURN d,
+               collect(DISTINCT t) AS trials,
+               collect(DISTINCT a) AS approvals,
+               collect(DISTINCT i) AS indications
+        ORDER BY t.first_patient_first_visit
+
+    - name: "trial_enrollment_status"
+      description: "Get enrollment status across all sites"
+      cypher: |
+        MATCH (t:Trial {id: $trial_id})
+        MATCH (t)-[r:CONDUCTED_AT]->(s:Site)
+        RETURN t,
+               s.site_number,
+               s.name,
+               r.target_enrollment,
+               s.current_enrollment,
+               s.screen_failure_rate,
+               s.enrollment_rate
+        ORDER BY s.enrollment_rate DESC
+
+    - name: "investigator_experience"
+      description: "Find investigators with experience in indication"
+      cypher: |
+        MATCH (i:Investigator)-[:INVESTIGATES]->(t:Trial)-[:TESTED_IN]-(d:Drug)-[:TREATS]->(ind:Indication)
+        WHERE ind.name = $indication_name
+          AND i.role = 'Principal Investigator'
+        RETURN i,
+               count(DISTINCT t) AS trial_count,
+               sum(t.current_enrollment) AS total_patients
+        ORDER BY trial_count DESC
+        LIMIT 50
+
+    - name: "safety_signal_detection"
+      description: "Find adverse events by drug and severity"
+      cypher: |
+        MATCH (d:Drug {id: $drug_id})-[:TESTED_IN]->(t:Trial)
+        MATCH (ae:AdverseEvent)-[:OCCURRED_IN]->(t)
+        WHERE ae.serious = true OR ae.severity IN ['Severe', 'Life-Threatening']
+        RETURN ae.meddra_pt AS event_term,
+               count(*) AS event_count,
+               collect(DISTINCT ae.causality) AS causality_assessments
+        ORDER BY event_count DESC
+
+    - name: "site_performance_ranking"
+      description: "Rank sites by performance metrics"
+      cypher: |
+        MATCH (s:Site)-[:CONDUCTED_AT]-(t:Trial {id: $trial_id})
+        RETURN s.site_number,
+               s.name,
+               s.current_enrollment,
+               s.enrollment_rate,
+               s.screen_failure_rate,
+               s.query_rate,
+               s.performance_score
+        ORDER BY s.performance_score DESC
+
+    - name: "manufacturing_supply_chain"
+      description: "Get manufacturing sites for a drug"
+      cypher: |
+        MATCH (d:Drug {id: $drug_id})-[r:MANUFACTURED_AT]->(m:Manufacturing)
+        RETURN m,
+               r.manufacturing_step,
+               r.primary
+        ORDER BY r.manufacturing_step
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  version: "1.0.0"
+  last_updated: "2025-11-19"

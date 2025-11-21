@@ -1,0 +1,1051 @@
+# Construction & Engineering Ontology Definition
+# Entity types, relationships, attributes, and constraints
+
+ontology:
+  version: "1.0.0"
+  description: "Construction & engineering domain ontology covering projects, contractors, materials, and compliance"
+
+  # ============================================================================
+  # ENTITY DEFINITIONS
+  # ============================================================================
+
+  entities:
+    # ------------------------------------------------------------------------
+    # Project Entity
+    # ------------------------------------------------------------------------
+    - name: Project
+      display_name: "Project"
+      description: "Construction project (commercial, residential, infrastructure)"
+      icon: "🏗️"
+      color: "#F59E0B"
+
+      attributes:
+        # Core Identification
+        - name: project_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: project_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: project_type
+          type: enum
+          required: true
+          values:
+            - "Commercial"
+            - "Residential"
+            - "Industrial"
+            - "Infrastructure"
+            - "Healthcare"
+            - "Education"
+            - "Retail"
+            - "Mixed Use"
+            - "Renovation"
+          default: "Commercial"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Preconstruction"
+            - "Bidding"
+            - "Awarded"
+            - "In Progress"
+            - "On Hold"
+            - "Completed"
+            - "Cancelled"
+          default: "Preconstruction"
+
+        # Location
+        - name: address
+          type: address
+          required: true
+
+        - name: location
+          type: geopoint
+          indexed: true
+
+        - name: city
+          type: string
+          indexed: true
+
+        - name: state
+          type: string
+          indexed: true
+
+        - name: zip_code
+          type: string
+
+        # Project Details
+        - name: square_footage
+          type: number
+          min: 0
+          unit: "sqft"
+
+        - name: stories
+          type: number
+          min: 1
+
+        - name: description
+          type: text
+
+        # Financial
+        - name: contract_value
+          type: money
+          required: true
+
+        - name: budget
+          type: money
+
+        - name: actual_cost
+          type: money
+
+        - name: cost_variance
+          type: money
+          computed: true
+
+        - name: contingency
+          type: money
+
+        # Schedule
+        - name: start_date
+          type: date
+
+        - name: substantial_completion_date
+          type: date
+
+        - name: final_completion_date
+          type: date
+
+        - name: actual_completion_date
+          type: date
+
+        - name: percent_complete
+          type: number
+          min: 0
+          max: 100
+          unit: "percentage"
+
+        # Delivery Method
+        - name: delivery_method
+          type: enum
+          values:
+            - "Design-Bid-Build"
+            - "Design-Build"
+            - "CM at Risk"
+            - "IPD"
+            - "GMPCSQ"
+
+        - name: contract_type
+          type: enum
+          values:
+            - "Lump Sum"
+            - "GMP"
+            - "Cost Plus"
+            - "Unit Price"
+            - "Time & Materials"
+
+        # Owner Information
+        - name: owner_name
+          type: string
+
+        - name: owner_contact
+          type: string
+
+        - name: architect_of_record
+          type: string
+
+      indexes:
+        - fields: ["status", "project_type"]
+          name: "idx_project_status_type"
+        - fields: ["location"]
+          name: "idx_location"
+          type: "spatial"
+        - fields: ["start_date"]
+          name: "idx_start_date"
+
+      validation_rules:
+        - rule: "contract_value must be > 0"
+        - rule: "final_completion_date must be >= substantial_completion_date"
+
+    # ------------------------------------------------------------------------
+    # Contractor Entity
+    # ------------------------------------------------------------------------
+    - name: Contractor
+      display_name: "Contractor"
+      description: "General contractor or subcontractor"
+      icon: "👷"
+      color: "#3B82F6"
+
+      attributes:
+        - name: company_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: contractor_type
+          type: enum
+          required: true
+          values:
+            - "General Contractor"
+            - "Subcontractor"
+            - "Specialty Contractor"
+            - "Material Supplier"
+
+        - name: trade
+          type: string
+          description: "Primary trade (e.g., Electrical, Plumbing, HVAC)"
+          indexed: true
+
+        - name: license_number
+          type: string
+
+        - name: license_state
+          type: string
+
+        - name: license_expiration
+          type: date
+
+        - name: tax_id
+          type: string
+
+        - name: address
+          type: address
+
+        - name: phone
+          type: phone
+
+        - name: email
+          type: email
+
+        - name: website
+          type: url
+
+        - name: contact_name
+          type: string
+
+        - name: employee_count
+          type: number
+
+        - name: annual_revenue
+          type: money
+
+        - name: insurance_expiration
+          type: date
+
+        - name: bonding_capacity
+          type: money
+
+        - name: safety_rating
+          type: number
+          min: 0
+          max: 100
+
+        - name: emr
+          type: number
+          description: "Experience Modification Rate"
+
+        - name: prequalified
+          type: boolean
+          default: false
+
+        - name: minority_owned
+          type: boolean
+          default: false
+
+        - name: woman_owned
+          type: boolean
+          default: false
+
+        - name: veteran_owned
+          type: boolean
+          default: false
+
+      indexes:
+        - fields: ["company_name"]
+          name: "idx_contractor_name"
+        - fields: ["trade"]
+          name: "idx_trade"
+
+    # ------------------------------------------------------------------------
+    # Material Entity
+    # ------------------------------------------------------------------------
+    - name: Material
+      display_name: "Material"
+      description: "Construction material or product"
+      icon: "📦"
+      color: "#10B981"
+
+      attributes:
+        - name: material_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: material_type
+          type: enum
+          required: true
+          values:
+            - "Structural Steel"
+            - "Concrete"
+            - "Lumber"
+            - "Electrical"
+            - "Plumbing"
+            - "HVAC"
+            - "Finishes"
+            - "Roofing"
+            - "Windows/Doors"
+            - "Equipment"
+            - "Other"
+
+        - name: specification
+          type: string
+
+        - name: manufacturer
+          type: string
+
+        - name: model_number
+          type: string
+
+        - name: unit_of_measure
+          type: string
+          default: "EA"
+
+        - name: unit_cost
+          type: money
+
+        - name: quantity_ordered
+          type: number
+
+        - name: quantity_received
+          type: number
+
+        - name: lead_time_days
+          type: number
+          description: "Lead time in days"
+
+        - name: order_date
+          type: date
+
+        - name: required_date
+          type: date
+
+        - name: delivery_date
+          type: date
+
+        - name: status
+          type: enum
+          values:
+            - "Not Ordered"
+            - "Ordered"
+            - "In Transit"
+            - "Partial Delivery"
+            - "Delivered"
+            - "Installed"
+
+        - name: storage_location
+          type: string
+
+        - name: warranty_years
+          type: number
+
+      indexes:
+        - fields: ["material_type", "status"]
+          name: "idx_material_type_status"
+
+    # ------------------------------------------------------------------------
+    # Equipment Entity
+    # ------------------------------------------------------------------------
+    - name: Equipment
+      display_name: "Equipment"
+      description: "Construction equipment or machinery"
+      icon: "🚜"
+      color: "#6366F1"
+
+      attributes:
+        - name: equipment_name
+          type: string
+          required: true
+          indexed: true
+
+        - name: equipment_type
+          type: enum
+          required: true
+          values:
+            - "Crane"
+            - "Excavator"
+            - "Bulldozer"
+            - "Forklift"
+            - "Scaffolding"
+            - "Concrete Pump"
+            - "Generator"
+            - "Compressor"
+            - "Welding Equipment"
+            - "Other"
+
+        - name: make
+          type: string
+
+        - name: model
+          type: string
+
+        - name: serial_number
+          type: string
+          unique_per_tenant: true
+
+        - name: year
+          type: number
+
+        - name: owned_or_rented
+          type: enum
+          values: ["Owned", "Rented"]
+
+        - name: rental_rate
+          type: money
+          description: "Daily rental rate"
+
+        - name: rental_company
+          type: string
+
+        - name: rental_start_date
+          type: date
+
+        - name: rental_end_date
+          type: date
+
+        - name: last_inspection_date
+          type: date
+
+        - name: next_inspection_due
+          type: date
+
+        - name: certification_required
+          type: boolean
+          default: false
+
+        - name: operator_certification
+          type: string
+
+        - name: status
+          type: enum
+          values:
+            - "Available"
+            - "In Use"
+            - "Maintenance"
+            - "Out of Service"
+
+      indexes:
+        - fields: ["equipment_type", "status"]
+          name: "idx_equipment_type_status"
+
+    # ------------------------------------------------------------------------
+    # Permit Entity
+    # ------------------------------------------------------------------------
+    - name: Permit
+      display_name: "Permit"
+      description: "Building or construction permit"
+      icon: "📋"
+      color: "#EC4899"
+
+      attributes:
+        - name: permit_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: permit_type
+          type: enum
+          required: true
+          values:
+            - "Building"
+            - "Electrical"
+            - "Plumbing"
+            - "Mechanical"
+            - "Fire"
+            - "Demolition"
+            - "Grading"
+            - "Environmental"
+            - "Sign"
+            - "Occupancy"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Pending"
+            - "Submitted"
+            - "In Review"
+            - "Approved"
+            - "Issued"
+            - "Expired"
+            - "Revoked"
+          default: "Pending"
+
+        - name: issuing_authority
+          type: string
+
+        - name: application_date
+          type: date
+
+        - name: issue_date
+          type: date
+
+        - name: expiration_date
+          type: date
+
+        - name: fee
+          type: money
+
+        - name: conditions
+          type: text
+          description: "Permit conditions or restrictions"
+
+        - name: document_url
+          type: url
+
+      indexes:
+        - fields: ["permit_type", "status"]
+          name: "idx_permit_type_status"
+        - fields: ["expiration_date"]
+          name: "idx_permit_expiration"
+
+    # ------------------------------------------------------------------------
+    # Inspection Entity
+    # ------------------------------------------------------------------------
+    - name: Inspection
+      display_name: "Inspection"
+      description: "Building or safety inspection"
+      icon: "🔍"
+      color: "#14B8A6"
+
+      attributes:
+        - name: inspection_type
+          type: enum
+          required: true
+          values:
+            - "Foundation"
+            - "Framing"
+            - "Electrical Rough"
+            - "Plumbing Rough"
+            - "Mechanical Rough"
+            - "Insulation"
+            - "Drywall"
+            - "Final Electrical"
+            - "Final Plumbing"
+            - "Final Mechanical"
+            - "Final Building"
+            - "Fire/Life Safety"
+            - "OSHA"
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Scheduled"
+            - "Pending"
+            - "Passed"
+            - "Failed"
+            - "Cancelled"
+            - "Re-inspection Required"
+          default: "Scheduled"
+
+        - name: scheduled_date
+          type: datetime
+          required: true
+
+        - name: actual_date
+          type: datetime
+
+        - name: inspector_name
+          type: string
+
+        - name: inspector_organization
+          type: string
+
+        - name: result_notes
+          type: text
+
+        - name: deficiencies
+          type: array
+          item_type: string
+
+        - name: re_inspection_date
+          type: datetime
+
+        - name: photos
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["inspection_type", "status"]
+          name: "idx_inspection_type_status"
+        - fields: ["scheduled_date"]
+          name: "idx_inspection_date"
+
+    # ------------------------------------------------------------------------
+    # RFI Entity
+    # ------------------------------------------------------------------------
+    - name: RFI
+      display_name: "RFI"
+      description: "Request for Information"
+      icon: "❓"
+      color: "#8B5CF6"
+
+      attributes:
+        - name: rfi_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: subject
+          type: string
+          required: true
+
+        - name: question
+          type: text
+          required: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Submitted"
+            - "In Review"
+            - "Answered"
+            - "Closed"
+            - "Void"
+          default: "Draft"
+
+        - name: priority
+          type: enum
+          values: ["Low", "Medium", "High", "Critical"]
+          default: "Medium"
+
+        - name: discipline
+          type: enum
+          values:
+            - "Architectural"
+            - "Structural"
+            - "Mechanical"
+            - "Electrical"
+            - "Plumbing"
+            - "Civil"
+            - "General"
+
+        - name: submitted_date
+          type: date
+
+        - name: due_date
+          type: date
+
+        - name: response_date
+          type: date
+
+        - name: response
+          type: text
+
+        - name: cost_impact
+          type: boolean
+          default: false
+
+        - name: schedule_impact
+          type: boolean
+          default: false
+
+        - name: drawing_reference
+          type: string
+
+        - name: spec_reference
+          type: string
+
+        - name: attachments
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["status", "priority"]
+          name: "idx_rfi_status_priority"
+        - fields: ["due_date"]
+          name: "idx_rfi_due_date"
+
+    # ------------------------------------------------------------------------
+    # ChangeOrder Entity
+    # ------------------------------------------------------------------------
+    - name: ChangeOrder
+      display_name: "Change Order"
+      description: "Contract change order"
+      icon: "📝"
+      color: "#EF4444"
+
+      attributes:
+        - name: co_number
+          type: string
+          required: true
+          indexed: true
+          unique_per_tenant: true
+
+        - name: title
+          type: string
+          required: true
+
+        - name: description
+          type: text
+          required: true
+
+        - name: status
+          type: enum
+          required: true
+          values:
+            - "Draft"
+            - "Pending"
+            - "Submitted"
+            - "Approved"
+            - "Rejected"
+            - "Void"
+          default: "Draft"
+
+        - name: change_type
+          type: enum
+          values:
+            - "Owner Request"
+            - "Design Change"
+            - "Field Condition"
+            - "Code Compliance"
+            - "Value Engineering"
+            - "Error/Omission"
+
+        - name: cost_impact
+          type: money
+          description: "Dollar impact (positive or negative)"
+
+        - name: schedule_impact_days
+          type: number
+          description: "Schedule impact in days"
+
+        - name: submitted_date
+          type: date
+
+        - name: approved_date
+          type: date
+
+        - name: approved_by
+          type: string
+
+        - name: markup_percentage
+          type: number
+          unit: "percentage"
+
+        - name: attachments
+          type: array
+          item_type: url
+
+      indexes:
+        - fields: ["status"]
+          name: "idx_co_status"
+
+    # ------------------------------------------------------------------------
+    # Drawing Entity
+    # ------------------------------------------------------------------------
+    - name: Drawing
+      display_name: "Drawing"
+      description: "Construction drawing or document"
+      icon: "📐"
+      color: "#0EA5E9"
+
+      attributes:
+        - name: drawing_number
+          type: string
+          required: true
+          indexed: true
+
+        - name: title
+          type: string
+          required: true
+
+        - name: discipline
+          type: enum
+          required: true
+          values:
+            - "Architectural"
+            - "Structural"
+            - "Mechanical"
+            - "Electrical"
+            - "Plumbing"
+            - "Civil"
+            - "Landscape"
+            - "Fire Protection"
+
+        - name: revision
+          type: string
+          default: "0"
+
+        - name: revision_date
+          type: date
+
+        - name: status
+          type: enum
+          values:
+            - "In Progress"
+            - "For Review"
+            - "Approved"
+            - "Issued for Construction"
+            - "As-Built"
+            - "Superseded"
+
+        - name: scale
+          type: string
+
+        - name: sheet_size
+          type: string
+
+        - name: file_url
+          type: url
+
+        - name: issue_date
+          type: date
+
+        - name: created_by
+          type: string
+
+      indexes:
+        - fields: ["discipline", "status"]
+          name: "idx_drawing_discipline_status"
+
+    # ------------------------------------------------------------------------
+    # Schedule Entity
+    # ------------------------------------------------------------------------
+    - name: Schedule
+      display_name: "Schedule"
+      description: "Project schedule or milestone"
+      icon: "📅"
+      color: "#22C55E"
+
+      attributes:
+        - name: activity_name
+          type: string
+          required: true
+
+        - name: activity_id
+          type: string
+          indexed: true
+
+        - name: activity_type
+          type: enum
+          values:
+            - "Task"
+            - "Milestone"
+            - "Summary"
+            - "Hammock"
+
+        - name: start_date
+          type: date
+          required: true
+
+        - name: end_date
+          type: date
+          required: true
+
+        - name: actual_start
+          type: date
+
+        - name: actual_end
+          type: date
+
+        - name: duration_days
+          type: number
+
+        - name: percent_complete
+          type: number
+          min: 0
+          max: 100
+
+        - name: predecessor
+          type: string
+
+        - name: successor
+          type: string
+
+        - name: float_days
+          type: number
+
+        - name: critical_path
+          type: boolean
+          default: false
+
+        - name: responsible_party
+          type: string
+
+      indexes:
+        - fields: ["start_date", "end_date"]
+          name: "idx_schedule_dates"
+
+  # ============================================================================
+  # RELATIONSHIPS
+  # ============================================================================
+
+  relationships:
+    # Project Relationships
+    - name: WORKS_ON
+      from: Contractor
+      to: Project
+      description: "Contractor works on project"
+      cardinality: many_to_many
+      attributes:
+        - name: role
+          type: string
+          description: "e.g., General Contractor, Electrical Sub"
+        - name: contract_value
+          type: money
+        - name: start_date
+          type: date
+        - name: end_date
+          type: date
+
+    - name: SUPPLIES
+      from: Contractor
+      to: Material
+      description: "Contractor supplies material"
+      cardinality: many_to_many
+      attributes:
+        - name: po_number
+          type: string
+        - name: delivery_date
+          type: date
+
+    - name: MATERIAL_FOR
+      from: Material
+      to: Project
+      description: "Material used in project"
+      cardinality: many_to_one
+
+    - name: EQUIPMENT_FOR
+      from: Equipment
+      to: Project
+      description: "Equipment used on project"
+      cardinality: many_to_one
+
+    # Permit & Inspection Relationships
+    - name: REQUIRES_PERMIT
+      from: Project
+      to: Permit
+      description: "Project requires permit"
+      cardinality: one_to_many
+
+    - name: INSPECTED_BY
+      from: Permit
+      to: Inspection
+      description: "Permit requires inspections"
+      cardinality: one_to_many
+
+    - name: PROJECT_INSPECTION
+      from: Project
+      to: Inspection
+      description: "Project has inspection"
+      cardinality: one_to_many
+
+    # Change Management Relationships
+    - name: HAS_RFI
+      from: Project
+      to: RFI
+      description: "Project has RFI"
+      cardinality: one_to_many
+
+    - name: SUBMITTED_BY
+      from: RFI
+      to: Contractor
+      description: "RFI submitted by contractor"
+      cardinality: many_to_one
+
+    - name: MODIFIES
+      from: ChangeOrder
+      to: Project
+      description: "Change order modifies project"
+      cardinality: many_to_one
+
+    - name: CO_FROM_RFI
+      from: ChangeOrder
+      to: RFI
+      description: "Change order originated from RFI"
+      cardinality: many_to_one
+
+    # Drawing Relationships
+    - name: PROJECT_DRAWINGS
+      from: Project
+      to: Drawing
+      description: "Project has drawings"
+      cardinality: one_to_many
+
+    - name: REFERENCES_DRAWING
+      from: RFI
+      to: Drawing
+      description: "RFI references drawing"
+      cardinality: many_to_many
+
+    # Schedule Relationships
+    - name: PROJECT_SCHEDULE
+      from: Project
+      to: Schedule
+      description: "Project has schedule activities"
+      cardinality: one_to_many
+
+    - name: RESPONSIBLE_FOR
+      from: Contractor
+      to: Schedule
+      description: "Contractor responsible for activity"
+      cardinality: many_to_many
+
+  # ============================================================================
+  # GRAPH QUERIES
+  # ============================================================================
+
+  common_queries:
+    - name: "project_team"
+      description: "Get all contractors on a project"
+      cypher: |
+        MATCH (c:Contractor)-[r:WORKS_ON]->(p:Project {id: $project_id})
+        RETURN c, r.role, r.contract_value
+        ORDER BY r.contract_value DESC
+
+    - name: "contractor_history"
+      description: "Get project history for contractor"
+      cypher: |
+        MATCH (c:Contractor {id: $contractor_id})-[r:WORKS_ON]->(p:Project)
+        RETURN p, r.role, r.contract_value
+        ORDER BY p.start_date DESC
+
+    - name: "open_rfis"
+      description: "Get all open RFIs for project"
+      cypher: |
+        MATCH (p:Project {id: $project_id})-[:HAS_RFI]->(rfi:RFI)
+        WHERE rfi.status IN ['Submitted', 'In Review']
+        RETURN rfi
+        ORDER BY rfi.due_date ASC
+
+    - name: "pending_inspections"
+      description: "Get pending inspections for project"
+      cypher: |
+        MATCH (p:Project {id: $project_id})-[:PROJECT_INSPECTION]->(i:Inspection)
+        WHERE i.status IN ['Scheduled', 'Pending']
+        RETURN i
+        ORDER BY i.scheduled_date ASC
+
+    - name: "change_order_impact"
+      description: "Calculate total change order impact"
+      cypher: |
+        MATCH (co:ChangeOrder)-[:MODIFIES]->(p:Project {id: $project_id})
+        WHERE co.status = 'Approved'
+        RETURN sum(co.cost_impact) AS total_cost_impact,
+               sum(co.schedule_impact_days) AS total_schedule_impact
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2024-01-15"
+  version: "1.0.0"
+  last_updated: "2024-01-15"

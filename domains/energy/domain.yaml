@@ -1,0 +1,232 @@
+# Energy & Utilities Domain Configuration
+# Industry-specific metadata, pricing, and market analysis
+
+domain:
+  id: energy
+  name: "Energy & Utilities"
+  version: "1.0.0"
+  description: |
+    Comprehensive energy and utilities knowledge graph platform for asset management,
+    grid operations, customer management, and regulatory compliance. Supports electric,
+    gas, water, and renewable energy utilities.
+
+  icon: "⚡"
+  color: "#F59E0B"  # Amber
+
+  industry:
+    sector: "Energy & Utilities"
+    subsectors:
+      - "Electric Utilities"
+      - "Natural Gas"
+      - "Water & Wastewater"
+      - "Renewable Energy"
+      - "District Energy"
+
+    primary_use_cases:
+      - "Asset Performance Management"
+      - "Outage Management Systems"
+      - "Customer Information Systems"
+      - "Grid Analytics and Optimization"
+      - "Regulatory Compliance Reporting"
+      - "Renewable Energy Integration"
+
+  target_customers:
+    - type: "Investor-Owned Utilities"
+      size: "100,000-5,000,000 customers"
+      pain_points:
+        - "Aging infrastructure asset tracking"
+        - "Grid reliability and outage prediction"
+        - "Regulatory compliance reporting burden"
+        - "Renewable integration challenges"
+
+    - type: "Municipal Utilities"
+      size: "10,000-500,000 customers"
+      pain_points:
+        - "Limited IT resources for modernization"
+        - "Customer service improvement needs"
+        - "Smart meter data management"
+        - "Conservation program tracking"
+
+    - type: "Electric Cooperatives"
+      size: "5,000-100,000 members"
+      pain_points:
+        - "Member engagement and communication"
+        - "Distributed energy resource management"
+        - "Vegetation management optimization"
+        - "Capital planning prioritization"
+
+    - type: "Renewable Energy Developers"
+      size: "Enterprise"
+      pain_points:
+        - "Project portfolio optimization"
+        - "Grid interconnection management"
+        - "Power purchase agreement tracking"
+        - "Environmental compliance"
+
+  market_analysis:
+    market_size:
+      global_utility_analytics: "$4.2B (2023)"
+      projected_2030: "$12.8B"
+      cagr: "17.2%"
+
+    key_trends:
+      - "Grid modernization and smart grid deployment"
+      - "Distributed energy resources integration"
+      - "AI/ML for predictive maintenance"
+      - "Customer experience transformation"
+      - "Decarbonization and net-zero commitments"
+
+    competitive_landscape:
+      traditional_competitors:
+        - "Oracle Utilities (CIS, OMS)"
+        - "SAP IS-U (Utility Industry Solution)"
+        - "Itron (AMI and Analytics)"
+        - "Schneider Electric (Grid Management)"
+
+      differentiation:
+        - "Graph-based grid topology intelligence"
+        - "Cross-system asset relationship visualization"
+        - "AI-driven outage prediction from connected data"
+        - "Unified customer-to-asset traceability"
+        - "Real-time regulatory compliance dashboards"
+
+  pricing_tiers:
+    - tier: "Developer Sandbox"
+      price: "$0/month"
+      target: "Individual developers, small utilities evaluating platform"
+      included:
+        - "1 user"
+        - "1,000 assets/meters"
+        - "10k API calls/month"
+        - "Sample utility data only"
+        - "Community support"
+      limitations:
+        - "Powered by Binelek branding"
+        - "No custom branding"
+        - "No SSO"
+
+    - tier: "Starter"
+      price: "$799/month + $50/user"
+      target: "Small utilities, co-ops (10,000-50,000 customers)"
+      included:
+        - "5 users included, then $50/user"
+        - "50,000 assets"
+        - "100k API calls/month"
+        - "Basic analytics dashboard"
+        - "Webhooks for notifications"
+        - "Email support"
+      overage_rates:
+        - "Assets: $0.01 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Professional"
+      price: "$2,999/month + $75/user"
+      target: "Mid-size utilities (50,000-500,000 customers)"
+      included:
+        - "15 users included, then $75/user"
+        - "500,000 assets"
+        - "1M API calls/month"
+        - "Advanced analytics and reporting"
+        - "SAML SSO"
+        - "NERC compliance tools"
+        - "Priority support (4hr response time)"
+        - "Custom branding"
+      overage_rates:
+        - "Assets: $0.01 per 100 additional"
+        - "API calls: $0.10 per 1,000 additional"
+
+    - tier: "Enterprise"
+      price: "Custom pricing (typically $9,999+/month)"
+      target: "Large IOUs, state agencies, multi-utility organizations"
+      included:
+        - "Unlimited users"
+        - "Unlimited assets"
+        - "Unlimited API calls"
+        - "White-label platform"
+        - "Dedicated support engineer"
+        - "SLA guarantees (99.95% uptime)"
+        - "On-premise deployment option"
+        - "Custom integrations (SCADA, GIS, etc.)"
+        - "Advanced security (SOC 2, NERC CIP compliance)"
+
+  compliance_requirements:
+    regulations:
+      - name: "NERC CIP (Critical Infrastructure Protection)"
+        description: "Cybersecurity standards for bulk electric system"
+        impact: "Asset classification, access controls, security monitoring"
+
+      - name: "FERC Reporting Requirements"
+        description: "Federal Energy Regulatory Commission reporting"
+        impact: "Automated Form 1, Form 714, and market data reporting"
+
+      - name: "State PUC Regulations"
+        description: "State Public Utility Commission requirements"
+        impact: "Rate case support, service quality metrics, safety reporting"
+
+      - name: "EPA Environmental Requirements"
+        description: "Environmental Protection Agency compliance"
+        impact: "Emissions tracking, water discharge monitoring"
+
+      - name: "OSHA Safety Standards"
+        description: "Occupational Safety and Health Administration"
+        impact: "Worker safety tracking, incident reporting"
+
+  integration_ecosystem:
+    priority_integrations:
+      - name: "SCADA/EMS Systems"
+        providers: ["GE Grid Solutions", "Siemens", "ABB", "OSIsoft PI"]
+        use_case: "Real-time grid telemetry and control data"
+
+      - name: "GIS Systems"
+        providers: ["Esri ArcGIS", "Smallworld", "Intergraph"]
+        use_case: "Spatial asset data and network topology"
+
+      - name: "Work Management"
+        providers: ["IBM Maximo", "Oracle WAM", "Cityworks"]
+        use_case: "Work orders and maintenance scheduling"
+
+      - name: "Customer Information Systems"
+        providers: ["Oracle CC&B", "SAP IS-U", "Harris Utilities"]
+        use_case: "Customer accounts and billing"
+
+      - name: "Advanced Metering Infrastructure"
+        providers: ["Itron", "Landis+Gyr", "Sensus"]
+        use_case: "Smart meter data and analytics"
+
+      - name: "Outage Management Systems"
+        providers: ["Oracle NMS", "GE PowerOn", "Schneider ADMS"]
+        use_case: "Outage detection and restoration"
+
+  success_metrics:
+    key_performance_indicators:
+      - metric: "SAIDI improvement"
+        benchmark: "Graph-based analysis reduces System Average Interruption Duration Index by 20%"
+
+      - metric: "Asset failure prediction accuracy"
+        benchmark: "85% accuracy in predicting asset failures 30 days ahead"
+
+      - metric: "Regulatory reporting time reduction"
+        benchmark: "Reduce NERC reporting preparation from 40 hours to 4 hours"
+
+      - metric: "Customer complaint resolution"
+        benchmark: "Graph-based routing reduces resolution time by 35%"
+
+metadata:
+  created_by: "Binelek Platform Team"
+  created_at: "2025-11-19"
+  last_updated: "2025-11-19"
+  status: "Planned"
+  planned_release: "Q3 2026"
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-19"
+      changes: "Initial Energy & Utilities domain configuration"
+
+  documentation:
+    setup_guide: "docs/domains/energy/SETUP.md"
+    api_reference: "docs/domains/energy/API.md"
+    migration_guide: "docs/domains/energy/MIGRATION.md"
+
+  contact:
+    domain_owner: "energy-team@binelek.com"
+    support: "support@binelek.com"

@@ -1,0 +1,396 @@
+ontology:
+  entities:
+    - name: Client
+      description: "Client company or individual"
+      label: "Client"
+      attributes:
+        - name: name
+          type: string
+          required: true
+
+        - name: companyName
+          type: string
+          required: false
+
+        - name: email
+          type: string
+          required: true
+          validators:
+            - type: Email
+
+        - name: phone
+          type: string
+          required: false
+
+        - name: website
+          type: string
+          required: false
+
+        - name: industry
+          type: string
+          required: false
+
+        - name: status
+          type: enum
+          values: ["active", "inactive", "prospect"]
+          required: true
+          default: "prospect"
+
+        - name: totalRevenue
+          type: decimal
+          required: false
+          default: 0
+
+        - name: activeProjects
+          type: integer
+          required: false
+          default: 0
+
+    - name: Project
+      description: "Client project or engagement"
+      label: "Project"
+      attributes:
+        - name: name
+          type: string
+          required: true
+
+        - name: description
+          type: string
+          required: false
+
+        - name: status
+          type: enum
+          values: ["planning", "active", "on_hold", "completed", "cancelled"]
+          required: true
+          default: "planning"
+
+        - name: projectType
+          type: enum
+          values: ["fixed_price", "time_and_materials", "retainer"]
+          required: true
+
+        - name: budget
+          type: decimal
+          required: false
+
+        - name: hourlyRate
+          type: decimal
+          required: false
+
+        - name: estimatedHours
+          type: decimal
+          required: false
+
+        - name: actualHours
+          type: decimal
+          required: false
+          default: 0
+
+        - name: startDate
+          type: date
+          required: true
+
+        - name: endDate
+          type: date
+          required: false
+
+        - name: completionPercentage
+          type: integer
+          required: false
+          default: 0
+          validators:
+            - type: Range
+              min: 0
+              max: 100
+
+    - name: TeamMember
+      description: "Team member or employee"
+      label: "Team Member"
+      attributes:
+        - name: firstName
+          type: string
+          required: true
+
+        - name: lastName
+          type: string
+          required: true
+
+        - name: email
+          type: string
+          required: true
+          validators:
+            - type: Email
+
+        - name: role
+          type: enum
+          values: ["partner", "senior_consultant", "consultant", "associate", "admin"]
+          required: true
+
+        - name: hourlyRate
+          type: decimal
+          required: false
+
+        - name: capacity
+          type: decimal
+          required: false
+          default: 40
+          description: "Weekly capacity in hours"
+
+        - name: active
+          type: boolean
+          required: true
+          default: true
+
+    - name: TimeEntry
+      description: "Logged time entry"
+      label: "Time Entry"
+      attributes:
+        - name: date
+          type: date
+          required: true
+
+        - name: hours
+          type: decimal
+          required: true
+          validators:
+            - type: GreaterThan
+              value: 0
+            - type: LessThanOrEqual
+              value: 24
+
+        - name: description
+          type: string
+          required: true
+
+        - name: billable
+          type: boolean
+          required: true
+          default: true
+
+        - name: hourlyRate
+          type: decimal
+          required: false
+
+        - name: amount
+          type: decimal
+          required: false
+
+        - name: invoiced
+          type: boolean
+          required: false
+          default: false
+
+    - name: Invoice
+      description: "Client invoice"
+      label: "Invoice"
+      attributes:
+        - name: invoiceNumber
+          type: string
+          required: true
+
+        - name: issueDate
+          type: date
+          required: true
+
+        - name: dueDate
+          type: date
+          required: true
+
+        - name: status
+          type: enum
+          values: ["draft", "sent", "paid", "overdue", "cancelled"]
+          required: true
+          default: "draft"
+
+        - name: subtotal
+          type: decimal
+          required: true
+
+        - name: taxRate
+          type: decimal
+          required: false
+          default: 0
+
+        - name: taxAmount
+          type: decimal
+          required: false
+          default: 0
+
+        - name: total
+          type: decimal
+          required: true
+
+        - name: paidAmount
+          type: decimal
+          required: false
+          default: 0
+
+        - name: paidDate
+          type: date
+          required: false
+
+        - name: notes
+          type: string
+          required: false
+
+    - name: InvoiceLineItem
+      description: "Line item on invoice"
+      label: "Invoice Line Item"
+      attributes:
+        - name: description
+          type: string
+          required: true
+
+        - name: quantity
+          type: decimal
+          required: true
+          default: 1
+
+        - name: unitPrice
+          type: decimal
+          required: true
+
+        - name: amount
+          type: decimal
+          required: true
+
+    - name: Task
+      description: "Project task or deliverable"
+      label: "Task"
+      attributes:
+        - name: title
+          type: string
+          required: true
+
+        - name: description
+          type: string
+          required: false
+
+        - name: status
+          type: enum
+          values: ["todo", "in_progress", "blocked", "completed"]
+          required: true
+          default: "todo"
+
+        - name: priority
+          type: enum
+          values: ["low", "medium", "high", "urgent"]
+          required: true
+          default: "medium"
+
+        - name: dueDate
+          type: date
+          required: false
+
+        - name: estimatedHours
+          type: decimal
+          required: false
+
+        - name: actualHours
+          type: decimal
+          required: false
+
+    - name: Document
+      description: "Project document or file"
+      label: "Document"
+      attributes:
+        - name: name
+          type: string
+          required: true
+
+        - name: fileUrl
+          type: string
+          required: true
+
+        - name: fileType
+          type: string
+          required: true
+
+        - name: fileSize
+          type: integer
+          required: false
+          description: "Size in bytes"
+
+        - name: version
+          type: string
+          required: false
+          default: "1.0"
+
+        - name: uploadDate
+          type: datetime
+          required: true
+
+  relationships:
+    - name: HAS_PROJECT
+      from: Client
+      to: Project
+      type: one-to-many
+
+    - name: ASSIGNED_TO
+      from: Project
+      to: TeamMember
+      type: many-to-many
+
+    - name: PROJECT_TASK
+      from: Project
+      to: Task
+      type: one-to-many
+
+    - name: TASK_ASSIGNEE
+      from: Task
+      to: TeamMember
+      type: many-to-one
+
+    - name: TIME_FOR_PROJECT
+      from: TimeEntry
+      to: Project
+      type: many-to-one
+
+    - name: TIME_BY_MEMBER
+      from: TimeEntry
+      to: TeamMember
+      type: many-to-one
+
+    - name: TIME_FOR_TASK
+      from: TimeEntry
+      to: Task
+      type: many-to-one
+
+    - name: INVOICE_CLIENT
+      from: Invoice
+      to: Client
+      type: many-to-one
+
+    - name: INVOICE_PROJECT
+      from: Invoice
+      to: Project
+      type: many-to-one
+
+    - name: INVOICE_LINE
+      from: Invoice
+      to: InvoiceLineItem
+      type: one-to-many
+
+    - name: PROJECT_DOCUMENT
+      from: Project
+      to: Document
+      type: one-to-many
+
+  indexes:
+    - entity: Client
+      type: btree
+      fields: [email]
+      unique: true
+
+    - entity: Invoice
+      type: btree
+      fields: [invoiceNumber]
+      unique: true
+
+    - entity: TimeEntry
+      type: btree
+      fields: [date]
+
+    - entity: TimeEntry
+      type: btree
+      fields: [billable, invoiced]
