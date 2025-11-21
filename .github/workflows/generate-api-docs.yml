@@ -1,0 +1,167 @@
+name: Generate API Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/**'
+      - '.github/workflows/generate-api-docs.yml'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to generate docs for (or "all")'
+        required: false
+        default: 'all'
+
+jobs:
+  generate-binah-aip-docs:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      (github.event.inputs.service == 'binah-aip' || github.event.inputs.service == 'all') ||
+      github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd services/binah-aip
+          pip install -r requirements.txt
+          pip install -r requirements-docs.txt
+
+      - name: Generate module documentation
+        run: |
+          cd services/binah-aip/docs
+          sphinx-apidoc -o . ../app --force
+
+      - name: Build documentation
+        run: |
+          cd services/binah-aip/docs
+          make html
+
+      - name: Package documentation
+        run: |
+          cd services/binah-aip/docs/_build/html
+          tar -czf ../../../../binah-aip-docs.tar.gz .
+          cd ../../../..
+          ls -lh binah-aip-docs.tar.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binah-aip-docs
+          path: services/binah-aip/binah-aip-docs.tar.gz
+          retention-days: 90
+
+      - name: Get short SHA
+        id: sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: binah-aip-docs-${{ steps.sha.outputs.SHORT_SHA }}
+          name: "Binah AIP API Docs - ${{ steps.sha.outputs.SHORT_SHA }}"
+          body: |
+            ## Binah AIP API Documentation
+
+            Auto-generated API documentation from commit ${{ github.sha }}
+
+            **Service:** binah-aip
+            **Language:** Python 3.11
+          files: services/binah-aip/binah-aip-docs.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger binelek-docs update
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: k5tuck/binelek-docs
+          event-type: api-docs-updated
+          client-payload: '{"service": "binah-aip", "version": "${{ github.sha }}", "tag": "binah-aip-docs-${{ steps.sha.outputs.SHORT_SHA }}"}'
+        continue-on-error: true
+
+  generate-binah-ml-docs:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      (github.event.inputs.service == 'binah-ml' || github.event.inputs.service == 'all') ||
+      github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd services/binah-ml
+          pip install -r requirements.txt
+          pip install -r requirements-docs.txt
+
+      - name: Generate module documentation
+        run: |
+          cd services/binah-ml/docs
+          sphinx-apidoc -o . ../app --force
+
+      - name: Build documentation
+        run: |
+          cd services/binah-ml/docs
+          make html
+
+      - name: Package documentation
+        run: |
+          cd services/binah-ml/docs/_build/html
+          tar -czf ../../../../binah-ml-docs.tar.gz .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binah-ml-docs
+          path: services/binah-ml/binah-ml-docs.tar.gz
+          retention-days: 90
+
+      - name: Get short SHA
+        id: sha
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: binah-ml-docs-${{ steps.sha.outputs.SHORT_SHA }}
+          name: "Binah ML API Docs - ${{ steps.sha.outputs.SHORT_SHA }}"
+          body: |
+            ## Binah ML API Documentation
+
+            Auto-generated API documentation from commit ${{ github.sha }}
+
+            **Service:** binah-ml
+            **Language:** Python 3.11
+          files: services/binah-ml/binah-ml-docs.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger binelek-docs update
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: k5tuck/binelek-docs
+          event-type: api-docs-updated
+          client-payload: '{"service": "binah-ml", "version": "${{ github.sha }}", "tag": "binah-ml-docs-${{ steps.sha.outputs.SHORT_SHA }}"}'
+        continue-on-error: true
