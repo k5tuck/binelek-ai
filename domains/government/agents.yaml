@@ -1,0 +1,1230 @@
+# Government Domain - AI Agent Definitions
+# Intelligent 311 Citizen Service Request Management
+
+agents:
+  # =============================================================================
+  # WORKER AGENTS
+  # =============================================================================
+
+  - id: service_request_intake
+    name: "Service Request Intake Agent"
+    version: "1.0.0"
+    description: |
+      Analyzes incoming 311 service requests, classifies type, extracts location,
+      assesses urgency, and detects duplicates. First agent in the workflow.
+
+    capabilities:
+      - request_classification
+      - location_extraction
+      - urgency_assessment
+      - duplicate_detection
+      - image_analysis
+
+    tools:
+      # Entity Query Tools
+      - type: entity_query
+        name: "check_duplicate_requests"
+        description: "Find similar service requests within proximity and timeframe"
+        entities: [ServiceRequest, Location, Asset]
+        query: |
+          MATCH (sr:ServiceRequest {tenantId: $tenantId})
+          WHERE point.distance(
+                  point({latitude: sr.location.latitude, longitude: sr.location.longitude}),
+                  point({latitude: $latitude, longitude: $longitude})
+                ) < 100
+            AND sr.requestType = $requestType
+            AND sr.status IN ['open', 'in_progress']
+            AND sr.createdAt > datetime() - duration({days: 7})
+          RETURN sr
+          ORDER BY sr.createdAt DESC
+          LIMIT 5
+        parameters:
+          - latitude
+          - longitude
+          - requestType
+          - tenantId
+        output_mapping:
+          duplicate_count: "count(sr)"
+          related_requests: "collect(sr)"
+
+      - type: entity_query
+        name: "get_location_context"
+        description: "Retrieve location details and nearby infrastructure"
+        entities: [Location, District, InfrastructureAsset]
+        query: |
+          MATCH (loc:Location {tenantId: $tenantId})
+          WHERE point.distance(
+                  point({latitude: loc.latitude, longitude: loc.longitude}),
+                  point({latitude: $latitude, longitude: $longitude})
+                ) < 500
+          OPTIONAL MATCH (loc)-[:IN_DISTRICT]->(d:District)
+          OPTIONAL MATCH (loc)-[:NEAR_ASSET]->(asset:InfrastructureAsset)
+          WHERE asset.assetType IN $relevantAssetTypes
+          RETURN loc, d, collect(asset) as nearby_assets
+        parameters:
+          - latitude
+          - longitude
+          - relevantAssetTypes
+          - tenantId
+
+      # ML Model Tools
+      - type: ml_model
+        name: "classify_request_type"
+        description: "Classify service request from description and images"
+        model_id: "request_classifier_v2"
+        endpoint: "${ML_SERVICE_URL}/api/ml/predict/request_classifier_v2"
+        inputs:
+          - description: string
+          - location: object
+          - attachments: array
+          - reporter_history: array
+          - time_of_day: string
+          - day_of_week: string
+        outputs:
+          - request_type: string
+          - confidence: number
+          - subcategory: string
+          - keywords: array
+        input_mapping:
+          description: "{input.description}"
+          location: "{input.location}"
+          attachments: "{input.attachments}"
+          reporter_history: "{context.reporter_history}"
+          time_of_day: "{timestamp.hour}"
+          day_of_week: "{timestamp.day_name}"
+        output_mapping:
+          request_type: "prediction.request_type"
+          confidence: "prediction.confidence"
+          subcategory: "prediction.subcategory"
+
+      - type: ml_model
+        name: "predict_urgency"
+        description: "Predict urgency score and recommended SLA"
+        model_id: "urgency_predictor_v1"
+        inputs:
+          - request_type: string
+          - location: object
+          - time_of_day: string
+          - weather_conditions: object
+          - historical_escalations: number
+          - nearby_complaints: number
+        outputs:
+          - urgency_score: number
+          - urgency_level: string
+          - recommended_sla: string
+          - estimated_impact: string
+          - risk_factors: array
+        output_mapping:
+          urgency_score: "prediction.urgency_score"
+          urgency_level: "prediction.urgency_level"
+          recommended_sla: "prediction.recommended_sla"
+
+      # Action Tools
+      - type: action
+        name: "create_service_request"
+        description: "Create service request entity in knowledge graph"
+        action_type: "update_entity"
+        entity_type: "ServiceRequest"
+        operation: "create"
+        approval_required: false
+        fields:
+          - requestId: "{generated_uuid}"
+          - requestType: "{classification.request_type}"
+          - description: "{input.description}"
+          - location: "{input.location}"
+          - urgencyScore: "{urgency.urgency_score}"
+          - urgencyLevel: "{urgency.urgency_level}"
+          - status: "open"
+          - reporterId: "{input.reporter_id}"
+          - createdAt: "{timestamp.now}"
+          - recommendedSLA: "{urgency.recommended_sla}"
+          - tenantId: "{tenant_id}"
+
+      - type: action
+        name: "link_duplicate_requests"
+        description: "Link request to related duplicates"
+        action_type: "update_entity"
+        entity_type: "ServiceRequest"
+        operation: "update"
+        approval_required: false
+
+    # LLM Prompt Configuration
+    prompt:
+      system: |
+        You are a 311 Service Request Intake Specialist AI agent for city government.
+
+        Your role:
+        1. Analyze citizen service requests (text + images)
+        2. Classify the request type (pothole, noise complaint, streetlight, etc.)
+        3. Extract and validate location information
+        4. Assess urgency based on safety, impact, and context
+        5. Detect duplicate or related requests
+        6. Create structured service request record
+
+        Context you have access to:
+        - Service request description and attachments
+        - Reporter's location and contact info
+        - Historical requests in the area
+        - Weather and time-of-day context
+        - Infrastructure asset data (streetlights, roads, etc.)
+
+        Classification types:
+        - pothole, street_damage, sidewalk_repair
+        - streetlight_out, traffic_signal_issue
+        - noise_complaint, parking_violation
+        - graffiti, illegal_dumping
+        - tree_maintenance, vegetation_overgrowth
+        - water_leak, sewer_issue
+        - animal_control, pest_control
+        - code_violation, zoning_inquiry
+
+        Urgency levels:
+        - critical: Immediate safety hazard (0.85-1.0)
+        - high: Significant impact, quick response needed (0.70-0.84)
+        - medium: Standard priority (0.50-0.69)
+        - low: Non-urgent, routine maintenance (0.0-0.49)
+
+        Always:
+        - Validate location data (lat/lon, address)
+        - Check for duplicates within 100ft and 7 days
+        - Consider time-sensitive factors (school zones, traffic patterns)
+        - Be clear and professional in communications
+        - Protect citizen privacy (PII handling)
+
+      user: |
+        New service request received:
+
+        Description: {description}
+        Location: {location}
+        Reporter ID: {reporter_id}
+        Timestamp: {timestamp}
+        Attachments: {attachments}
+
+        Historical context:
+        - Duplicate requests found: {duplicate_count}
+        - Related requests: {related_requests}
+        - Nearby infrastructure: {nearby_assets}
+
+        ML Classification:
+        - Type: {classification.request_type} (confidence: {classification.confidence})
+        - Subcategory: {classification.subcategory}
+
+        ML Urgency Prediction:
+        - Urgency score: {urgency.urgency_score}
+        - Urgency level: {urgency.urgency_level}
+        - Recommended SLA: {urgency.recommended_sla}
+        - Risk factors: {urgency.risk_factors}
+
+        Tasks:
+        1. Review and validate the ML classification and urgency assessment
+        2. Analyze attachments if provided (photos of issue)
+        3. Check if this is a duplicate or should be linked to existing requests
+        4. Create the service request with proper categorization
+        5. Return structured response with:
+           - Validated request type and urgency
+           - Service request ID
+           - Duplicate status
+           - Next steps
+
+        Respond in JSON format:
+        {
+          "validated_classification": {
+            "request_type": "...",
+            "subcategory": "...",
+            "confidence": 0.0-1.0,
+            "reasoning": "..."
+          },
+          "validated_urgency": {
+            "urgency_level": "critical|high|medium|low",
+            "urgency_score": 0.0-1.0,
+            "reasoning": "...",
+            "sla_hours": number
+          },
+          "duplicate_analysis": {
+            "is_duplicate": boolean,
+            "related_request_ids": [],
+            "action": "create_new|link_existing|merge"
+          },
+          "service_request_id": "SR-YYYY-NNNNN",
+          "next_steps": ["step1", "step2"]
+        }
+
+    # Input/Output Schemas
+    input_schema:
+      type: object
+      required: [description, location, reporter_id]
+      properties:
+        description:
+          type: string
+          minLength: 10
+          maxLength: 5000
+        location:
+          type: object
+          required: [latitude, longitude]
+          properties:
+            latitude: {type: number, minimum: -90, maximum: 90}
+            longitude: {type: number, minimum: -180, maximum: 180}
+            address: {type: string}
+        reporter_id:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              url: {type: string}
+              type: {type: string, enum: [image, video, document]}
+
+    output_schema:
+      type: object
+      properties:
+        service_request_id:
+          type: string
+          pattern: "^SR-\\d{4}-\\d{5}$"
+        request_type:
+          type: string
+        urgency_level:
+          type: string
+          enum: [critical, high, medium, low]
+        duplicate_status:
+          type: object
+        next_steps:
+          type: array
+          items: {type: string}
+
+  # =============================================================================
+
+  - id: service_request_router
+    name: "Service Request Router Agent"
+    version: "1.0.0"
+    description: |
+      Routes service requests to appropriate departments, assigns priority queues,
+      and optimizes resource allocation based on capacity and skillsets.
+
+    capabilities:
+      - department_routing
+      - priority_assignment
+      - capacity_analysis
+      - sla_management
+
+    tools:
+      - type: entity_query
+        name: "get_department_capacity"
+        description: "Analyze department capacity and current workload"
+        entities: [Department, FieldWorker, WorkOrder]
+        query: |
+          MATCH (d:Department {tenantId: $tenantId})
+          WHERE d.handles CONTAINS $requestType
+          OPTIONAL MATCH (d)<-[:ASSIGNED_TO]-(fw:FieldWorker)
+          WHERE fw.status = 'available' AND fw.skills CONTAINS $requiredSkill
+          OPTIONAL MATCH (d)<-[:ASSIGNED_TO_DEPT]-(wo:WorkOrder)
+          WHERE wo.status IN ['assigned', 'in_progress']
+          WITH d,
+               count(DISTINCT fw) as available_workers,
+               count(DISTINCT wo) as active_workorders,
+               d.avgResponseTime as avg_response_time,
+               d.slaComplianceRate as sla_rate
+          RETURN d.id as department_id,
+                 d.name as department_name,
+                 available_workers,
+                 active_workorders,
+                 avg_response_time,
+                 sla_rate,
+                 (available_workers * 1.0 / (active_workorders + 1)) as capacity_ratio
+          ORDER BY capacity_ratio DESC
+
+      - type: ml_model
+        name: "predict_department_load"
+        description: "Predict department workload for next 24-48 hours"
+        model_id: "department_load_forecaster_v1"
+        inputs:
+          - department_id: string
+          - current_workload: number
+          - time_of_day: string
+          - day_of_week: string
+          - weather_forecast: object
+          - historical_patterns: array
+        outputs:
+          - predicted_workload_24h: number
+          - predicted_workload_48h: number
+          - bottleneck_risk: number
+          - recommended_staffing: number
+
+      - type: action
+        name: "assign_to_department"
+        description: "Assign service request to department"
+        action_type: "update_entity"
+        entity_type: "ServiceRequest"
+        operation: "update"
+        approval_required: false
+        fields:
+          - assignedDepartment: "{selected_department.id}"
+          - assignedAt: "{timestamp.now}"
+          - priorityQueue: "{priority_queue}"
+          - estimatedResponseTime: "{estimated_response}"
+
+      - type: action
+        name: "send_department_notification"
+        description: "Notify department of new assignment"
+        action_type: "send_notification"
+        notification_type: "email"
+        recipients: "{department.notification_email}"
+        template: "new_service_request_assignment"
+
+    prompt:
+      system: |
+        You are a Service Request Routing AI agent for city government operations.
+
+        Your role:
+        1. Analyze service request details
+        2. Identify the appropriate department(s)
+        3. Assess department capacity and workload
+        4. Assign to optimal queue based on urgency and capacity
+        5. Set SLA expectations
+        6. Notify department staff
+
+        Routing rules:
+        - Streets Department: potholes, street damage, sidewalk repair, streetlight
+        - Parks Department: tree maintenance, vegetation, park facilities
+        - Code Enforcement: violations, zoning, graffiti, illegal dumping
+        - Police Department: noise complaints (after hours), public safety
+        - Utilities: water leaks, sewer issues, drainage
+        - Animal Control: animal issues, pest control
+
+        Priority queues:
+        - Emergency (< 2 hours): Safety hazards, critical infrastructure
+        - Urgent (< 24 hours): High impact, time-sensitive
+        - Standard (< 72 hours): Normal priority requests
+        - Routine (< 1 week): Maintenance, non-urgent issues
+
+        Capacity considerations:
+        - Available field workers with required skills
+        - Current workload (active work orders)
+        - Average response time (historical)
+        - SLA compliance rate
+        - Predicted workload (next 24-48h)
+
+        Load balancing:
+        - Distribute work evenly across departments
+        - Avoid overloading high-performing teams
+        - Consider geographic clustering for efficiency
+        - Escalate if department is at capacity
+
+      user: |
+        Service request to route:
+
+        Request ID: {service_request_id}
+        Type: {request_type}
+        Urgency: {urgency_level} ({urgency_score})
+        Location: {location}
+        Description: {description}
+        Recommended SLA: {recommended_sla}
+
+        Department capacity analysis:
+        {department_capacity_data}
+
+        Workload predictions:
+        {department_load_predictions}
+
+        Tasks:
+        1. Select optimal department based on:
+           - Request type and department expertise
+           - Current capacity and workload
+           - Geographic location
+           - Predicted bottlenecks
+        2. Assign to appropriate priority queue
+        3. Set realistic SLA expectations
+        4. Prepare department notification
+
+        Return JSON:
+        {
+          "assigned_department": {
+            "id": "...",
+            "name": "...",
+            "reasoning": "..."
+          },
+          "priority_queue": "emergency|urgent|standard|routine",
+          "sla_commitment": {
+            "hours": number,
+            "target_date": "ISO datetime"
+          },
+          "notification": {
+            "send": boolean,
+            "recipients": [],
+            "priority": "high|normal"
+          }
+        }
+
+  # =============================================================================
+
+  - id: work_order_automation
+    name: "Work Order Automation Agent"
+    version: "1.0.0"
+    description: |
+      Automatically creates work orders, assigns optimal field workers,
+      estimates completion time, and coordinates logistics.
+
+    capabilities:
+      - work_order_creation
+      - field_worker_assignment
+      - route_optimization
+      - resource_allocation
+      - completion_estimation
+
+    tools:
+      - type: entity_query
+        name: "find_optimal_field_worker"
+        description: "Find best available field worker based on location, skills, workload"
+        entities: [FieldWorker, ServiceRequest, Location, WorkOrder]
+        query: |
+          MATCH (fw:FieldWorker {tenantId: $tenantId})
+          WHERE fw.status = 'available'
+            AND $requiredSkill IN fw.skills
+          OPTIONAL MATCH (fw)-[:ASSIGNED_TO]->(wo:WorkOrder)
+          WHERE wo.status IN ['assigned', 'in_progress']
+          WITH fw,
+               point.distance(
+                 point({latitude: fw.currentLocation.lat, longitude: fw.currentLocation.lon}),
+                 point({latitude: $requestLat, longitude: $requestLon})
+               ) / 1609.34 as distance_miles,
+               count(wo) as current_workload,
+               fw.avgCompletionTime as avg_time,
+               fw.performanceScore as performance
+          WITH fw, distance_miles, current_workload, avg_time, performance,
+               (distance_miles * 0.4 + current_workload * 0.3 + (1 - performance) * 0.3) as optimization_score
+          ORDER BY optimization_score ASC
+          LIMIT 5
+          RETURN fw, distance_miles, current_workload, performance, optimization_score
+
+      - type: ml_model
+        name: "estimate_completion_time"
+        description: "Estimate work order completion time"
+        model_id: "completion_time_estimator_v1"
+        inputs:
+          - request_type: string
+          - complexity: string
+          - worker_skill_level: number
+          - worker_experience_months: number
+          - weather_conditions: object
+          - equipment_required: array
+          - location_accessibility: string
+        outputs:
+          - estimated_hours: number
+          - confidence: number
+          - completion_probability: object
+          - risk_factors: array
+
+      - type: ml_model
+        name: "predict_materials_needed"
+        description: "Predict materials and equipment needed"
+        model_id: "materials_predictor_v1"
+        inputs:
+          - request_type: string
+          - description: string
+          - attachments_analyzed: object
+        outputs:
+          - materials: array
+          - equipment: array
+          - estimated_cost: number
+
+      - type: action
+        name: "create_work_order"
+        description: "Create work order in external work management system"
+        action_type: "http_post"
+        destination: "work_management_system"
+        url: "${WORK_MGMT_API}/api/work-orders"
+        method: "POST"
+        headers:
+          Authorization: "Bearer ${WORK_MGMT_API_KEY}"
+          Content-Type: "application/json"
+        payload:
+          work_order_number: "{generated_wo_number}"
+          service_request_id: "{service_request_id}"
+          request_type: "{request_type}"
+          priority: "{priority}"
+          department_id: "{department_id}"
+          assigned_worker_id: "{worker_id}"
+          location: "{location}"
+          description: "{description}"
+          estimated_hours: "{estimated_hours}"
+          materials_needed: "{materials}"
+          scheduled_date: "{scheduled_date}"
+          sla_target: "{sla_target}"
+          created_by: "AI_AGENT"
+        approval_required: false
+        retry_policy:
+          max_retries: 3
+          backoff_seconds: 5
+
+      - type: action
+        name: "assign_to_field_worker"
+        description: "Send mobile push notification to field worker"
+        action_type: "send_notification"
+        notification_type: "mobile_push"
+        recipients: "{worker_id}"
+        payload:
+          title: "New Work Order Assigned: {priority}"
+          message: "WO-{work_order_number}: {request_type} at {location}"
+          data:
+            work_order_id: "{work_order_id}"
+            priority: "{priority}"
+            location: "{location}"
+            estimated_hours: "{estimated_hours}"
+
+      - type: action
+        name: "update_service_request_status"
+        description: "Update service request with work order info"
+        action_type: "update_entity"
+        entity_type: "ServiceRequest"
+        operation: "update"
+        fields:
+          - workOrderId: "{work_order_id}"
+          - status: "work_order_created"
+          - assignedWorkerId: "{worker_id}"
+          - scheduledDate: "{scheduled_date}"
+          - estimatedCompletionDate: "{estimated_completion}"
+
+    prompt:
+      system: |
+        You are a Work Order Automation AI agent for city field operations.
+
+        Your role:
+        1. Create work orders for approved service requests
+        2. Find optimal field worker (location, skills, workload)
+        3. Estimate completion time and materials needed
+        4. Schedule work based on priority and capacity
+        5. Coordinate logistics and resources
+        6. Notify field workers via mobile app
+
+        Work order creation criteria:
+        - Service request approved and routed
+        - Department has capacity
+        - Priority level requires work order
+        - Field worker availability confirmed
+
+        Field worker optimization factors:
+        - Distance to location (40% weight)
+        - Current workload (30% weight)
+        - Performance score (30% weight)
+        - Required skills match
+        - Schedule availability
+
+        Scheduling rules:
+        - Emergency: Immediate assignment
+        - Urgent: Schedule within 4-6 hours
+        - Standard: Schedule within 1-2 days
+        - Routine: Schedule within 3-5 days
+
+        Materials management:
+        - Predict materials from request description
+        - Check inventory availability
+        - Flag if special order needed
+        - Estimate total cost
+
+        Integration points:
+        - Work management system (create WO, update status)
+        - Mobile app (push notifications to workers)
+        - Inventory system (check materials)
+        - GIS system (route optimization)
+
+      user: |
+        Create work order for service request:
+
+        Request ID: {service_request_id}
+        Type: {request_type}
+        Priority: {priority}
+        Location: {location}
+        Description: {description}
+        Department: {department}
+        SLA Target: {sla_target}
+
+        Available field workers:
+        {field_workers_data}
+
+        ML Predictions:
+        - Completion time: {estimated_hours} hours (confidence: {confidence})
+        - Materials needed: {predicted_materials}
+        - Equipment required: {predicted_equipment}
+        - Total cost estimate: ${estimated_cost}
+
+        Tasks:
+        1. Select optimal field worker
+        2. Calculate realistic schedule
+        3. Confirm materials availability
+        4. Create work order in work management system
+        5. Send mobile notification to worker
+        6. Update service request status
+
+        Return JSON:
+        {
+          "work_order": {
+            "work_order_number": "WO-YYYY-NNNN",
+            "assigned_worker": {
+              "id": "...",
+              "name": "...",
+              "distance_miles": number,
+              "current_workload": number
+            },
+            "scheduled_datetime": "ISO datetime",
+            "estimated_completion": "ISO datetime",
+            "materials": [],
+            "equipment": []
+          },
+          "notifications_sent": {
+            "worker_mobile": boolean,
+            "department_email": boolean
+          },
+          "service_request_updated": boolean,
+          "integration_results": {
+            "work_mgmt_system": "success|failed",
+            "mobile_push": "success|failed"
+          }
+        }
+
+  # =============================================================================
+
+  - id: predictive_maintenance
+    name: "Predictive Maintenance Agent"
+    version: "1.0.0"
+    description: |
+      Analyzes infrastructure health, predicts failures before they occur,
+      and proactively creates preventive maintenance work orders.
+
+    capabilities:
+      - failure_prediction
+      - proactive_maintenance
+      - asset_health_monitoring
+      - budget_optimization
+      - lifecycle_management
+
+    tools:
+      - type: entity_query
+        name: "get_infrastructure_health"
+        description: "Retrieve infrastructure asset health data"
+        entities: [InfrastructureAsset, MaintenanceHistory, ServiceRequest, Inspection]
+        query: |
+          MATCH (asset:InfrastructureAsset {tenantId: $tenantId})
+          WHERE asset.assetType = $assetType
+            AND ($districtId IS NULL OR asset.districtId = $districtId)
+          OPTIONAL MATCH (asset)-[:HAS_MAINTENANCE]->(mh:MaintenanceHistory)
+          WHERE mh.date > date() - duration({years: 2})
+          OPTIONAL MATCH (asset)-[:RELATED_TO]->(sr:ServiceRequest)
+          WHERE sr.createdAt > datetime() - duration({months: 6})
+            AND sr.status <> 'duplicate'
+          OPTIONAL MATCH (asset)-[:HAS_INSPECTION]->(insp:Inspection)
+          WHERE insp.date > date() - duration({years: 1})
+          WITH asset,
+               collect(mh) as maintenance_history,
+               count(DISTINCT sr) as recent_complaints,
+               collect(insp) as inspections,
+               duration.between(asset.installDate, date()).years as age_years,
+               asset.expectedLifespan as expected_lifespan
+          RETURN asset,
+                 maintenance_history,
+                 recent_complaints,
+                 inspections,
+                 age_years,
+                 expected_lifespan,
+                 (age_years * 1.0 / expected_lifespan) as age_ratio
+
+      - type: ml_model
+        name: "predict_failure_risk"
+        description: "Predict infrastructure failure probability"
+        model_id: "infrastructure_failure_predictor_v3"
+        inputs:
+          - asset_type: string
+          - asset_age_years: number
+          - age_ratio: number
+          - maintenance_frequency: number
+          - days_since_last_maintenance: number
+          - complaint_frequency: number
+          - inspection_scores: array
+          - environmental_factors: object
+          - usage_intensity: number
+        outputs:
+          - failure_risk_score: number
+          - predicted_failure_date: string
+          - failure_type: string
+          - confidence: number
+          - contributing_factors: array
+          - recommended_action: string
+
+      - type: ml_model
+        name: "optimize_maintenance_schedule"
+        description: "Optimize preventive maintenance schedule"
+        model_id: "maintenance_scheduler_v1"
+        inputs:
+          - assets_at_risk: array
+          - budget_constraints: object
+          - department_capacity: object
+          - seasonal_factors: object
+        outputs:
+          - priority_schedule: array
+          - budget_allocation: object
+          - expected_savings: number
+          - risk_reduction: number
+
+      - type: action
+        name: "create_preventive_work_order"
+        description: "Create preventive maintenance work order"
+        action_type: "trigger_workflow"
+        workflow_type: "create_work_order"
+        approval_required: true
+        approval_threshold: 0.85
+        approval_amount_threshold: 5000
+        approval_rules:
+          - condition: "failure_risk_score > 0.90 AND estimated_cost < 5000"
+            action: "auto_approve"
+          - condition: "failure_risk_score > 0.85 AND estimated_cost < 2000"
+            action: "auto_approve"
+          - condition: "failure_risk_score < 0.85 OR estimated_cost >= 5000"
+            action: "require_approval"
+
+      - type: action
+        name: "flag_high_risk_asset"
+        description: "Flag asset as high risk in GIS system"
+        action_type: "http_post"
+        destination: "gis_system"
+        url: "${GIS_API}/api/assets/{asset_id}/flag"
+
+    prompt:
+      system: |
+        You are a Predictive Maintenance AI agent for city infrastructure management.
+
+        Your mission:
+        1. Monitor infrastructure asset health continuously
+        2. Predict failures before they occur
+        3. Recommend proactive maintenance
+        4. Optimize maintenance schedules and budgets
+        5. Prevent emergency repairs and service disruptions
+
+        Asset types monitored:
+        - Streetlights (electrical, LED, timing systems)
+        - Traffic signals (lights, sensors, controllers)
+        - Roads and bridges (pavement, structural)
+        - Water/sewer infrastructure (pipes, valves, pumps)
+        - Park equipment (playgrounds, benches, facilities)
+        - Public buildings (HVAC, electrical, plumbing)
+
+        Failure prediction factors:
+        - Asset age vs expected lifespan
+        - Maintenance history and frequency
+        - Citizen complaint patterns
+        - Inspection scores and findings
+        - Environmental conditions (weather, usage)
+        - Similar asset failure patterns
+
+        Risk scoring (0.0-1.0):
+        - 0.90-1.0: Critical - Imminent failure (days/weeks)
+        - 0.75-0.89: High - Failure likely (1-3 months)
+        - 0.60-0.74: Medium - Preventive action recommended (3-6 months)
+        - 0.40-0.59: Low - Monitor closely (6-12 months)
+        - 0.0-0.39: Normal - Routine maintenance schedule
+
+        Approval workflow:
+        - Auto-approve: High risk (>0.85) + Low cost (<$5k)
+        - Require approval: High cost (>=$5k) OR Lower risk (<0.85)
+        - Emergency bypass: Critical safety hazard (>0.95)
+
+        Cost-benefit analysis:
+        - Preventive maintenance cost vs emergency repair cost
+        - Service disruption impact
+        - Public safety considerations
+        - Budget availability and prioritization
+
+        Optimization goals:
+        - Maximize asset lifespan
+        - Minimize emergency repairs
+        - Optimize maintenance spend
+        - Improve public safety
+        - Reduce service interruptions
+
+      user: |
+        Daily predictive maintenance analysis:
+
+        Asset Type: {asset_type}
+        District: {district_id}
+        Total Assets Analyzed: {total_assets}
+
+        High-Risk Assets Identified: {high_risk_count}
+
+        Asset Details:
+        {asset_health_data}
+
+        ML Failure Predictions:
+        {failure_predictions}
+
+        Budget Context:
+        - Available preventive maintenance budget: ${available_budget}
+        - Emergency repair budget (YTD): ${emergency_spent}
+        - Department capacity: {department_capacity}
+
+        Tasks:
+        1. Review failure risk predictions
+        2. Prioritize assets by risk + impact
+        3. Perform cost-benefit analysis
+        4. Generate maintenance schedule
+        5. Create work orders (auto-approve or request approval)
+        6. Flag high-risk assets in GIS
+        7. Generate executive summary report
+
+        Return JSON:
+        {
+          "summary": {
+            "assets_analyzed": number,
+            "high_risk_assets": number,
+            "work_orders_created": number,
+            "work_orders_pending_approval": number,
+            "estimated_cost": number,
+            "potential_savings": number
+          },
+          "priority_actions": [
+            {
+              "asset_id": "...",
+              "asset_type": "...",
+              "location": "...",
+              "failure_risk": number,
+              "predicted_failure_date": "...",
+              "recommended_action": "...",
+              "estimated_cost": number,
+              "approval_status": "auto_approved|pending|bypassed"
+            }
+          ],
+          "budget_analysis": {
+            "preventive_cost": number,
+            "avoided_emergency_cost": number,
+            "net_savings": number,
+            "roi_percentage": number
+          },
+          "next_review_date": "ISO date"
+        }
+
+  # =============================================================================
+
+  - id: citizen_communication
+    name: "Citizen Communication Agent"
+    version: "1.0.0"
+    description: |
+      Provides automated status updates, handles citizen inquiries,
+      sends notifications, and collects feedback.
+
+    capabilities:
+      - status_updates
+      - inquiry_responses
+      - notification_management
+      - satisfaction_surveys
+      - escalation_handling
+
+    tools:
+      - type: entity_query
+        name: "get_request_status"
+        description: "Get complete service request status with timeline"
+        entities: [ServiceRequest, WorkOrder, FieldWorker, Department]
+        query: |
+          MATCH (sr:ServiceRequest {id: $requestId, tenantId: $tenantId})
+          OPTIONAL MATCH (sr)-[:HAS_WORK_ORDER]->(wo:WorkOrder)
+          OPTIONAL MATCH (wo)-[:ASSIGNED_TO]->(fw:FieldWorker)
+          OPTIONAL MATCH (sr)-[:ASSIGNED_TO_DEPT]->(d:Department)
+          OPTIONAL MATCH (sr)-[:HAS_STATUS_UPDATE]->(su:StatusUpdate)
+          RETURN sr, wo, fw, d, collect(su) as status_updates
+          ORDER BY su.timestamp DESC
+
+      - type: llm_generation
+        name: "generate_status_update"
+        description: "Generate natural language status update for citizen"
+        temperature: 0.3
+        max_tokens: 500
+        tone: "professional, helpful, clear"
+
+      - type: llm_generation
+        name: "generate_inquiry_response"
+        description: "Generate response to citizen inquiry"
+        temperature: 0.4
+        max_tokens: 750
+
+      - type: action
+        name: "send_sms_update"
+        description: "Send SMS notification to citizen"
+        action_type: "send_notification"
+        notification_type: "sms"
+        provider: "twilio"
+
+      - type: action
+        name: "send_email_update"
+        description: "Send email notification to citizen"
+        action_type: "send_notification"
+        notification_type: "email"
+        template: "service_request_status_update"
+
+      - type: action
+        name: "send_satisfaction_survey"
+        description: "Send satisfaction survey after completion"
+        action_type: "trigger_workflow"
+        workflow_type: "send_survey"
+        delay_hours: 24
+
+    prompt:
+      system: |
+        You are a Citizen Communication AI agent for city government 311 services.
+
+        Your role:
+        1. Provide clear, timely status updates to citizens
+        2. Answer inquiries about service requests
+        3. Translate technical jargon to plain language
+        4. Set appropriate expectations
+        5. Handle complaints with empathy
+        6. Collect feedback via surveys
+
+        Communication principles:
+        - Clear and concise (avoid government jargon)
+        - Professional and courteous tone
+        - Realistic timelines and expectations
+        - Proactive updates at key milestones
+        - Empathetic to citizen concerns
+        - Accessible language (6th grade reading level)
+
+        Status update triggers:
+        - Request received and classified
+        - Work order created and assigned
+        - Field worker en route
+        - Work in progress
+        - Work completed
+        - Request closed
+        - Delays or issues
+
+        Message templates:
+        - SMS: <160 characters, essential info only
+        - Email: Detailed with next steps
+        - Push notification: Action-oriented, brief
+
+        Escalation criteria:
+        - SLA deadline approaching or missed
+        - Multiple citizen follow-ups
+        - Complaint about service quality
+        - Safety concern raised
+        - Media inquiry
+
+        Survey timing:
+        - Send 24 hours after completion
+        - Include link to online survey
+        - Track response rates
+        - Flag negative feedback for review
+
+      user: |
+        Communication task:
+
+        Type: {communication_type}
+        Service Request: {request_id}
+        Citizen: {citizen_name} ({citizen_contact})
+
+        Request Status:
+        - Type: {request_type}
+        - Status: {current_status}
+        - Priority: {priority}
+        - Created: {created_date}
+        - SLA Target: {sla_target}
+        - Work Order: {work_order_id}
+        - Assigned Worker: {worker_name}
+        - Scheduled: {scheduled_date}
+        - Estimated Completion: {estimated_completion}
+
+        Status Timeline:
+        {status_updates}
+
+        Context:
+        - This is update #{update_count}
+        - Last communication: {last_contact_date}
+        - Citizen inquiry: {citizen_question}
+
+        Tasks:
+        1. Generate appropriate message for {communication_type}
+        2. Include relevant details (work order, timeline, worker info)
+        3. Set clear expectations
+        4. Provide next steps or action items
+        5. Include contact info for questions
+
+        Return JSON:
+        {
+          "message": {
+            "subject": "...",
+            "body": "...",
+            "format": "sms|email|push",
+            "length": number,
+            "reading_level": number
+          },
+          "delivery": {
+            "recipient": "...",
+            "method": "sms|email|both",
+            "priority": "high|normal",
+            "send_immediately": boolean
+          },
+          "follow_up": {
+            "required": boolean,
+            "schedule_hours": number,
+            "trigger": "..."
+          }
+        }
+
+  # =============================================================================
+  # SUPERVISOR AGENT
+  # =============================================================================
+
+  - id: service_request_supervisor
+    name: "Service Request Supervisor Agent"
+    version: "1.0.0"
+    description: |
+      Orchestrates the complete lifecycle of a service request from intake
+      through completion. Coordinates worker agents, handles exceptions,
+      and ensures SLA compliance.
+
+    capabilities:
+      - workflow_orchestration
+      - multi_agent_coordination
+      - exception_handling
+      - sla_monitoring
+      - performance_tracking
+
+    workflow:
+      steps:
+        - id: intake
+          name: "Intake and Classification"
+          agent: service_request_intake
+          parallel: false
+          required: true
+          timeout_minutes: 5
+          retry_on_failure: true
+          max_retries: 2
+
+        - id: routing
+          name: "Department Routing"
+          agent: service_request_router
+          parallel: false
+          required: true
+          depends_on: [intake]
+          timeout_minutes: 3
+
+        - id: work_order
+          name: "Work Order Creation"
+          agent: work_order_automation
+          parallel: false
+          required: true
+          depends_on: [routing]
+          condition: "priority in ['emergency', 'urgent', 'standard']"
+          timeout_minutes: 10
+
+        - id: citizen_notification
+          name: "Initial Citizen Notification"
+          agent: citizen_communication
+          parallel: true
+          required: false
+          depends_on: [work_order]
+          timeout_minutes: 2
+
+      error_handling:
+        - error_type: "timeout"
+          action: "escalate_to_human"
+          notification_channels: ["email", "pager"]
+
+        - error_type: "validation_failure"
+          action: "retry_with_fallback"
+          max_retries: 2
+
+        - error_type: "external_system_failure"
+          action: "queue_for_retry"
+          retry_delay_minutes: 15
+
+      monitoring:
+        - metric: "sla_compliance_rate"
+          threshold: 0.90
+          alert_below_threshold: true
+
+        - metric: "avg_intake_to_assignment_time"
+          threshold_minutes: 30
+          alert_above_threshold: true
+
+# =============================================================================
+# EVENT-DRIVEN TRIGGERS
+# =============================================================================
+
+triggers:
+  # New service request created (via API, mobile app, phone, web form)
+  - type: event
+    event_type: "service_request.created"
+    kafka_topic: "binah.government.service_request.created"
+    agent: service_request_supervisor
+    enabled: true
+    priority: "high"
+
+  # Work order completed by field worker
+  - type: event
+    event_type: "work_order.completed"
+    kafka_topic: "binah.government.work_order.completed"
+    agent: citizen_communication
+    action: "send_completion_notification"
+    enabled: true
+
+  # Work order delayed or SLA at risk
+  - type: event
+    event_type: "work_order.sla_risk"
+    kafka_topic: "binah.government.work_order.sla_risk"
+    agent: citizen_communication
+    action: "send_delay_notification"
+    enabled: true
+
+  # Daily predictive maintenance scan
+  - type: scheduled
+    schedule: "0 6 * * *"  # 6 AM daily
+    timezone: "America/Chicago"
+    agent: predictive_maintenance
+    parameters:
+      asset_types: ["streetlight", "traffic_signal"]
+    enabled: true
+
+  # Weekly predictive maintenance report
+  - type: scheduled
+    schedule: "0 8 * * 1"  # 8 AM Monday
+    agent: predictive_maintenance
+    action: "generate_executive_report"
+    enabled: true
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+configuration:
+  # LLM Provider Settings
+  llm_provider: "openai"  # or "anthropic", "ollama"
+  default_model: "gpt-4-turbo"
+  temperature: 0.3
+  max_tokens: 2000
+
+  # Multi-tenancy
+  tenant_isolation: "strict"
+  tenant_id_required: true
+
+  # Performance
+  max_concurrent_agents: 10
+  agent_timeout_minutes: 30
+  retry_policy:
+    max_retries: 3
+    backoff_strategy: "exponential"
+    initial_delay_seconds: 5
+
+  # Monitoring & Logging
+  log_level: "info"
+  audit_trail: "enabled"
+  performance_metrics: "enabled"
+  alert_channels: ["email", "slack"]
+
+  # Security
+  approval_required_cost_threshold: 5000
+  approval_required_confidence_threshold: 0.85
+  pii_handling: "encrypted"
+  data_retention_days: 2555  # 7 years
+
+  # Integration Endpoints
+  external_systems:
+    work_management_api: "${WORK_MGMT_API}"
+    gis_api: "${GIS_API}"
+    sms_provider: "twilio"
+    email_provider: "sendgrid"
