@@ -13,6 +13,9 @@ on:
         required: false
         default: 'all'
 
+permissions:
+  contents: write
+
 jobs:
   generate-binah-aip-docs:
     runs-on: ubuntu-latest
