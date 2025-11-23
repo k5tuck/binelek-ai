@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     pipeline_service_url: str = "http://localhost:8094"
     context_service_url: str = "http://localhost:8095"
 
+    # Kafka
+    kafka_brokers: str = "kafka:9092"
+
     # AI Configuration
     max_reasoning_steps: int = 5
     temperature: float = 0.7
