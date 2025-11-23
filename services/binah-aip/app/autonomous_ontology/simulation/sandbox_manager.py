@@ -35,7 +35,13 @@ class SandboxManager:
             docker_client: Docker client for container management
             production_neo4j_uri: URI of production Neo4j instance
         """
-        self.docker_client = docker_client or docker.from_env()
+        try:
+            self.docker_client = docker_client or docker.from_env()
+            logger.info("SandboxManager initialized with Docker client")
+        except Exception as e:
+            logger.warning(f"Docker not available: {e}. Sandbox features will be disabled.")
+            self.docker_client = None
+
         self.production_neo4j_uri = production_neo4j_uri
         self.active_sandboxes: Dict[str, Dict[str, Any]] = {}
         logger.info("SandboxManager initialized")

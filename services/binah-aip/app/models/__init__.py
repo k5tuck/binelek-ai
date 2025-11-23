@@ -90,3 +90,19 @@ class AuditLogEntry(BaseModel):
     tools_used: list[str]
     processing_time_ms: int
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Re-export explainability schemas for convenience
+from app.models.explainability_schemas import *
+
+__all__ = [
+    "QueryRequest",
+    "QueryType",
+    "ExecutionPlan",
+    "AIResponse",
+    "Agent",
+    "PropertyAnalysisRequest",
+    "PropertyAnalysisResponse",
+    "MarketResearchRequest",
+    "AuditLogEntry",
+]
