@@ -39,3 +39,6 @@ tenacity==8.2.3
 
 # Kafka (Event-Driven AI Orchestration)
 confluent-kafka==2.3.0
+
+# Docker SDK (for sandbox management)
+docker==7.0.0

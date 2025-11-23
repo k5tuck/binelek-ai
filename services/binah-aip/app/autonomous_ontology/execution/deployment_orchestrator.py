@@ -7,7 +7,7 @@ Implements blue-green deployment with automatic rollback.
 
 import logging
 import asyncio
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 from ..models import Deployment, DeploymentStatus, DeploymentMetrics, Recommendation

@@ -6,7 +6,6 @@ for ontology refactoring recommendations.
 """
 
 from .workflow_engine import WorkflowEngine
-from .approval_manager import ApprovalManager
 from .notification_service import NotificationService
 
-__all__ = ["WorkflowEngine", "ApprovalManager", "NotificationService"]
+__all__ = ["WorkflowEngine", "NotificationService"]

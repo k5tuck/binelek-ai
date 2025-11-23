@@ -34,7 +34,7 @@ from .collectors import (
 
 from .recommendation import RecommendationEngine
 from .simulation import SandboxManager, QueryReplayEngine, ImpactAnalyzer
-from .workflow import WorkflowEngine, ApprovalManager, NotificationService
+from .workflow import WorkflowEngine, NotificationService
 from .execution import YAMLEditor, MigrationGenerator, DeploymentOrchestrator
 from .monitoring import FeedbackCollector, ModelRetrainer
 
