@@ -15,6 +15,7 @@ The **binah-llm-extractor** service extracts structured entities from unstructur
 ### Key Features
 
 - ✅ **LLM-Powered Extraction** - Uses OpenAI GPT-4, Anthropic Claude, or Ollama Llama 3
+- ✅ **Image Analysis Support** - Multimodal LLMs for property photos, floor plans, documents (see [IMAGE_ANALYSIS_ARCHITECTURE.md](/IMAGE_ANALYSIS_ARCHITECTURE.md))
 - ✅ **Schema Integration** - Fetches schemas from binah-discovery for consistency
 - ✅ **Confidence-Based Routing** - Auto-apply (≥90%), manual review (75-89%), reject (<75%)
 - ✅ **Kafka Consumer** - Processes messages from `extraction.raw.*` topics
@@ -511,12 +512,33 @@ Part of the Binelek Platform
 
 ---
 
+## Image Analysis
+
+This service supports **multimodal LLMs** for extracting entities from images (property photos, floor plans, documents, business cards, etc.).
+
+**📸 See comprehensive guide:** [IMAGE_ANALYSIS_ARCHITECTURE.md](/IMAGE_ANALYSIS_ARCHITECTURE.md)
+
+**Supported:**
+- Property photos → Extract features, condition, room types
+- Floor plans → Identify layout, dimensions, rooms
+- Documents → OCR + understanding of invoices, contracts, forms
+- Business cards/IDs → Structured contact information
+- Product images → Catalog with descriptions and attributes
+
+**Providers:**
+- OpenAI GPT-4 Vision / GPT-4o
+- Anthropic Claude 3.5 Sonnet / Opus / Haiku (recommended)
+- Ollama LLaVA (local, free)
+
+---
+
 ## Support
 
 For issues or questions:
 - Check logs: `docker logs binah-llm-extractor`
 - Review API docs: `http://localhost:8110/docs`
 - See LLM_ENTITY_EXTRACTION_GUIDE.md in project root
+- See IMAGE_ANALYSIS_ARCHITECTURE.md for image processing
 
 ---
 
